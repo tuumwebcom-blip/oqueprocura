@@ -288,7 +288,8 @@
             <label class="form-label">Endereço Completo</label>
             <input type="text" class="form-control" id="input-address" placeholder="Rua, Número - Bairro, Cidade - UF">
           </div>
-          <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
+          <!-- Campo Google Maps (Exclusivo Plano PRO e Elite) -->
+          <div class="form-group" id="maps-field" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); display: none;">
             <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
               <span style="background: linear-gradient(135deg, #fbbc04, #34a853, #4285f4, #ea4335); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">Google Maps</span>
               <span class="badge badge-featured">Plano PRO</span>
@@ -297,6 +298,25 @@
               Cole aqui o link de incorporação do Google Maps. <strong>Como obter:</strong> Abra o Google Maps → pesquise seu endereço → clique em "Compartilhar" → "Incorporar um mapa" → copie o link do <code>src="..."</code> e cole aqui.
             </p>
             <input type="text" class="form-control" id="input-maps-url" placeholder="https://www.google.com/maps/embed?pb=...">
+          </div>
+
+          <!-- Teaser Bloqueado para Plano Gratuito e Básico -->
+          <div class="form-group" id="maps-field-locked" style="margin-top: 1.5rem; padding: 1.25rem; border-radius: var(--radius-lg); background: #f8fafc; border: 1px dashed var(--color-border); display: none;">
+            <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+              <div class="flex items-center gap-3">
+                <span style="background: #eff6ff; padding: 0.6rem; border-radius: 8px; color: var(--color-secondary); display: flex; align-items: center; justify-content: center;">
+                  <i data-lucide="map-pin" class="w-5 h-5"></i>
+                </span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong class="text-text-dark text-sm">Google Maps Interativo</strong>
+                    <span class="badge badge-featured" style="font-size: 0.65rem;">Exclusivo PRO / Elite</span>
+                  </div>
+                  <p class="text-xs text-muted mt-0.5">Permite que seus clientes tracem rotas até o seu endereço com 1 clique direto no seu perfil.</p>
+                </div>
+              </div>
+              <button class="btn btn-outline text-xs font-semibold" onclick="window.location.href='anuncie.html'" style="padding: 0.5rem 1rem; white-space: nowrap;">Fazer Upgrade</button>
+            </div>
           </div>
         </div>
       </section>
@@ -599,7 +619,15 @@
 
         // Mostrar/ocultar campo de maps conforme plano
         const mapsField = document.getElementById('maps-field');
-        if (mapsField) mapsField.style.display = currentPlanLimits.maps ? 'block' : 'none';
+        const mapsLocked = document.getElementById('maps-field-locked');
+        if (currentPlanLimits.maps) {
+          if (mapsField) mapsField.style.display = 'block';
+          if (mapsLocked) mapsLocked.style.display = 'none';
+        } else {
+          if (mapsField) mapsField.style.display = 'none';
+          if (mapsLocked) mapsLocked.style.display = 'block';
+        }
+        lucide.createIcons();
 
         // Renderizar imagem principal
         const imgMain = document.getElementById('admin-main-photo');
