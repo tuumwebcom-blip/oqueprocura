@@ -99,7 +99,7 @@ def get_user_plan(business_id):
 @app.route('/api/businesses')
 def api_businesses():
     conn = get_db_connection()
-    businesses = conn.execute('SELECT * FROM businesses WHERE status != 'suspended'').fetchall()
+    businesses = conn.execute("SELECT * FROM businesses WHERE status != 'suspended'").fetchall()
     conn.close()
     return jsonify([dict(b) for b in businesses])
 
@@ -164,7 +164,7 @@ def api_business(id):
     conn.execute('UPDATE businesses SET views = COALESCE(views, 0) + 1 WHERE id = ?', (id,))
     conn.commit()
 
-    business_row = conn.execute('SELECT * FROM businesses WHERE status != 'suspended' WHERE id = ?', (id,)).fetchone()
+    business_row = conn.execute("SELECT * FROM businesses WHERE status != 'suspended' AND id = ?", (id,)).fetchone()
     if not business_row:
         conn.close()
         return jsonify({'error': 'Business not found'}), 404
