@@ -120,10 +120,10 @@
       
       <div class="px-4 mb-6">
         <div class="flex items-center gap-3 p-3 rounded-lg border border-color-border bg-bg">
-          <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=100" class="w-10 h-10 rounded-full object-cover shadow-sm">
-          <div>
-            <p class="text-sm font-bold text-text-dark">Estúdio Lente</p>
-            <p class="text-xs text-secondary font-medium">Plano PRO</p>
+          <img id="sidebar-user-avatar" src="https://ui-avatars.com/api/?name=Empresa&background=2563eb&color=fff" class="w-10 h-10 rounded-full object-cover shadow-sm">
+          <div style="overflow: hidden; flex: 1;">
+            <p class="text-sm font-bold text-text-dark" id="sidebar-business-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Minha Empresa</p>
+            <p class="text-xs text-secondary font-medium" id="sidebar-plan-name">Plano ...</p>
           </div>
         </div>
       </div>
@@ -575,6 +575,23 @@
         // Mostrar plano no badge
         const planBadge = document.getElementById('plan-badge');
         if (planBadge) planBadge.textContent = (data.plan || 'basico').toUpperCase();
+
+        // Atualizar perfil na barra lateral
+        const sidebarName = document.getElementById('sidebar-business-name');
+        if (sidebarName) sidebarName.textContent = data.name || 'Minha Empresa';
+        
+        const sidebarPlan = document.getElementById('sidebar-plan-name');
+        if (sidebarPlan) {
+          const p = (data.plan || 'gratuito').toUpperCase();
+          sidebarPlan.textContent = `Plano ${p}`;
+        }
+
+        const sidebarAvatar = document.getElementById('sidebar-user-avatar');
+        if (sidebarAvatar) {
+          sidebarAvatar.src = data.image && !data.image.includes('placehold.co')
+            ? data.image
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Empresa')}&background=2563eb&color=fff`;
+        }
 
         // Guardar limites globalmente e renderizar serviços
         currentPlanLimits = data.plan_limits || {};
