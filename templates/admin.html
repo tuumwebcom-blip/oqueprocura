@@ -295,6 +295,8 @@
           </div>
         </div>
 
+        <div class="card-panel">
+          <h2 class="text-xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Contato & Localização</h2>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div class="form-group">
               <label class="form-label">WhatsApp Comercial</label>
@@ -369,7 +371,9 @@
               <p class="text-sm text-muted mt-1" id="gallery-count-label">Carregando limites do plano...</p>
             </div>
             <input type="file" id="upload-gallery-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoGaleria(this)">
-            <button class="btn btn-secondary" id="btn-add-gallery" onclick="document.getElementById('upload-gallery-photo').click()">+ Adicionar Foto</button>
+            <button class="btn btn-primary" id="btn-add-gallery" onclick="document.getElementById('upload-gallery-photo').click()">
+              <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Foto na Galeria
+            </button>
           </div>
           
           <p id="gallery-upload-status" class="text-sm mb-4 font-medium" style="display:none;"></p>
@@ -747,7 +751,7 @@
           } else if (planoAtual === 'gratuito') {
             assinaturaNome.textContent = 'Plano Gratuito (Cortesia)';
             assinaturaNome.style.color = '#64748b';
-            assinaturaDesc.textContent = '1 Foto de Capa · 1 Serviço · Sem Destaque';
+            assinaturaDesc.textContent = 'Logotipo da Empresa · Galeria com até 2 fotos · 1 Serviço';
             assinaturaValor.innerHTML = 'R$ 0,00';
           } else {
             assinaturaNome.textContent = 'Plano Básico';

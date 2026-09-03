@@ -58,7 +58,7 @@ def allowed_file(filename):
 # Limites por plano
 PLAN_LIMITS = {
     'gratuito': {
-        'photos': 1,
+        'photos': 2,
         'services': 1,
         'maps': False,
         'verified': False,
