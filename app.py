@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 import sqlite3
+import requests
+import uuid
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
