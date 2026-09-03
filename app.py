@@ -458,7 +458,7 @@ def google_callback():
     if user:
         session['user_id'] = user['id']
         session['business_id'] = user['business_id']
-        session['role'] = user['role']
+        session['role'] = 'business'
         conn.close()
         return redirect('/admin.html')
     else:
