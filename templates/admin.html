@@ -409,18 +409,24 @@
   </script>
 
   <script>
-    // Suporte a login via Google (pega business_id da URL ou do localStorage)
+    // Recupera BUSINESS_ID diretamente do Jinja/Flask, da URL ou do localStorage
+    const jinjaBizId = "{{ current_business_id or session.get('business_id') or '' }}";
     const urlParams = new URLSearchParams(window.location.search);
     const paramBizId = urlParams.get('business_id');
-    if (paramBizId && paramBizId !== 'None' && paramBizId !== 'null' && paramBizId !== 'undefined') {
-        localStorage.setItem('business_id', paramBizId);
+
+    let BUSINESS_ID = (jinjaBizId && jinjaBizId !== 'None') 
+      ? jinjaBizId 
+      : (paramBizId && paramBizId !== 'None' && paramBizId !== 'null' ? paramBizId : localStorage.getItem('business_id'));
+
+    if (BUSINESS_ID && BUSINESS_ID !== 'None' && BUSINESS_ID !== 'null' && BUSINESS_ID !== 'undefined') {
+      localStorage.setItem('business_id', BUSINESS_ID);
+      // Limpa os parâmetros da URL para manter a barra de endereços limpa
+      if (urlParams.has('business_id')) {
         window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
-    let BUSINESS_ID = localStorage.getItem('business_id');
-    if (BUSINESS_ID === 'None' || BUSINESS_ID === 'null' || BUSINESS_ID === 'undefined') {
-        BUSINESS_ID = null;
-        localStorage.removeItem('business_id');
+      }
+    } else {
+      BUSINESS_ID = null;
+      localStorage.removeItem('business_id');
     }
 
     async function fazerLogout() {

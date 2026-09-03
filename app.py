@@ -757,7 +757,13 @@ def cadastro():
 
 @app.route('/admin.html')
 def admin():
-    return render_template('admin.html')
+    param_bid = request.args.get('business_id', '').strip()
+    if param_bid and param_bid.isdigit():
+        session['business_id'] = int(param_bid)
+        session['role'] = 'business'
+    
+    current_bid = session.get('business_id') or param_bid or ''
+    return render_template('admin.html', current_business_id=current_bid)
 
 @app.route('/super_admin.html')
 def super_admin():
