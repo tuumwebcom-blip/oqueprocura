@@ -166,22 +166,22 @@
           <div class="stat-card">
             <div class="stat-icon"><i data-lucide="eye" class="w-6 h-6"></i></div>
             <div>
-              <p class="text-sm text-muted font-medium">Visualizações no mês</p>
-              <p class="text-2xl font-bold text-text-dark">1,248</p>
+              <p class="text-sm text-muted font-medium">Visualizações do perfil</p>
+              <p class="text-2xl font-bold text-text-dark" id="stat-views">0</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon" style="background: #ecfdf5; color: var(--color-success);"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
             <div>
               <p class="text-sm text-muted font-medium">Cliques no WhatsApp</p>
-              <p class="text-2xl font-bold text-text-dark">84</p>
+              <p class="text-2xl font-bold text-text-dark" id="stat-whatsapp">0</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon" style="background: #fffbeb; color: var(--color-warning);"><i data-lucide="star" class="w-6 h-6"></i></div>
             <div>
               <p class="text-sm text-muted font-medium">Avaliação Média</p>
-              <p class="text-2xl font-bold text-text-dark">4.9</p>
+              <p class="text-2xl font-bold text-text-dark" id="stat-rating">Sem notas</p>
             </div>
           </div>
         </div>
@@ -763,6 +763,19 @@
           sidebarAvatar.src = data.image && !data.image.includes('placehold.co')
             ? data.image
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Empresa')}&background=2563eb&color=fff`;
+        }
+
+        // Atualizar estatísticas reais da Visão Geral
+        const statViews = document.getElementById('stat-views');
+        if (statViews) statViews.textContent = (data.views || 0).toLocaleString('pt-BR');
+
+        const statWhatsapp = document.getElementById('stat-whatsapp');
+        if (statWhatsapp) statWhatsapp.textContent = (data.whatsapp_clicks || 0).toLocaleString('pt-BR');
+
+        const statRating = document.getElementById('stat-rating');
+        if (statRating) {
+          const r = parseFloat(data.rating || 0);
+          statRating.textContent = r > 0 ? r.toFixed(1) : 'Sem notas';
         }
 
         // Guardar limites globalmente e renderizar serviços

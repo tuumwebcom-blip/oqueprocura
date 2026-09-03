@@ -104,6 +104,8 @@ def check_db_schema():
             conn.execute('ALTER TABLE businesses ADD COLUMN website TEXT')
         if 'business_hours' not in cols:
             conn.execute('ALTER TABLE businesses ADD COLUMN business_hours TEXT')
+        if 'whatsapp_clicks' not in cols:
+            conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_clicks INTEGER DEFAULT 0')
         conn.commit()
         conn.close()
     except Exception:
@@ -212,6 +214,14 @@ def api_business(id):
     business['plan_limits'] = PLAN_LIMITS.get(plan, PLAN_LIMITS['basico'])
 
     return jsonify(business)
+
+@app.route('/api/businesses/<int:id>/click-whatsapp', methods=['POST'])
+def track_whatsapp_click(id):
+    conn = get_db_connection()
+    conn.execute('UPDATE businesses SET whatsapp_clicks = COALESCE(whatsapp_clicks, 0) + 1 WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 # ============================================================
 # API — Upload de Imagens
