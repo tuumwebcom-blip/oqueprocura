@@ -411,29 +411,16 @@
   <script>
     // Suporte a login via Google (pega business_id da URL ou do localStorage)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('business_id')) {
-        localStorage.setItem('business_id', urlParams.get('business_id'));
+    const paramBizId = urlParams.get('business_id');
+    if (paramBizId && paramBizId !== 'None' && paramBizId !== 'null' && paramBizId !== 'undefined') {
+        localStorage.setItem('business_id', paramBizId);
         window.history.replaceState({}, document.title, window.location.pathname);
     }
     
     let BUSINESS_ID = localStorage.getItem('business_id');
-    
-    // Se não tiver no localStorage, consulta a sessão no backend antes de redirecionar
-    if (!BUSINESS_ID) {
-        fetch('/api/auth/me')
-            .then(res => res.json())
-            .then(data => {
-                if (data.logged_in && data.business_id) {
-                    BUSINESS_ID = data.business_id;
-                    localStorage.setItem('business_id', BUSINESS_ID);
-                    carregarDados();
-                } else {
-                    window.location.href = '/login.html';
-                }
-            })
-            .catch(() => {
-                window.location.href = '/login.html';
-            });
+    if (BUSINESS_ID === 'None' || BUSINESS_ID === 'null' || BUSINESS_ID === 'undefined') {
+        BUSINESS_ID = null;
+        localStorage.removeItem('business_id');
     }
 
     async function fazerLogout() {
@@ -539,8 +526,35 @@
     }
 
     async function carregarDados() {
+      // Se não temos BUSINESS_ID válido no momento, tenta obter da sessão ativa do servidor
+      if (!BUSINESS_ID || isNaN(Number(BUSINESS_ID))) {
+        try {
+          const meRes = await fetch('/api/auth/me');
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            if (meData.logged_in && meData.business_id) {
+              BUSINESS_ID = meData.business_id;
+              localStorage.setItem('business_id', BUSINESS_ID);
+            } else {
+              window.location.href = '/login.html';
+              return;
+            }
+          } else {
+            window.location.href = '/login.html';
+            return;
+          }
+        } catch(e) {
+          window.location.href = '/login.html';
+          return;
+        }
+      }
+
       try {
         const response = await fetch('/api/businesses/' + BUSINESS_ID);
+        if (!response.ok) {
+          console.error('Empresa não encontrada no banco:', response.status);
+          return;
+        }
         const data = await response.json();
 
         document.getElementById('input-name').value = data.name || '';

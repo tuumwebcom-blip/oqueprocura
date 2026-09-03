@@ -486,6 +486,20 @@ def google_callback():
         
         if user:
             business_id = user['business_id']
+            biz = None
+            if business_id:
+                biz = conn.execute('SELECT id FROM businesses WHERE id = ?', (business_id,)).fetchone()
+            
+            # Auto-recuperação: se o usuário ficou sem empresa associada, cria uma agora
+            if not biz:
+                cursor = conn.execute('''
+                    INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
+                    VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
+                ''', (name,))
+                business_id = cursor.lastrowid
+                conn.execute('UPDATE users SET business_id = ? WHERE id = ?', (business_id, user['id']))
+                conn.commit()
+
             session['user_id'] = user['id']
             session['business_id'] = business_id
             session['role'] = 'business'
