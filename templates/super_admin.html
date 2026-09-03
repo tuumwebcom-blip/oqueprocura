@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin - O Que Procura?</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+      background-color: var(--color-bg);
+    }
+    
+    .admin-sidebar {
+      background-color: var(--color-primary);
+      color: white;
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .admin-nav {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+    }
+    
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+    
+    .admin-nav-item:hover {
+      background-color: var(--color-primary-light);
+      color: white;
+    }
+    .admin-nav-item.active {
+      background-color: var(--color-secondary);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .admin-content {
+      padding: 2.5rem 3rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .stat-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .stat-trend {
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .trend-up { color: var(--color-success); }
+    .trend-down { color: var(--color-danger); }
+
+    .data-table-container {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    .data-table-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--color-surface);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 1.25rem 2rem;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .data-table th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: var(--color-text-light);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: #f8fafc;
+    }
+    
+    .data-table td {
+      color: var(--color-text-dark);
+      font-size: 0.95rem;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef9c3; color: #854d0e; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <a href="/" class="logo mb-6 px-4 text-white" style="filter: brightness(0) invert(1);">
+        <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="height: 60px;">
+      </a>
+      
+      <div class="px-4 mb-6">
+        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Administração Global</p>
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800">
+          <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold">
+            SA
+          </div>
+          <div>
+            <p class="text-sm font-bold text-white">Super Admin</p>
+            <p class="text-xs text-slate-400">Acesso Total</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="admin-nav px-2">
+        <a href="#" class="admin-nav-item active" data-target="dashboard">
+          <i data-lucide="pie-chart" class="w-5 h-5"></i> Dashboard
+        </a>
+        <a href="#" class="admin-nav-item" data-target="empresas">
+          <i data-lucide="users" class="w-5 h-5"></i> <span id="nav-empresas-count">Empresas</span>
+        </a>
+        <a href="#" class="admin-nav-item" data-target="assinaturas">
+          <i data-lucide="dollar-sign" class="w-5 h-5"></i> Planos Ativos
+        </a>
+        <a href="#" class="admin-nav-item" data-target="categorias">
+          <i data-lucide="tag" class="w-5 h-5"></i> Categorias
+        </a>
+        <a href="#" class="admin-nav-item" data-target="configuracoes">
+          <i data-lucide="settings" class="w-5 h-5"></i> Configurações
+        </a>
+      </nav>
+      
+      <div class="mt-auto px-4 mb-4">
+        <a href="login.html" class="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sair do sistema
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+      <!-- ABA: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-section">
+
+      
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Visão Geral</h1>
+          <p class="text-muted mt-1">Acompanhe as métricas principais da plataforma O Que Procura.</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-muted">Filtrar por:</span>
+          <select class="form-control" style="width: auto; padding: 0.5rem 1rem;">
+            <option>Últimos 30 dias</option>
+            <option>Últimos 7 dias</option>
+            <option>Este ano</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Overview Stats -->
+      <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="text-sm text-muted font-medium">Receita Recorrente (MRR)</span>
+            <i data-lucide="dollar-sign" class="w-5 h-5 text-secondary"></i>
+          </div>
+          <div class="stat-value" id="stat-mrr">Carregando...</div>
+          <div class="stat-trend trend-up mt-2"><i data-lucide="trending-up" class="w-4 h-4"></i> Baseado nos planos ativos</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="text-sm text-muted font-medium">Empresas Ativas</span>
+            <i data-lucide="store" class="w-5 h-5 text-secondary"></i>
+          </div>
+          <div class="stat-value" id="stat-empresas">...</div>
+          <div class="stat-trend trend-up mt-2"><i data-lucide="trending-up" class="w-4 h-4"></i> Registradas no sistema</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="text-sm text-muted font-medium">Total de Pageviews</span>
+            <i data-lucide="eye" class="w-5 h-5 text-secondary"></i>
+          </div>
+          <div class="stat-value" id="stat-views">...</div>
+          <div class="stat-trend trend-up mt-2"><i data-lucide="trending-up" class="w-4 h-4"></i> Visualizações em perfis</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span class="text-sm text-muted font-medium">Taxa de Churn</span>
+            <i data-lucide="activity" class="w-5 h-5 text-secondary"></i>
+          </div>
+          <div class="stat-value">1.2%</div>
+          <div class="stat-trend trend-down mt-2"><i data-lucide="trending-down" class="w-4 h-4"></i> Saudável</div>
+        </div>
+      </div>
+
+      <div class="data-table-container">
+        <div class="data-table-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 class="text-lg font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Todas as Assinaturas</h2>
+          <button class="btn btn-primary text-sm py-2 px-4" onclick="abrirModalNovaEmpresa()">+ Nova Empresa</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Empresa / Contato</th>
+              <th>Plano</th>
+              <th>Valor Mensal</th>
+              <th>Views</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <tr><td colspan="6" style="text-align:center; padding: 2rem;">Carregando dados...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      
+      </section>
+
+      <!-- ABA: EMPRESAS -->
+      <section id="tab-empresas" class="tab-section" style="display:none;">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Diretório de Empresas</h1>
+          <button class="btn btn-primary" onclick="document.getElementById('modal-add').style.display='flex'">+ Nova Empresa</button>
+        </div>
+        <div class="card">
+          <table class="data-table w-full">
+            <thead>
+              <tr>
+                <th class="text-left">Empresa</th>
+                <th class="text-left">Email</th>
+                <th class="text-left">Plano</th>
+                <th class="text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody id="empresas-list-body">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ABA: ASSINATURAS -->
+      <section id="tab-assinaturas" class="tab-section" style="display:none;">
+        <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Planos da Plataforma</h1>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="card">
+            <h3 class="font-bold text-text-dark text-lg">Básico</h3>
+            <p class="text-2xl font-bold text-secondary my-2">R$ 29,90</p>
+            <p class="text-sm text-muted">Ideal para quem está começando.</p>
+          </div>
+          <div class="card" style="border: 2px solid var(--color-secondary);">
+            <h3 class="font-bold text-text-dark text-lg">PRO</h3>
+            <p class="text-2xl font-bold text-secondary my-2">R$ 49,90</p>
+            <p class="text-sm text-muted">Destaque nas buscas e 20 fotos.</p>
+          </div>
+          <div class="card" style="background: #1e293b; color: white;">
+            <h3 class="font-bold text-white text-lg">Elite</h3>
+            <p class="text-2xl font-bold text-purple-400 my-2">R$ 99,90</p>
+            <p class="text-sm text-slate-300">Máxima visibilidade e serviços ilimitados.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA: CATEGORIAS -->
+      <section id="tab-categorias" class="tab-section" style="display:none;">
+        <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Categorias Cadastradas</h1>
+        <div class="card">
+          <ul id="categorias-list" class="flex flex-col gap-3">
+            <li class="text-muted">Carregando categorias...</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ABA: CONFIGURAÇÕES -->
+      <section id="tab-configuracoes" class="tab-section" style="display:none;">
+        <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Configurações Globais</h1>
+        <div class="card max-w-lg">
+          <p class="text-muted mb-4">Em breve, configurações avançadas de SEO, nome da plataforma e chaves de pagamento estarão disponíveis aqui.</p>
+          <button class="btn btn-outline" onclick="alert('Funcionalidade em desenvolvimento!')">Exportar Banco de Dados</button>
+        </div>
+      </section>
+<!-- Modal Nova Empresa -->
+      <div id="modal-nova-empresa" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem;">
+          <h3 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Cadastrar Nova Empresa</h3>
+          <div class="form-group mb-3">
+            <label class="form-label">Nome da Empresa</label>
+            <input type="text" id="new-biz-name" class="form-control" placeholder="Ex: Studio 54">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Email de Acesso</label>
+            <input type="email" id="new-biz-email" class="form-control" placeholder="contato@empresa.com">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Senha de Acesso</label>
+            <input type="text" id="new-biz-password" class="form-control" value="123456">
+          </div>
+          <div class="form-group mb-5">
+            <label class="form-label">Plano</label>
+            <select id="new-biz-plan" class="form-control">
+              <option value="gratuito">Gratuito (Manual)</option>
+              <option value="basico">Básico</option>
+              <option value="pro">PRO</option>
+              <option value="elite">Elite</option>
+            </select>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-outline flex-1" onclick="fecharModalNovaEmpresa()">Cancelar</button>
+            <button class="btn btn-primary flex-1" onclick="salvarNovaEmpresa()">Cadastrar</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Lógica de Abas
+    document.querySelectorAll('.admin-nav-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if(item.getAttribute('href') !== '#') return; // ignora logout
+        e.preventDefault();
+        
+        // Remove active class de todos
+        document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Esconde todas as sections
+        document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+        
+        // Mostra a selecionada
+        const target = item.getAttribute('data-target');
+        document.getElementById('tab-' + target).style.display = 'block';
+      });
+    });
+
+
+    async function carregarDashboard() {
+      try {
+        const response = await fetch('/api/superadmin/dashboard');
+        const data = await response.json();
+        
+        // Atualizar métricas do topo
+        document.getElementById('stat-mrr').textContent = data.mrr;
+        document.getElementById('stat-empresas').textContent = data.total_businesses;
+        document.getElementById('stat-views').textContent = data.total_views;
+
+        // Atualizar tabela de empresas
+        const tbody = document.getElementById('admin-table-body');
+        
+        if (data.subscriptions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhuma empresa cadastrada.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.subscriptions.map(sub => {
+          const isSuspended = sub.status === 'suspended';
+          const badgeClass = isSuspended ? 'status-pending' : 'status-active';
+          const badgeText = isSuspended ? 'Suspensa' : 'Ativa';
+          const btnText = isSuspended ? 'Ativar' : 'Suspender';
+          const btnColor = isSuspended ? '#22c55e' : '#ef4444';
+          
+          return `
+          <tr>
+            <td>
+              <div class="font-bold text-text-dark">${sub.business_name}</div>
+              <div class="text-sm text-muted">${sub.email}</div>
+            </td>
+            <td>
+              <span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span>
+            </td>
+            <td class="font-bold text-text-dark">${sub.price}</td>
+            <td class="font-bold text-text-dark">${sub.views}</td>
+            <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+            <td>
+              <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
+                ${btnText}
+              </button>
+            </td>
+          </tr>
+        `}).join('');
+      
+        // Preencher Aba Empresas
+        document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
+        const empBody = document.getElementById('empresas-list-body');
+        if (empBody) {
+          empBody.innerHTML = data.subscriptions.map(sub => `
+            <tr class="border-b border-slate-100">
+              <td class="py-3 font-bold text-text-dark">${sub.business_name}</td>
+              <td class="py-3 text-muted">${sub.email}</td>
+              <td class="py-3"><span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span></td>
+              <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        // Preencher Aba Categorias
+        const categoriasList = document.getElementById('categorias-list');
+        if (categoriasList) {
+          const categorias = [...new Set(data.subscriptions.map(s => s.category))];
+          categoriasList.innerHTML = categorias.map(c => `
+            <li class="p-3 border border-slate-200 rounded-lg font-medium text-text-dark flex items-center gap-2">
+              <i data-lucide="tag" class="w-4 h-4 text-secondary"></i> ${c}
+            </li>
+          `).join('');
+        }
+
+      } catch (e) {
+        console.error('Erro ao carregar dashboard', e);
+        document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Erro ao conectar com o servidor.</td></tr>';
+      }
+    }
+
+    async function toggleStatus(businessId) {
+      if(!confirm('Deseja alterar o status desta empresa?')) return;
+      try {
+        const res = await fetch('/api/superadmin/businesses/' + businessId + '/status', { method: 'POST' });
+        const data = await res.json();
+        if(data.success) {
+          carregarDashboard();
+        } else {
+          alert('Erro ao alterar status.');
+        }
+      
+        // Preencher Aba Empresas
+        document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
+        const empBody = document.getElementById('empresas-list-body');
+        if (empBody) {
+          empBody.innerHTML = data.subscriptions.map(sub => `
+            <tr class="border-b border-slate-100">
+              <td class="py-3 font-bold text-text-dark">${sub.business_name}</td>
+              <td class="py-3 text-muted">${sub.email}</td>
+              <td class="py-3"><span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span></td>
+              <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        // Preencher Aba Categorias
+        const categoriasList = document.getElementById('categorias-list');
+        if (categoriasList) {
+          const categorias = [...new Set(data.subscriptions.map(s => s.category))];
+          categoriasList.innerHTML = categorias.map(c => `
+            <li class="p-3 border border-slate-200 rounded-lg font-medium text-text-dark flex items-center gap-2">
+              <i data-lucide="tag" class="w-4 h-4 text-secondary"></i> ${c}
+            </li>
+          `).join('');
+        }
+
+      } catch (e) {
+        alert('Erro de conexão.');
+      }
+    }
+
+    // Modal Funções
+    function abrirModalNovaEmpresa() {
+      document.getElementById('new-biz-name').value = '';
+      document.getElementById('new-biz-email').value = '';
+      document.getElementById('modal-nova-empresa').style.display = 'flex';
+    }
+
+    function fecharModalNovaEmpresa() {
+      document.getElementById('modal-nova-empresa').style.display = 'none';
+    }
+
+    async function salvarNovaEmpresa() {
+      const name = document.getElementById('new-biz-name').value.trim();
+      const email = document.getElementById('new-biz-email').value.trim();
+      const password = document.getElementById('new-biz-password').value.trim();
+      const plan = document.getElementById('new-biz-plan').value;
+
+      if (!name || !email || !password) {
+        alert('Preencha todos os campos obrigatórios!');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/businesses/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ business_name: name, email, password, plan })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          fecharModalNovaEmpresa();
+          carregarDashboard();
+        } else {
+          alert(data.message);
+        }
+      } catch(e) {
+        alert('Erro ao cadastrar empresa.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarDashboard);
+  </script>
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Anunciante - O Que Procura?</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+      background-color: var(--color-bg);
+    }
+    
+    .admin-sidebar {
+      background-color: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .admin-nav {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+    }
+    
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      color: var(--color-text);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+    
+    .admin-nav-item:hover {
+      background-color: #f1f5f9;
+      color: var(--color-text-dark);
+    }
+    .admin-nav-item.active {
+      background-color: #eff6ff;
+      color: var(--color-secondary);
+      font-weight: 600;
+    }
+    
+    .admin-content {
+      padding: 2.5rem 3rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .card-panel {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      margin-bottom: 2rem;
+    }
+    
+    .photo-upload {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background-color: var(--color-bg);
+    }
+    
+    .photo-upload:hover {
+      border-color: var(--color-secondary);
+      background-color: #eff6ff;
+    }
+
+    .stat-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: #eff6ff;
+      color: var(--color-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <a href="/" class="logo mb-6 px-4">
+        <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?" style="height: 60px;">
+      </a>
+      
+      <div class="px-4 mb-6">
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-color-border bg-bg">
+          <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=100" class="w-10 h-10 rounded-full object-cover shadow-sm">
+          <div>
+            <p class="text-sm font-bold text-text-dark">Estúdio Lente</p>
+            <p class="text-xs text-secondary font-medium">Plano PRO</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="admin-nav px-2">
+        <a href="#" class="admin-nav-item" data-target="visao-geral">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Visão Geral
+        </a>
+        <a href="#" class="admin-nav-item active" data-target="minha-pagina">
+          <i data-lucide="store" class="w-5 h-5"></i> Minha Página
+        </a>
+        <a href="#" class="admin-nav-item" data-target="galeria">
+          <i data-lucide="image" class="w-5 h-5"></i> Galeria e Fotos
+        </a>
+        <a href="#" class="admin-nav-item" data-target="assinatura">
+          <i data-lucide="credit-card" class="w-5 h-5"></i> Assinatura
+        </a>
+        <a href="#" class="admin-nav-item" data-target="avaliacoes">
+          <i data-lucide="message-square" class="w-5 h-5"></i> Avaliações
+        </a>
+      </nav>
+      
+      <div class="mt-auto px-4 mb-4">
+        <a href="#" onclick="fazerLogout()" class="flex items-center gap-2 text-sm font-medium text-muted hover:text-danger transition-colors">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sair da conta
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+
+      <!-- ===== ABA: VISÃO GERAL ===== -->
+      <section id="tab-visao-geral" class="tab-section" style="display:none;">
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Visão Geral</h1>
+          <p class="text-muted mt-1">Acompanhe o desempenho do seu perfil.</p>
+        </div>
+        <div class="grid grid-cols-3 gap-6 mb-8">
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="eye" class="w-6 h-6"></i></div>
+            <div>
+              <p class="text-sm text-muted font-medium">Visualizações no mês</p>
+              <p class="text-2xl font-bold text-text-dark">1,248</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #ecfdf5; color: var(--color-success);"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
+            <div>
+              <p class="text-sm text-muted font-medium">Cliques no WhatsApp</p>
+              <p class="text-2xl font-bold text-text-dark">84</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #fffbeb; color: var(--color-warning);"><i data-lucide="star" class="w-6 h-6"></i></div>
+            <div>
+              <p class="text-sm text-muted font-medium">Avaliação Média</p>
+              <p class="text-2xl font-bold text-text-dark">4.9</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h2 class="text-xl font-bold text-text-dark mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">Dica</h2>
+          <p class="text-muted">Seu perfil está ativo. Continue atualizando suas informações para atrair mais clientes!</p>
+        </div>
+      </section>
+
+      <!-- ===== ABA: MINHA PÁGINA ===== -->
+      <section id="tab-minha-pagina" class="tab-section" style="display:none;">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Minha Página</h1>
+            <p class="text-muted mt-1">Gerencie as informações que os clientes veem.</p>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-outline shadow-sm" onclick="verPerfil()"><i data-lucide="eye" class="w-4 h-4"></i> Ver Perfil Público</button>
+            <button class="btn btn-primary shadow-sm" onclick="salvarAlteracoes()"><i data-lucide="save" class="w-4 h-4"></i> Salvar Alterações</button>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h2 class="text-xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Informações Básicas</h2>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="form-group">
+              <label class="form-label">Nome da Empresa</label>
+              <input type="text" class="form-control" id="input-name" value="Carregando...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Categoria Principal</label>
+              <select class="form-control" id="input-category">
+                <option>Fotografia e Filmagem</option>
+                <option>Alimentação</option>
+                <option>Mecânica</option>
+                <option>Saúde</option>
+                <option>Eventos</option>
+                <option>Serviços Gerais</option>
+                <option>Beleza e Estética</option>
+                <option>Educação</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descrição Curta (Aparece nos cards de busca)</label>
+            <textarea class="form-control" id="input-short" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sobre a Empresa (Texto completo do perfil)</label>
+            <textarea class="form-control" id="input-about" rows="5"></textarea>
+          </div>
+        </div>
+        <div class="card-panel">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Serviços e Preços</h2>
+              <p class="text-sm text-muted mt-1">
+                Plano <span id="plan-badge" class="badge badge-featured">...</span> —
+                <span id="services-count-label">carregando...</span>
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalServico()" id="btn-add-service">
+              <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Serviço
+            </button>
+          </div>
+          <div id="admin-services-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <p class="text-muted text-sm">Carregando serviços...</p>
+          </div>
+        </div>
+
+        <!-- Modal de Adicionar/Editar Serviço -->
+        <div id="modal-servico" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+          <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem;">
+            <h3 class="text-xl font-bold text-text-dark mb-4" style="font-family:'Plus Jakarta Sans',sans-serif;">Novo Serviço</h3>
+            <div class="form-group">
+              <label class="form-label">Nome do Serviço</label>
+              <input type="text" id="svc-name" class="form-control" placeholder="Ex: Corte de cabelo masculino">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descrição</label>
+              <textarea id="svc-desc" class="form-control" rows="2" placeholder="Descreva o serviço brevemente..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Preço</label>
+              <input type="text" id="svc-price" class="form-control" placeholder="Ex: R$ 50 ou A partir de R$ 30">
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button class="btn btn-outline flex-1" onclick="fecharModalServico()">Cancelar</button>
+              <button class="btn btn-primary flex-1" onclick="salvarServico()">Salvar Serviço</button>
+            </div>
+          </div>
+        </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Comercial</label>
+              <input type="text" class="form-control" id="input-whatsapp" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instagram</label>
+              <input type="text" class="form-control" id="input-instagram" placeholder="@suaempresa">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Endereço Completo</label>
+            <input type="text" class="form-control" id="input-address" placeholder="Rua, Número - Bairro, Cidade - UF">
+          </div>
+          <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
+            <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="background: linear-gradient(135deg, #fbbc04, #34a853, #4285f4, #ea4335); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">Google Maps</span>
+              <span class="badge badge-featured">Plano PRO</span>
+            </label>
+            <p class="text-xs text-muted mb-3">
+              Cole aqui o link de incorporação do Google Maps. <strong>Como obter:</strong> Abra o Google Maps → pesquise seu endereço → clique em "Compartilhar" → "Incorporar um mapa" → copie o link do <code>src="..."</code> e cole aqui.
+            </p>
+            <input type="text" class="form-control" id="input-maps-url" placeholder="https://www.google.com/maps/embed?pb=...">
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ABA: GALERIA E FOTOS ===== -->
+      <section id="tab-galeria" class="tab-section" style="display:none;">
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Galeria e Fotos</h1>
+          <p class="text-muted mt-1">Adicione fotos do seu espaço, trabalhos e produtos.</p>
+        </div>
+
+        <div class="card-panel mb-6">
+          <h2 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Foto Principal de Capa</h2>
+          <div class="flex items-center gap-6">
+            <img id="admin-main-photo" src="" alt="Capa" style="width: 200px; height: 130px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div>
+              <input type="file" id="upload-main-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoPrincipal(this)">
+              <button class="btn btn-primary" onclick="document.getElementById('upload-main-photo').click()">Alterar Foto de Capa</button>
+              <p class="text-xs text-muted mt-2">Recomendado: 600x400px (Máx 10MB)</p>
+              <p id="main-upload-status" class="text-sm mt-2 font-medium" style="display:none;"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Fotos da Galeria</h2>
+              <p class="text-sm text-muted mt-1" id="gallery-count-label">Carregando limites do plano...</p>
+            </div>
+            <input type="file" id="upload-gallery-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoGaleria(this)">
+            <button class="btn btn-secondary" id="btn-add-gallery" onclick="document.getElementById('upload-gallery-photo').click()">+ Adicionar Foto</button>
+          </div>
+          
+          <p id="gallery-upload-status" class="text-sm mb-4 font-medium" style="display:none;"></p>
+
+          <div class="grid grid-cols-4 gap-4" id="gallery-container">
+            <!-- Fotos injetadas via JS -->
+            <p class="col-span-4 text-center text-muted py-4">Nenhuma foto adicionada ainda.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ABA: ASSINATURA ===== -->
+      <section id="tab-assinatura" class="tab-section" style="display:none;">
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Minha Assinatura</h1>
+          <p class="text-muted mt-1">Gerencie seu plano e recursos atuais.</p>
+        </div>
+        <div class="card-panel" style="border: 2px solid var(--color-secondary);">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="badge badge-featured mb-2">Plano Atual</span>
+              <h2 class="text-2xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;" id="assinatura-nome-plano">Carregando...</h2>
+              <p class="text-muted mt-1" id="assinatura-desc-plano">Buscando detalhes do plano...</p>
+            </div>
+            <p class="text-3xl font-bold text-secondary" id="assinatura-valor-plano">R$ --</p>
+          </div>
+          <div class="mt-6 pt-6" style="border-top: 1px solid var(--color-border); display: flex; gap: 1rem;">
+            <button class="btn btn-primary" onclick="window.location.href='anuncie.html'">Fazer Upgrade de Plano</button>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h2 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Status da Conta</h2>
+          <p class="text-success text-sm flex items-center gap-2 font-bold"><i data-lucide="check-circle" class="w-4 h-4"></i> Conta Ativa e visível nas buscas.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Sistema de abas (tabs)
+    const tabMap = {
+      'visao-geral': 'tab-visao-geral',
+      'minha-pagina': 'tab-minha-pagina',
+      'galeria': 'tab-galeria',
+      'assinatura': 'tab-assinatura',
+      'avaliacoes': 'tab-avaliacoes'
+    };
+
+    function mostrarAba(target) {
+      // Esconder todas as seções
+      document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+      // Remover active de todos os itens do menu
+      document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+
+      // Mostrar a seção correta
+      const secao = document.getElementById(tabMap[target]);
+      if (secao) secao.style.display = 'block';
+
+      // Marcar o item do menu como ativo
+      const navItem = document.querySelector(`.admin-nav-item[data-target="${target}"]`);
+      if (navItem) navItem.classList.add('active');
+    }
+
+    const navItems = document.querySelectorAll('.admin-nav-item');
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = item.getAttribute('data-target');
+        mostrarAba(target);
+      });
+    });
+
+    // Mostrar aba inicial
+    mostrarAba('minha-pagina');
+  </script>
+
+  <script>
+    // Pega o ID da empresa logada no LocalStorage
+    const BUSINESS_ID = localStorage.getItem('business_id');
+    
+    // Se não estiver logado, manda pro login
+    if (!BUSINESS_ID) {
+        window.location.href = '/login.html';
+    }
+
+    async function fazerLogout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch(e) { console.error('Erro no logout', e); }
+      
+      localStorage.removeItem('business_id');
+      window.location.href = '/login.html';
+    }
+
+    function verPerfil() {
+        window.open('/profile.html?id=' + BUSINESS_ID, '_blank');
+    }
+
+
+    let currentPlanLimits = {};
+
+    function renderizarServicos(servicos, planLimits) {
+      const lista = document.getElementById('admin-services-list');
+      const countLabel = document.getElementById('services-count-label');
+      const btnAdd = document.getElementById('btn-add-service');
+
+      const max = planLimits.services;
+      const count = servicos.length;
+
+      if (countLabel) {
+        countLabel.textContent = max === null
+          ? `${count} serviços (ilimitado)`
+          : `${count} de ${max} serviços usados`;
+      }
+
+      // Bloquear botão se atingiu o limite
+      if (btnAdd) {
+        const atingiu = max !== null && count >= max;
+        btnAdd.disabled = atingiu;
+        btnAdd.title = atingiu ? `Limite do plano atingido. Faça upgrade!` : 'Adicionar serviço';
+        btnAdd.style.opacity = atingiu ? '0.5' : '1';
+      }
+
+      if (!lista) return;
+      if (servicos.length === 0) {
+        lista.innerHTML = '<p class="text-muted text-sm">Nenhum serviço cadastrado ainda. Clique em "+ Adicionar Serviço".</p>';
+        return;
+      }
+
+      lista.innerHTML = servicos.map(s => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-bg);">
+          <div>
+            <p class="font-bold text-text-dark">${s.name}</p>
+            <p class="text-sm text-muted">${s.description}</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; flex-shrink:0;">
+            <span class="font-bold text-text-dark">${s.price}</span>
+            <button onclick="deletarServico(${s.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;" title="Remover serviço">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function deletarServico(serviceId) {
+      if (!confirm('Tem certeza que deseja remover este serviço?')) return;
+      try {
+        await fetch(`/api/businesses/${BUSINESS_ID}/services/${serviceId}/delete`, { method: 'POST' });
+        await carregarDados();
+      } catch(e) { alert('Erro ao remover serviço.'); }
+    }
+
+    function abrirModalServico() {
+      document.getElementById('svc-name').value = '';
+      document.getElementById('svc-desc').value = '';
+      document.getElementById('svc-price').value = '';
+      document.getElementById('modal-servico').style.display = 'flex';
+    }
+
+    function fecharModalServico() {
+      document.getElementById('modal-servico').style.display = 'none';
+    }
+
+    async function salvarServico() {
+      const name = document.getElementById('svc-name').value.trim();
+      const desc = document.getElementById('svc-desc').value.trim();
+      const price = document.getElementById('svc-price').value.trim();
+      if (!name || !price) { alert('Preencha pelo menos o nome e o preço!'); return; }
+
+      try {
+        const res = await fetch(`/api/businesses/${BUSINESS_ID}/services/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description: desc, price })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fecharModalServico();
+          await carregarDados();
+        } else {
+          alert(data.message);
+        }
+      } catch(e) { alert('Erro ao salvar serviço.'); }
+    }
+
+    async function carregarDados() {
+      try {
+        const response = await fetch('/api/businesses/' + BUSINESS_ID);
+        const data = await response.json();
+
+        document.getElementById('input-name').value = data.name || '';
+        document.getElementById('input-category').value = data.category || '';
+        document.getElementById('input-short').value = data.short_description || '';
+        document.getElementById('input-about').value = data.about_text || '';
+        document.getElementById('input-whatsapp').value = data.whatsapp || '';
+        document.getElementById('input-instagram').value = data.instagram || '';
+        document.getElementById('input-address').value = data.address || '';
+        document.getElementById('input-maps-url').value = data.maps_url || '';
+
+        // Mostrar plano no badge
+        const planBadge = document.getElementById('plan-badge');
+        if (planBadge) planBadge.textContent = (data.plan || 'basico').toUpperCase();
+
+        // Guardar limites globalmente e renderizar serviços
+        currentPlanLimits = data.plan_limits || {};
+        renderizarServicos(data.services || [], currentPlanLimits);
+
+        // Mostrar/ocultar campo de maps conforme plano
+        const mapsField = document.getElementById('maps-field');
+        if (mapsField) mapsField.style.display = currentPlanLimits.maps ? 'block' : 'none';
+
+        // Renderizar imagem principal
+        const imgMain = document.getElementById('admin-main-photo');
+        if (imgMain) {
+          imgMain.src = data.image || 'https://placehold.co/600x400?text=Sem+Foto';
+        }
+
+        // Renderizar Galeria e limites
+        const galleryLabel = document.getElementById('gallery-count-label');
+        const btnGallery = document.getElementById('btn-add-gallery');
+        const maxPhotos = currentPlanLimits.photos;
+        const currentCount = (data.gallery || []).length;
+
+        if (galleryLabel) {
+          galleryLabel.textContent = maxPhotos === null
+            ? `${currentCount} fotos adicionadas (ilimitado)`
+            : `${currentCount} de ${maxPhotos} fotos adicionadas`;
+        }
+        
+        if (btnGallery) {
+          const atingiu = maxPhotos !== null && currentCount >= maxPhotos;
+          btnGallery.disabled = atingiu;
+          btnGallery.title = atingiu ? `Limite do plano atingido.` : 'Adicionar Foto';
+          btnGallery.style.opacity = atingiu ? '0.5' : '1';
+        }
+
+        const galleryContainer = document.getElementById('gallery-container');
+        if (galleryContainer) {
+          if (currentCount === 0) {
+            galleryContainer.innerHTML = '<p class="col-span-4 text-center text-muted py-4">Nenhuma foto adicionada ainda.</p>';
+          } else {
+            galleryContainer.innerHTML = data.gallery.map(g => `
+              <div style="position: relative; aspect-ratio: 16/9; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border);">
+                <img src="${g.image_url}" class="w-full h-full object-cover">
+                <button onclick="apagarFotoGaleria(${g.id})" class="w-8 h-8 rounded-full bg-white text-danger flex items-center justify-center shadow-sm absolute top-2 right-2 hover:bg-red-50">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            `).join('');
+            lucide.createIcons();
+          }
+        }
+
+        // Renderizar Avaliações no Painel Admin
+        const adminReviews = document.getElementById('admin-reviews-container');
+        if (adminReviews && data.reviews) {
+          if (data.reviews.length === 0) {
+            adminReviews.innerHTML = '<p class="text-muted text-center py-4">Sua empresa ainda não tem avaliações.</p>';
+          } else {
+            adminReviews.innerHTML = data.reviews.map(r => {
+              const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+              const replyBox = r.reply 
+                ? `<div class="mt-3 p-3 bg-slate-50 border-l-4 border-secondary rounded">
+                     <p class="text-xs font-bold text-text-dark mb-1">Sua Resposta:</p>
+                     <p class="text-sm text-muted">${r.reply}</p>
+                   </div>`
+                : `<div class="mt-3 flex gap-2">
+                     <input type="text" id="reply-input-${r.id}" class="form-control text-sm" placeholder="Escreva uma resposta pública...">
+                     <button onclick="responderAvaliacao(${r.id})" class="btn btn-primary text-sm py-1 px-3">Responder</button>
+                   </div>`;
+              
+              return `
+                <div class="p-4 border border-border rounded-lg mb-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-text-dark">${r.author_name}</span>
+                    <span class="text-warning text-sm">${stars}</span>
+                  </div>
+                  <p class="text-sm text-text-dark mb-2">${r.comment}</p>
+                  ${replyBox}
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // Renderizar Dados da Aba de Assinatura
+        const assinaturaNome = document.getElementById('assinatura-nome-plano');
+        const assinaturaDesc = document.getElementById('assinatura-desc-plano');
+        const assinaturaValor = document.getElementById('assinatura-valor-plano');
+
+        if (assinaturaNome) {
+          const planoAtual = (data.plan || 'basico').toLowerCase();
+          if (planoAtual === 'elite') {
+            assinaturaNome.textContent = 'Plano Elite';
+            assinaturaNome.style.color = '#8b5cf6';
+            assinaturaDesc.textContent = 'Destaque MÁXIMO nas buscas · Galeria com 100 fotos · Serviços Ilimitados';
+            assinaturaValor.innerHTML = 'R$ 99,90<span class="text-base text-muted font-normal">/mês</span>';
+          } else if (planoAtual === 'pro') {
+            assinaturaNome.textContent = 'Plano PRO';
+            assinaturaNome.style.color = 'var(--color-secondary)';
+            assinaturaDesc.textContent = 'Destaque nas buscas · Galeria com até 20 fotos · Até 20 Serviços';
+            assinaturaValor.innerHTML = 'R$ 49,90<span class="text-base text-muted font-normal">/mês</span>';
+          } else if (planoAtual === 'gratuito') {
+            assinaturaNome.textContent = 'Plano Gratuito (Cortesia)';
+            assinaturaNome.style.color = '#64748b';
+            assinaturaDesc.textContent = '1 Foto de Capa · 1 Serviço · Sem Destaque';
+            assinaturaValor.innerHTML = 'R$ 0,00';
+          } else {
+            assinaturaNome.textContent = 'Plano Básico';
+            assinaturaNome.style.color = 'var(--color-text-dark)';
+            assinaturaDesc.textContent = 'Presença Digital · Galeria com até 5 fotos · Até 5 Serviços';
+            assinaturaValor.innerHTML = 'R$ 29,90<span class="text-base text-muted font-normal">/mês</span>';
+          }
+        }
+
+      } catch(e) {
+        console.error('Erro ao carregar dados', e);
+      }
+    }
+
+    // Funcionalidades de Upload de Imagens
+    async function enviarFotoPrincipal(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const status = document.getElementById('main-upload-status');
+      status.style.display = 'block';
+      status.textContent = 'Enviando...';
+      status.className = 'text-sm mt-2 font-medium text-secondary';
+
+      try {
+        const res = await fetch(`/api/businesses/${BUSINESS_ID}/upload-main`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          status.textContent = 'Capa atualizada!';
+          status.className = 'text-sm mt-2 font-medium text-success';
+          await carregarDados(); // Recarrega para mostrar a foto nova
+        } else {
+          status.textContent = 'Erro: ' + data.message;
+          status.className = 'text-sm mt-2 font-medium text-danger';
+        }
+      } catch(e) {
+        status.textContent = 'Erro de conexão.';
+        status.className = 'text-sm mt-2 font-medium text-danger';
+      }
+      setTimeout(() => status.style.display = 'none', 4000);
+    }
+
+    async function enviarFotoGaleria(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const status = document.getElementById('gallery-upload-status');
+      status.style.display = 'block';
+      status.textContent = 'Enviando foto...';
+      status.className = 'text-sm mb-4 font-medium text-secondary';
+
+      try {
+        const res = await fetch(`/api/businesses/${BUSINESS_ID}/gallery/add`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          status.style.display = 'none';
+          await carregarDados(); // Recarrega galeria
+        } else {
+          status.textContent = 'Erro: ' + data.message;
+          status.className = 'text-sm mb-4 font-medium text-danger';
+        }
+      } catch(e) {
+        status.textContent = 'Erro de conexão.';
+        status.className = 'text-sm mb-4 font-medium text-danger';
+      }
+      input.value = ""; // Reseta o input de arquivo
+    }
+
+    async function responderAvaliacao(reviewId) {
+      const replyInput = document.getElementById(`reply-input-${reviewId}`);
+      const replyText = replyInput.value.trim();
+      
+      if (!replyText) {
+        alert("Digite uma resposta.");
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/businesses/${BUSINESS_ID}/reviews/${reviewId}/reply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reply: replyText })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Resposta enviada com sucesso!');
+          carregarDados();
+        } else {
+          alert(data.message || 'Erro ao responder.');
+        }
+      } catch (e) {
+        alert('Erro de conexão ao enviar resposta.');
+      }
+    }
+
+    async function apagarFotoGaleria(photoId) {
+      if (!confirm('Deseja apagar esta foto da galeria?')) return;
+      
+      try {
+        const res = await fetch(`/api/businesses/${BUSINESS_ID}/gallery/${photoId}/delete`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          await carregarDados();
+        }
+      } catch(e) {
+        alert('Erro ao apagar foto.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarDados);
+
+    async function salvarAlteracoes() {
+      const data = {
+        name: document.getElementById('input-name').value,
+        category: document.getElementById('input-category').value,
+        short_description: document.getElementById('input-short').value,
+        about_text: document.getElementById('input-about').value,
+        whatsapp: document.getElementById('input-whatsapp').value,
+        instagram: document.getElementById('input-instagram').value,
+        address: document.getElementById('input-address').value,
+        maps_url: document.getElementById('input-maps-url').value
+      };
+
+      try {
+        const response = await fetch('/api/businesses/' + BUSINESS_ID + '/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('Salvo com sucesso! Abra seu perfil público para ver as mudanças.');
+        } else {
+          alert('Atenção: ' + (result.message || 'Erro ao salvar.'));
+        }
+      } catch(e) {
+        alert('Erro ao salvar. Verifique o console.');
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+
+</html>

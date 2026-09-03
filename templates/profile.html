@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estúdio Lente Clara - O Que Procura?</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background-color: var(--color-bg);
+    }
+    
+    .profile-gallery {
+      height: 400px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .gallery-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter var(--transition-fast);
+      cursor: pointer;
+    }
+    .gallery-img:hover { filter: brightness(0.9); }
+    .gallery-main {
+      grid-row: 1 / -1;
+    }
+
+    .profile-layout {
+      max-width: 1200px;
+      margin: 2.5rem auto 5rem;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 4rem;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .profile-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .profile-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-bottom: 0.25rem;
+    }
+
+    .profile-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--color-text-light);
+      font-size: 0.95rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 1.25rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .about-text {
+      color: var(--color-text);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--color-text-dark);
+      font-weight: 500;
+    }
+
+    /* Sticky Contact Card */
+    .contact-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-xl);
+      position: sticky;
+      top: 100px;
+    }
+
+    .contact-card-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 1.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .contact-card-price span {
+      font-size: 1rem;
+      color: var(--color-text-light);
+      font-weight: 400;
+    }
+
+    .btn-whatsapp { background-color: #25D366; color: white; border-radius: var(--radius-md); font-weight: 600; }
+    .btn-whatsapp:hover { background-color: #20BD5A; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+    
+    .btn-instagram { 
+      background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+      color: white; 
+    }
+    .btn-instagram:hover { filter: brightness(1.1); box-shadow: 0 4px 12px rgba(220, 39, 67, 0.3); }
+
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .service-item:last-child { border-bottom: none; }
+    
+    @media (max-width: 900px) {
+      .profile-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .contact-card { position: static; }
+      .profile-gallery { grid-template-columns: 1fr 1fr; grid-template-rows: 250px 150px; }
+      .gallery-main { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container flex justify-between items-center">
+      <a href="/" class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
+      </a>
+      
+      <!-- Mini Search in Header -->
+      <div class="search-container" style="margin: 0; max-width: 400px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
+        <div class="search-input-group" style="padding: 0.25rem 0.75rem; border: none;">
+          <i data-lucide="search" class="search-icon w-4 h-4"></i>
+          <input type="text" class="search-input text-sm" placeholder="Buscar...">
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        <a href="anuncie.html" class="btn btn-ghost text-sm font-medium">Sou uma empresa</a>
+        <a href="login.html" class="btn btn-ghost text-sm font-medium">Entrar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Airbnb style gallery -->
+    <div class="profile-gallery mt-6">
+      <div id="gallery-container">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </div>
+
+    <div class="profile-layout">
+      
+      <!-- Left Column: Content -->
+      <div class="profile-content">
+        <div class="profile-header">
+          <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200" alt="Logo Estúdio" class="profile-logo">
+          <div>
+            <h1 class="profile-title">Estúdio Lente Clara</h1>
+            <div class="profile-meta">
+              <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> 4.9 (128 avaliações)</span>
+              <span>•</span>
+              <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> Centro, São Paulo</span>
+              <span>•</span>
+              <span class="badge badge-featured">Destaque</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Sobre nós</h2>
+        <div class="about-text" id="about-text-container">
+          <p>Somos um estúdio de fotografia especializado em capturar os melhores momentos da sua vida. Com mais de 10 anos de experiência, oferecemos ensaios fotográficos para casamentos, formaturas, gestantes e corporativos.</p>
+          <p class="mt-4">Nossa equipe é formada por profissionais apaixonados por contar histórias através das lentes, entregando não apenas fotos, mas memórias que durarão para sempre. Venha conhecer nosso espaço criativo no coração da cidade.</p>
+        </div>
+
+        <h2 class="section-title">Nossas Especialidades</h2>
+        <div class="feature-list">
+          <div class="feature-item"><i data-lucide="camera" class="w-5 h-5 text-secondary"></i> Ensaios de Casamento</div>
+          <div class="feature-item"><i data-lucide="user" class="w-5 h-5 text-secondary"></i> Retratos Corporativos</div>
+          <div class="feature-item"><i data-lucide="video" class="w-5 h-5 text-secondary"></i> Filmagem em 4K</div>
+          <div class="feature-item"><i data-lucide="image" class="w-5 h-5 text-secondary"></i> Edição Profissional</div>
+          <div class="feature-item"><i data-lucide="baby" class="w-5 h-5 text-secondary"></i> Ensaios Gestantes</div>
+          <div class="feature-item"><i data-lucide="drone" class="w-5 h-5 text-secondary"></i> Imagens Aéreas (Drone)</div>
+        </div>
+
+        <h2 class="section-title">Serviços e Preços Base</h2>
+        <div class="mb-8" id="services-container">
+          <div class="service-item">
+            <div>
+              <h4 class="font-bold text-text-dark">Ensaio Externo (2h)</h4>
+              <p class="text-sm text-muted">Sessão fotográfica em local externo, entrega de 50 fotos editadas.</p>
+            </div>
+            <div class="font-bold text-text-dark">A partir de R$ 450</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <h4 class="font-bold text-text-dark">Cobertura de Casamento</h4>
+              <p class="text-sm text-muted">Fotografia e Filmagem completa. Making of, cerimônia e festa.</p>
+            </div>
+            <div class="font-bold text-text-dark">Sob consulta</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <h4 class="font-bold text-text-dark">Retrato Corporativo</h4>
+              <p class="text-sm text-muted">Sessão em estúdio para LinkedIn e material de divulgação.</p>
+            </div>
+            <div class="font-bold text-text-dark">A partir de R$ 180</div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Avaliações dos Clientes</h2>
+        <div class="mb-8">
+          <div id="reviews-container" class="mb-6">
+            <!-- Comentários injetados via JS -->
+          </div>
+          
+          <div class="card" style="background: var(--color-bg); padding: 1.5rem; border-radius: var(--radius-lg);">
+            <h3 class="font-bold text-text-dark mb-4">Deixe sua avaliação</h3>
+            <div class="form-group mb-3">
+              <input type="text" id="review-name" class="form-control" placeholder="Seu nome">
+            </div>
+            <div class="form-group mb-3">
+              <select id="review-rating" class="form-control">
+                <option value="5">⭐⭐⭐⭐⭐ - Excelente</option>
+                <option value="4">⭐⭐⭐⭐ - Muito Bom</option>
+                <option value="3">⭐⭐⭐ - Bom</option>
+                <option value="2">⭐⭐ - Regular</option>
+                <option value="1">⭐ - Ruim</option>
+              </select>
+            </div>
+            <div class="form-group mb-4">
+              <textarea id="review-comment" class="form-control" rows="3" placeholder="Conte como foi sua experiência..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="enviarAvaliacao()">Enviar Avaliação</button>
+          </div>
+        </div>
+
+        <!-- Google Maps (só aparece se a empresa tiver cadastrado) -->
+        <div id="maps-section" style="display:none; margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--color-border);">
+          <h2 class="section-title">Como chegar</h2>
+          <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+            <iframe id="maps-iframe"
+              src=""
+              width="100%"
+              height="350"
+              style="border:0; display:block;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+          <a id="maps-directions-link" href="#" target="_blank"
+            class="btn btn-outline w-full mt-3 flex items-center justify-center gap-2"
+            style="padding: 0.875rem;">
+            <i data-lucide="navigation" class="w-5 h-5 text-secondary"></i>
+            Traçar rota no Google Maps
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Sticky Contact Card -->
+      <aside>
+        <div class="contact-card">
+          <div class="contact-card-price">
+            Consulte disponibilidade
+          </div>
+          
+          <div class="flex-col gap-3 mb-6">
+            <button class="btn btn-whatsapp w-full flex items-center justify-center gap-2" style="padding: 1rem;" id="btn-whatsapp">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              Conversar no WhatsApp
+            </button>
+            
+            <button class="btn btn-instagram w-full flex items-center justify-center gap-2 mt-3" style="padding: 1rem;" id="btn-instagram">
+              <i data-lucide="instagram" class="w-5 h-5"></i>
+              Ver Instagram
+            </button>
+          </div>
+          
+          <div class="text-sm text-center text-muted mb-6 pb-6 border-b border-color-border">
+            Responde em até 1 hora
+          </div>
+
+          <h4 class="font-bold text-text-dark mb-3">Informações</h4>
+          <ul class="flex-col gap-3 text-sm">
+            <li class="flex items-center gap-2 text-text"><i data-lucide="clock" class="w-4 h-4 text-muted"></i> Seg - Sex: 09:00 às 18:00</li>
+            <li class="flex items-center gap-2 text-text" id="contact-address"><i data-lucide="map-pin" class="w-4 h-4 text-muted"></i> Endereço</li>
+            <li class="flex items-center gap-2 text-text"><i data-lucide="globe" class="w-4 h-4 text-muted"></i> lentelclara.com.br</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <!-- Same global footer -->
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <a href="/" class="logo mb-6 text-white">
+            <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="filter: brightness(0) invert(1); opacity: 0.9;">
+          </a>
+          <p class="text-sm" style="color: #94a3b8; max-width: 320px; line-height: 1.6;">
+            A plataforma definitiva para conectar você aos melhores profissionais e empresas da sua região de forma inteligente e rápida.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Para Usuários</h4>
+          <div class="footer-links">
+            <a href="como-funciona.html" class="footer-link">Como funciona</a>
+            <a href="search.html" class="footer-link">Categorias</a>
+            <a href="#" class="footer-link">Central de Ajuda</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Para Empresas</h4>
+          <div class="footer-links">
+            <a href="anuncie.html" class="footer-link">Planos e Preços</a>
+            <a href="anuncie.html" class="footer-link">Anunciar minha empresa</a>
+            <a href="login.html" class="footer-link">Painel Administrativo</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 O Que Procura?. Construindo melhores conexões.</p>
+        <p class="mt-2 text-white" style="font-weight: 600; letter-spacing: 0.05em;">Desenvolvido por TUUMWEB.COM</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    lucide.createIcons();
+
+    // Lógica para carregar os dados dinâmicos da API baseados no ID da URL
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = parseInt(urlParams.get('id'));
+      
+      if (id) {
+        try {
+          const response = await fetch('/api/businesses/' + id);
+          if (!response.ok) {
+            // Se a empresa não for encontrada (Deletada ou ID errado)
+            document.querySelector('.profile-layout').innerHTML = `
+              <div style="text-align: center; padding: 5rem 2rem; width: 100%;">
+                <i data-lucide="search-X" style="width: 64px; height: 64px; color: var(--color-muted); margin: 0 auto 1rem;"></i>
+                <h1 style="font-size: 2rem; font-weight: bold; color: var(--color-text-dark);">Perfil não encontrado</h1>
+                <p style="color: var(--color-muted); margin-bottom: 2rem;">A empresa que você está procurando não existe ou foi removida.</p>
+                <a href="/" class="btn btn-primary">Voltar para o Início</a>
+              </div>
+            `;
+            document.querySelector('.profile-gallery').style.display = 'none';
+            lucide.createIcons();
+            return;
+          }
+          const business = await response.json();
+          
+          // Atualizar Título e Title da aba
+          const titleEl = document.querySelector('.profile-title');
+          if (titleEl) titleEl.textContent = business.name;
+          document.title = business.name + " - O Que Procura?";
+
+          // Atualizar Imagem Principal
+          const imgEl = document.querySelector('.gallery-main');
+          if (imgEl) {
+            imgEl.src = business.image;
+            imgEl.alt = business.name;
+          }
+          
+          // Atualizar Meta Informações
+          const metaContainer = document.querySelector('.profile-meta');
+          if (metaContainer) {
+            const reviewCount = business.reviews ? business.reviews.length : 0;
+            const ratingDisplay = business.rating > 0 ? parseFloat(business.rating).toFixed(1) : 'Novo';
+            
+            metaContainer.innerHTML = `
+              <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
+              <span>•</span>
+              <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${business.distance}</span>
+              <span>•</span>
+              <span class="badge badge-featured">${business.category}</span>
+            `;
+          }
+
+          // Renderizar Avaliações
+          const reviewsContainer = document.getElementById('reviews-container');
+          if (reviewsContainer) {
+            if (business.reviews && business.reviews.length > 0) {
+              reviewsContainer.innerHTML = business.reviews.map(r => {
+                const replyHtml = r.reply ? `
+                  <div style="margin-top: 1rem; padding: 1rem; background: var(--color-bg); border-left: 3px solid var(--color-secondary); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                    <p class="text-xs font-bold text-text-dark mb-1">Resposta do Proprietário</p>
+                    <p class="text-sm text-muted">${r.reply}</p>
+                  </div>
+                ` : '';
+
+                return `
+                <div style="padding: 1rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1rem;">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-text-dark">${r.author_name}</span>
+                    <span class="text-sm text-warning flex items-center">
+                      ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                    </span>
+                  </div>
+                  <p class="text-sm text-muted">${r.comment}</p>
+                  ${replyHtml}
+                </div>
+                `;
+              }).join('');
+            } else {
+              reviewsContainer.innerHTML = '<p class="text-muted text-sm">Nenhuma avaliação ainda. Seja o primeiro a avaliar!</p>';
+            }
+          }
+
+          // Atualizar Sobre Nós
+          const aboutEl = document.getElementById('about-text-container');
+          if (aboutEl) {
+              aboutEl.innerHTML = `<p>${business.about_text}</p>`;
+          }
+
+
+          // Atualizar Contatos
+          const btnWhatsapp = document.getElementById('btn-whatsapp');
+          if (btnWhatsapp) btnWhatsapp.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ` + (business.whatsapp || 'Conversar no WhatsApp');
+          
+          const btnInsta = document.getElementById('btn-instagram');
+          if (btnInsta) btnInsta.innerHTML = `<i data-lucide="instagram" class="w-5 h-5"></i> ` + (business.instagram || 'Ver Instagram');
+          
+          const addressEl = document.getElementById('contact-address');
+          if (addressEl) addressEl.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-muted"></i> ` + (business.address || business.distance);
+
+          // Ativar Google Maps se a empresa tiver o link cadastrado
+          if (business.maps_url) {
+            const mapsSection = document.getElementById('maps-section');
+            const mapsIframe = document.getElementById('maps-iframe');
+            const mapsLink = document.getElementById('maps-directions-link');
+
+            if (mapsSection) mapsSection.style.display = 'block';
+            if (mapsIframe) mapsIframe.src = business.maps_url;
+
+            // Link "Traçar rota" — abre Google Maps direto com o endereço
+            if (mapsLink && business.address) {
+              const encodedAddress = encodeURIComponent(business.address);
+              mapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+            }
+          }
+
+          // Atualizar Galeria
+          const galleryContainer = document.getElementById('gallery-container');
+          if (galleryContainer) {
+            const parent = galleryContainer.parentElement;
+            
+            if (business.gallery && business.gallery.length > 0) {
+              parent.innerHTML = business.gallery.slice(0, 5).map((g, i) => {
+                let classes = 'gallery-img';
+                let style = '';
+                if (i === 0) classes += ' gallery-main';
+                if (i === 2) style = 'border-top-right-radius: var(--radius-xl);';
+                if (i === 4 || (i === business.gallery.length - 1 && i > 0)) style += 'border-bottom-right-radius: var(--radius-xl);';
+                
+                // Se for a única foto
+                if (business.gallery.length === 1) style = 'border-radius: var(--radius-xl);';
+                
+                return `<img src="${g.image_url}" alt="Foto ${i+1}" class="${classes}" style="${style}">`;
+              }).join('');
+            } else {
+              // Se não tiver fotos na galeria, usamos a imagem principal de capa!
+              parent.innerHTML = `<img src="${business.image || 'https://placehold.co/1200x600?text=Sem+Foto'}" alt="Capa" class="gallery-img gallery-main" style="border-radius: var(--radius-xl);">`;
+            }
+          }
+
+          // Atualizar Logo
+          const logoEl = document.querySelector('.profile-logo');
+          if (logoEl) {
+            // A imagem de perfil se torna a imagem principal que subimos
+            logoEl.src = business.image || 'https://placehold.co/200x200?text=Logo';
+          }
+
+          // Atualizar Serviços
+          const servicesEl = document.getElementById('services-container');
+          if (servicesEl && business.services) {
+              servicesEl.innerHTML = business.services.map(s => `
+                <div class="service-item">
+                  <div>
+                    <h4 class="font-bold text-text-dark">${s.name}</h4>
+                    <p class="text-sm text-muted">${s.description}</p>
+                  </div>
+                  <div class="font-bold text-text-dark">${s.price}</div>
+                </div>
+              `).join('');
+          }
+          
+          // Recriar os ícones
+          lucide.createIcons(); 
+          
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+    async function enviarAvaliacao() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      const author_name = document.getElementById('review-name').value.trim();
+      const rating = document.getElementById('review-rating').value;
+      const comment = document.getElementById('review-comment').value.trim();
+
+      if (!author_name || !comment) {
+        alert('Por favor, preencha seu nome e um comentário.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/businesses/${id}/reviews/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ author_name, rating, comment })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Avaliação enviada com sucesso! Obrigado pelo feedback.');
+          window.location.reload();
+        } else {
+          alert('Erro ao enviar avaliação.');
+        }
+      } catch (e) {
+        alert('Erro de conexão ao enviar.');
+      }
+    }
+  </script>
+</body>
+</html>

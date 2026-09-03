@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finalizar Assinatura - O Que Procura?</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background-color: var(--color-bg);
+    }
+    
+    .checkout-header {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .checkout-container {
+      max-width: 1100px;
+      margin: 3rem auto 6rem;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    /* Resumo do Plano (Esquerda) */
+    .plan-summary {
+      background: var(--color-primary);
+      color: white;
+      padding: 2.5rem;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 100px;
+    }
+
+    .plan-summary h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .plan-summary .price-display {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: white;
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .plan-summary .price-display span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .plan-benefits {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem 0;
+    }
+
+    .plan-benefits li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .plan-benefits i {
+      color: var(--color-accent);
+    }
+    
+    .trust-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Formulário de Vendas (Direita) */
+    .checkout-form {
+      background: var(--color-surface);
+      padding: 3rem;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-border);
+    }
+
+    .checkout-step {
+      margin-bottom: 3rem;
+    }
+
+    .checkout-step:last-child {
+      margin-bottom: 0;
+    }
+
+    .checkout-step-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .checkout-step-title .step-number {
+      background: #eff6ff;
+      color: var(--color-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .payment-methods {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .payment-method {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-weight: 500;
+      color: var(--color-text-dark);
+    }
+
+    .payment-method.active {
+      border-color: var(--color-secondary);
+      background: #eff6ff;
+      color: var(--color-secondary);
+      box-shadow: 0 0 0 1px var(--color-secondary);
+    }
+    
+    .payment-method:hover:not(.active) {
+      border-color: var(--color-border-hover);
+      background: var(--color-bg);
+    }
+
+    .secure-footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: var(--color-text-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .checkout-container {
+        grid-template-columns: 1fr;
+      }
+      .plan-summary {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="checkout-header">
+    <div class="container flex justify-between items-center" style="min-height: 70px;">
+      <a href="/" class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
+      </a>
+      <a href="anuncie.html" class="flex items-center gap-2 text-sm text-muted hover:text-text-dark transition-colors font-medium">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar aos planos
+      </a>
+    </div>
+  </header>
+
+  <main class="checkout-container">
+    
+    <!-- Esquerda: Resumo -->
+    <aside>
+      <div class="plan-summary">
+        <p class="text-sm font-medium mb-1" style="color: var(--color-accent);">Plano Selecionado</p>
+        <h2 id="summary-title">PRO</h2>
+        <div class="price-display">
+          R$ <span id="summary-price" style="font-size: 3rem; font-weight: 700; color: white;">99</span><span>/mês</span>
+        </div>
+
+        <ul class="plan-benefits" id="summary-benefits">
+          <li><i data-lucide="check-circle" class="w-5 h-5"></i> Perfil completo na plataforma</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5"></i> Busca Prioritária</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5"></i> Botão direto pro WhatsApp</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5"></i> Suporte Prioritário</li>
+        </ul>
+
+        <div class="trust-badge">
+          <i data-lucide="shield-check" class="w-8 h-8" style="color: var(--color-success);"></i>
+          <div>
+            <p class="font-medium mb-1" style="color: white;">Garantia de 7 dias</p>
+            <p style="opacity: 0.8;">Cancele a qualquer momento se não gostar. Sem burocracia.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Direita: Formulário -->
+    <div class="checkout-form">
+      
+      <div class="checkout-step">
+        <h3 class="checkout-step-title">
+          <span class="step-number">1</span> Dados da Conta
+        </h3>
+        <div class="form-group">
+          <label class="form-label">Nome Completo</label>
+          <input type="text" class="form-control" placeholder="Como deseja ser chamado?">
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" placeholder="Seu melhor e-mail">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Celular (WhatsApp)</label>
+            <input type="text" class="form-control" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">CPF ou CNPJ</label>
+            <input type="text" class="form-control" placeholder="000.000.000-00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Crie uma senha</label>
+            <input type="password" class="form-control" placeholder="Mínimo de 8 caracteres">
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-step">
+        <h3 class="checkout-step-title">
+          <span class="step-number">2</span> Pagamento
+        </h3>
+        
+        <div class="payment-methods">
+          <div class="payment-method active" onclick="selectPayment(this)">
+            <i data-lucide="credit-card" class="w-5 h-5"></i>
+            Cartão de Crédito
+          </div>
+          <div class="payment-method" onclick="selectPayment(this)">
+            <i data-lucide="smartphone" class="w-5 h-5"></i>
+            Pix (Aprovação na hora)
+          </div>
+        </div>
+
+        <div id="credit-card-form">
+          <div class="form-group">
+            <label class="form-label">Número do Cartão</label>
+            <input type="text" class="form-control" placeholder="0000 0000 0000 0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nome impresso no cartão</label>
+            <input type="text" class="form-control" placeholder="Ex: JOAO S SILVA">
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Validade</label>
+              <input type="text" class="form-control" placeholder="MM/AA">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV</label>
+              <input type="text" class="form-control" placeholder="123">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="btn btn-primary w-full" style="padding: 1rem; font-size: 1.1rem; font-weight: 700;" onclick="finalizarCompra()">
+        Finalizar Compra Segura
+      </button>
+
+      <div class="secure-footer">
+        <i data-lucide="lock" class="w-4 h-4 text-success"></i> Pagamento 100% seguro.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function selectPayment(element) {
+      document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    async function finalizarCompra() {
+      // Pega os dados dos inputs
+      const inputs = document.querySelectorAll('.checkout-form input.form-control');
+      const businessName = inputs[0].value.trim();
+      const email = inputs[1].value.trim();
+      const phone = inputs[2].value.trim();
+      const cpfCnpj = inputs[3].value.trim();
+      const password = inputs[4].value.trim();
+
+      if (!businessName || !email || !password) {
+        alert('Por favor, preencha pelo menos o Nome, E-mail e Senha.');
+        return;
+      }
+
+      // Pega o plano da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const plan = urlParams.get('plan') || 'basico';
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            business_name: businessName,
+            plan: plan
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          // Aqui no futuro entrará a API real de pagamento (Stripe/Mercado Pago)
+          // Mas por enquanto, se a conta for criada, faz o login
+          
+          const loginRes = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+          });
+          const loginData = await loginRes.json();
+          
+          if(loginData.success) {
+             localStorage.setItem('business_id', loginData.business_id);
+             alert('Conta criada com sucesso! Redirecionando para o seu painel...');
+             window.location.href = 'admin.html';
+          } else {
+             alert('Conta criada, mas houve um erro ao entrar automaticamente: ' + loginData.message);
+             window.location.href = 'login.html';
+          }
+        } else {
+          alert('Erro ao criar conta: ' + data.message);
+        }
+      } catch (e) {
+        alert('Erro de conexão ao finalizar compra.');
+      }
+    }
+
+    // Dynamic Plan Load
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const plan = urlParams.get('plan') || 'basico'; // default para basico se vier vazio
+      
+      const title = document.getElementById('summary-title');
+      const price = document.getElementById('summary-price');
+      const benefits = document.getElementById('summary-benefits');
+
+      if (plan === 'basico') {
+        title.textContent = 'Básico';
+        price.textContent = '29,90';
+        benefits.innerHTML = `
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Inserir Botão WhatsApp e Instagram</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Galeria com até 5 fotos</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Até 5 produtos/serviços</li>
+        `;
+      } else if (plan === 'pro') {
+        title.textContent = 'PRO';
+        price.textContent = '49,90';
+        benefits.innerHTML = `
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Tudo do plano Básico</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Galeria ampliada</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Até 20 produtos/serviços</li>
+        `;
+      } else if (plan === 'elite') {
+        title.textContent = 'Elite';
+        price.textContent = '99,90';
+        benefits.innerHTML = `
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Ranking Prioritário nas buscas</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Até 100 fotos na galeria</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Produtos/Serviços Ilimitados</li>
+        `;
+      }
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

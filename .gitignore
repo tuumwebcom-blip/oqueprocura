@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+# Ignorar o banco de dados e arquivos de upload locais para não sobrescrever os do servidor
+database.db
+static/uploads/*
+!static/uploads/.gitkeep

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anuncie Conosco - O Que Procura?</title>
+  <meta name="description" content="Junte-se ao O Que Procura? e seja encontrado por milhares de clientes na sua região todos os dias.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .pricing-hero {
+      background: var(--color-primary);
+      color: white;
+      padding: 6rem 0 10rem;
+      text-align: center;
+      position: relative;
+    }
+    .pricing-hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, rgba(37,99,235,0.1) 0%, transparent 70%);
+    }
+    
+    .pricing-section {
+      padding: 0 0 6rem;
+      margin-top: -6rem; /* Pull up into the hero */
+      position: relative;
+      z-index: 10;
+    }
+
+    .pricing-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: 3rem 2.5rem;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .pricing-card:hover {
+      box-shadow: var(--shadow-xl);
+    }
+
+    .pricing-card.popular {
+      border: 2px solid var(--color-secondary);
+      transform: scale(1.03);
+      position: relative;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .pricing-card.popular:hover {
+      transform: scale(1.05);
+    }
+    
+    @media (max-width: 1024px) {
+      .pricing-card.popular { transform: scale(1); }
+      .pricing-card.popular:hover { transform: translateY(-4px); }
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-secondary);
+      color: white;
+      padding: 0.35rem 1.25rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .price {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.25rem;
+      margin: 1.5rem 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .price span {
+      font-size: 1.125rem;
+      color: var(--color-text-light);
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: normal;
+    }
+
+    .feature-list {
+      margin: 2rem 0;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      color: var(--color-text);
+      font-size: 0.95rem;
+    }
+
+    .feature-icon {
+      color: var(--color-success);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    .feature-icon.missing {
+      color: #cbd5e1;
+    }
+
+    .step-card {
+      background: var(--color-surface);
+      padding: 2.5rem 2rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal);
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-border-hover);
+    }
+    .step-icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-md);
+      background: #eff6ff;
+      color: var(--color-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container flex justify-between items-center">
+      <a href="/" class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
+      </a>
+      <nav class="header-nav">
+        <a href="/" class="btn btn-ghost text-sm font-medium">Início</a>
+        <a href="search.html" class="btn btn-ghost text-sm font-medium">Buscar</a>
+        <a href="login.html" class="btn btn-primary text-sm shadow-md">Fazer Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="pricing-hero">
+      <div class="container relative z-10">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Cresça o seu negócio com a gente.</h1>
+        <p class="text-lg mx-auto" style="color: #94a3b8; max-width: 600px;">
+          Planos flexíveis desenhados para aumentar sua visibilidade local e trazer mais clientes para a sua porta.
+        </p>
+      </div>
+    </section>
+
+    <section class="pricing-section container">
+      <div class="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
+        
+        <!-- Plano Básico -->
+        <div class="pricing-card">
+          <div class="text-center">
+            <h3 class="text-xl font-bold text-text-dark">Básico</h3>
+            <p class="text-sm text-muted mt-2">Ideal para quem quer começar a ser encontrado online.</p>
+            <div class="price">
+              R$ 29<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            </div>
+          </div>
+          <ul class="feature-list">
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Perfil completo na plataforma</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Aparecer nas buscas</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Receber avaliações de clientes</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Botão WhatsApp</strong> e Instagram</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Galeria com até <strong>5 fotos</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Até <strong>5 produtos/serviços</strong> com descrição e preço</li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Posição prioritária na busca</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Google Maps no perfil</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Selo de verificado</span></li>
+          </ul>
+          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=basico'" style="padding: 0.875rem;">Começar com o Básico</button>
+        </div>
+
+        <!-- Plano PRO -->
+        <div class="pricing-card popular">
+          <div class="pricing-badge">Mais Escolhido</div>
+          <div class="text-center">
+            <h3 class="text-xl font-bold text-text-dark">PRO</h3>
+            <p class="text-sm text-muted mt-2">Para quem quer crescer de verdade e se destacar.</p>
+            <div class="price">
+              R$ 49<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            </div>
+          </div>
+          <ul class="feature-list">
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Tudo do Básico</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Posição prioritária</strong> nas buscas</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Até <strong>20 produtos/serviços</strong> com descrição e preço</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Google Maps</strong> com traçar rota no perfil</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Suporte prioritário</li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Galeria ilimitada (até 20 fotos)</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Selo de Empresa Verificada</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Destaque na página inicial</span></li>
+          </ul>
+          <button class="btn btn-primary w-full shadow-md" onclick="window.location.href='/checkout.html?plan=pro'" style="padding: 0.875rem;">Assinar Plano PRO</button>
+        </div>
+
+        <!-- Plano Elite -->
+        <div class="pricing-card">
+          <div class="text-center">
+            <div style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 0.75rem; letter-spacing: 0.05em;">MÁXIMO DESTAQUE</div>
+            <h3 class="text-xl font-bold text-text-dark">Elite</h3>
+            <p class="text-sm text-muted mt-2">Visibilidade máxima. Sem limites. Sem concorrência.</p>
+            <div class="price">
+              R$ 99<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            </div>
+          </div>
+          <ul class="feature-list">
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Tudo do PRO</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Galeria com até <strong>100 fotos</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Produtos/serviços ilimitados</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Selo de Empresa Verificada ✓</strong></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Destaque na <strong>Página Inicial</strong> (sorteio semanal)</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Painel de Analytics avançado</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Suporte VIP dedicado</li>
+          </ul>
+          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=elite'" style="padding: 0.875rem; border-color: #f59e0b; color: #b45309; font-weight: 700;">Assinar Plano Elite ✦</button>
+        </div>
+        
+      </div>
+    </section>
+
+    <section class="section" style="background-color: var(--color-bg);">
+      <div class="container">
+        <h2 class="text-3xl font-bold text-center mb-12 text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Como funciona?</h2>
+        <div class="grid grid-cols-3 gap-8">
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <i data-lucide="user-plus" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-text-dark mb-2">1. Crie sua conta</h3>
+            <p class="text-muted text-sm">Escolha o plano ideal e preencha os dados básicos da sua empresa em menos de 2 minutos.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <i data-lucide="edit-3" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-text-dark mb-2">2. Monte seu perfil</h3>
+            <p class="text-muted text-sm">Adicione fotos, descrição, serviços e horários. Quanto mais completo, melhor!</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <i data-lucide="trending-up" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-text-dark mb-2">3. Receba clientes</h3>
+            <p class="text-muted text-sm">Seu perfil vai ao ar e clientes da sua região começam a te encontrar e entrar em contato.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <a href="/" class="logo mb-6 text-white">
+            <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="filter: brightness(0) invert(1); opacity: 0.9;">
+          </a>
+          <p class="text-sm" style="color: #94a3b8; max-width: 320px; line-height: 1.6;">
+            A plataforma definitiva para conectar você aos melhores profissionais e empresas da sua região de forma inteligente e rápida.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Para Usuários</h4>
+          <div class="footer-links">
+            <a href="como-funciona.html" class="footer-link">Como funciona</a>
+            <a href="search.html" class="footer-link">Categorias</a>
+            <a href="#" class="footer-link">Central de Ajuda</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Para Empresas</h4>
+          <div class="footer-links">
+            <a href="anuncie.html" class="footer-link">Planos e Preços</a>
+            <a href="anuncie.html" class="footer-link">Anunciar minha empresa</a>
+            <a href="login.html" class="footer-link">Painel Administrativo</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 O Que Procura?. Construindo melhores conexões.</p>
+        <p class="mt-2 text-white" style="font-weight: 600; letter-spacing: 0.05em;">Desenvolvido por TUUMWEB.COM</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

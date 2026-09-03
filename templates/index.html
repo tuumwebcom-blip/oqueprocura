@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>O Que Procura? - Encontre profissionais e empresas</title>
+  <meta name="description" content="Conectando quem procura com quem oferece. A plataforma premium para encontrar serviços locais.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container flex justify-between items-center">
+      <a href="/" class="logo">
+        <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
+      </a>
+      <nav class="header-nav">
+        <a href="anuncie.html" class="btn btn-ghost text-sm font-medium">Sou uma empresa</a>
+        <a href="login.html" class="btn btn-ghost text-sm font-medium">Entrar</a>
+        <button class="btn btn-primary text-sm shadow-md" onclick="window.location.href='anuncie.html'">Anuncie Conosco</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container relative z-10">
+        <h1 class="hero-title">A conexão certa para<br>o que você precisa.</h1>
+        <p class="hero-subtitle">Descubra os melhores profissionais e empresas da sua região com poucos cliques.</p>
+        
+        <div class="search-container">
+          <div class="search-input-group">
+            <i data-lucide="search" class="search-icon w-5 h-5"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="O que você está procurando? (Ex: Dentista, Encanador)">
+          </div>
+          <div class="search-input-group">
+            <i data-lucide="map-pin" class="search-icon w-5 h-5"></i>
+            <input type="text" id="location-input" class="search-input" placeholder="Onde?">
+            <button type="button" class="btn-ghost flex items-center justify-center p-2 rounded-md hover:bg-slate-100" title="Usar minha localização atual" onclick="usarLocalizacao()">
+              <i data-lucide="crosshair" class="w-5 h-5 text-secondary"></i>
+            </button>
+          </div>
+          <button id="search-btn" class="btn btn-primary btn-search shadow-md">Pesquisar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Recomendados perto de você</h2>
+          <p class="section-subtitle">Profissionais verificados e com excelentes avaliações.</p>
+        </div>
+        <a href="search.html" class="btn btn-outline text-sm">
+          Explorar todos <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-4 gap-6" id="featured-businesses">
+        <!-- Injetado via app.js -->
+      </div>
+    </section>
+
+    <section class="section container">
+      <div style="background-color: var(--color-surface); padding: 5rem 3rem; border-radius: var(--radius-xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+        <h2 class="text-3xl font-bold text-center mb-12 text-primary">Navegue por categorias</h2>
+        <div class="grid grid-cols-4 gap-6">
+          <div class="category-pill" onclick="window.location.href='search.html?category=alimentacao'">
+            <div class="category-icon-wrapper">
+              <i data-lucide="utensils" class="w-7 h-7"></i>
+            </div>
+            <span class="font-semibold text-text-dark">Gastronomia</span>
+          </div>
+          <div class="category-pill" onclick="window.location.href='search.html?category=saude'">
+            <div class="category-icon-wrapper">
+              <i data-lucide="heart-pulse" class="w-7 h-7"></i>
+            </div>
+            <span class="font-semibold text-text-dark">Saúde & Bem-estar</span>
+          </div>
+          <div class="category-pill" onclick="window.location.href='search.html?category=servicos'">
+            <div class="category-icon-wrapper">
+              <i data-lucide="wrench" class="w-7 h-7"></i>
+            </div>
+            <span class="font-semibold text-text-dark">Serviços Gerais</span>
+          </div>
+          <div class="category-pill" onclick="window.location.href='search.html?category=eventos'">
+            <div class="category-icon-wrapper">
+              <i data-lucide="camera" class="w-7 h-7"></i>
+            </div>
+            <span class="font-semibold text-text-dark">Eventos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <a href="/" class="logo mb-6 text-white">
+            <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="filter: brightness(0) invert(1); opacity: 0.9;">
+          </a>
+          <p class="text-sm" style="color: #94a3b8; max-width: 320px; line-height: 1.6;">
+            A plataforma definitiva para conectar você aos melhores profissionais e empresas da sua região de forma inteligente e rápida.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Para Usuários</h4>
+          <div class="footer-links">
+            <a href="como-funciona.html" class="footer-link">Como funciona</a>
+            <a href="search.html" class="footer-link">Categorias</a>
+            <a href="#" class="footer-link">Central de Ajuda</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Para Empresas</h4>
+          <div class="footer-links">
+            <a href="anuncie.html" class="footer-link">Planos e Preços</a>
+            <a href="anuncie.html" class="footer-link">Anunciar minha empresa</a>
+            <a href="login.html" class="footer-link">Painel Administrativo</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 O Que Procura?. Construindo melhores conexões.</p>
+        <p class="mt-2 text-white" style="font-weight: 600; letter-spacing: 0.05em;">Desenvolvido por TUUMWEB.COM</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
