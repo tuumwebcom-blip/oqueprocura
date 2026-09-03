@@ -859,8 +859,11 @@
               
               return `
                 <div class="p-4 border border-border rounded-lg mb-4">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="font-bold text-text-dark">${r.author_name}</span>
+                  <div class="flex justify-between items-center mb-2" style="flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-text-dark">${r.author_name}</span>
+                      ${r.author_email ? `<span class="text-xs text-muted" style="background:#f1f5f9; padding:2px 8px; border-radius:12px;">✉️ ${r.author_email}</span>` : ''}
+                    </div>
                     <span class="text-warning text-sm">${stars}</span>
                   </div>
                   <p class="text-sm text-text-dark mb-2">${r.comment}</p>

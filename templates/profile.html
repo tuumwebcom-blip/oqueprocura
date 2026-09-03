@@ -251,10 +251,18 @@
           
           <div class="card" style="background: var(--color-bg); padding: 1.5rem; border-radius: var(--radius-lg);">
             <h3 class="font-bold text-text-dark mb-4">Deixe sua avaliação</h3>
-            <div class="form-group mb-3">
-              <input type="text" id="review-name" class="form-control" placeholder="Seu nome">
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="form-group">
+                <label class="form-label text-xs">Seu Nome *</label>
+                <input type="text" id="review-name" class="form-control" placeholder="Ex: Maria Silva" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label text-xs">Seu E-mail * (anti-spam)</label>
+                <input type="email" id="review-email" class="form-control" placeholder="seuemail@exemplo.com" required>
+              </div>
             </div>
             <div class="form-group mb-3">
+              <label class="form-label text-xs">Sua Nota *</label>
               <select id="review-rating" class="form-control">
                 <option value="5">⭐⭐⭐⭐⭐ - Excelente</option>
                 <option value="4">⭐⭐⭐⭐ - Muito Bom</option>
@@ -263,10 +271,17 @@
                 <option value="1">⭐ - Ruim</option>
               </select>
             </div>
-            <div class="form-group mb-4">
-              <textarea id="review-comment" class="form-control" rows="3" placeholder="Conte como foi sua experiência..."></textarea>
+            <div class="form-group mb-3">
+              <label class="form-label text-xs">Seu Comentário *</label>
+              <textarea id="review-comment" class="form-control" rows="3" placeholder="Conte como foi sua experiência com este estabelecimento..."></textarea>
             </div>
-            <button class="btn btn-primary" onclick="enviarAvaliacao()">Enviar Avaliação</button>
+            <p class="text-xs text-muted mb-4 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-success"></i>
+              O e-mail é obrigatório para validação anti-spam e <strong>nunca será exibido publicamente</strong>.
+            </p>
+            <button class="btn btn-primary" id="btn-submit-review" onclick="enviarAvaliacao()">
+              <i data-lucide="send" class="w-4 h-4"></i> Enviar Avaliação
+            </button>
           </div>
         </div>
 
@@ -633,30 +648,61 @@
       const id = urlParams.get('id');
       
       const author_name = document.getElementById('review-name').value.trim();
+      const author_email = document.getElementById('review-email').value.trim();
       const rating = document.getElementById('review-rating').value;
       const comment = document.getElementById('review-comment').value.trim();
 
-      if (!author_name || !comment) {
-        alert('Por favor, preencha seu nome e um comentário.');
+      if (!author_name) {
+        alert('Por favor, informe seu nome completo.');
+        document.getElementById('review-name').focus();
         return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!author_email || !emailRegex.test(author_email)) {
+        alert('Por favor, informe um e-mail válido para validação anti-spam.');
+        document.getElementById('review-email').focus();
+        return;
+      }
+
+      if (!comment) {
+        alert('Por favor, escreva um breve comentário sobre a sua experiência.');
+        document.getElementById('review-comment').focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-review');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'Enviando avaliação...';
       }
 
       try {
         const response = await fetch(`/api/businesses/${id}/reviews/add`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ author_name, rating, comment })
+          body: JSON.stringify({ author_name, author_email, rating, comment })
         });
         const data = await response.json();
         
         if (data.success) {
-          alert('Avaliação enviada com sucesso! Obrigado pelo feedback.');
+          alert('Sua avaliação foi enviada com sucesso! Obrigado pelo feedback.');
           window.location.reload();
         } else {
-          alert('Erro ao enviar avaliação.');
+          alert(data.message || 'Erro ao enviar avaliação.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Enviar Avaliação';
+            lucide.createIcons();
+          }
         }
       } catch (e) {
-        alert('Erro de conexão ao enviar.');
+        alert('Erro de conexão ao enviar avaliação.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Enviar Avaliação';
+          lucide.createIcons();
+        }
       }
     }
   </script>

@@ -3,6 +3,7 @@ import sqlite3
 import requests
 import uuid
 import os
+import re
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
@@ -106,6 +107,11 @@ def check_db_schema():
             conn.execute('ALTER TABLE businesses ADD COLUMN business_hours TEXT')
         if 'whatsapp_clicks' not in cols:
             conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_clicks INTEGER DEFAULT 0')
+
+        cols_rev = [c[1] for c in conn.execute('PRAGMA table_info(reviews)').fetchall()]
+        if 'author_email' not in cols_rev:
+            conn.execute('ALTER TABLE reviews ADD COLUMN author_email TEXT')
+
         conn.commit()
         conn.close()
     except Exception:
@@ -386,30 +392,50 @@ def delete_service(id, service_id):
 # ============================================================
 @app.route('/api/businesses/<int:id>/reviews/add', methods=['POST'])
 def add_review(id):
-    data = request.json
-    author = str(escape(data.get('author_name', 'Anônimo')))
-    
+    data = request.json or {}
+    author = str(escape(data.get('author_name', ''))).strip()
+    email = str(escape(data.get('author_email', ''))).strip().lower()
+    comment = str(escape(data.get('comment', ''))).strip()
+
+    if not author:
+        return jsonify({'success': False, 'message': 'Por favor, informe seu nome completo.'}), 400
+
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w{2,}$'
+    if not email or not re.match(email_regex, email):
+        return jsonify({'success': False, 'message': 'Por favor, informe um e-mail válido para registrar sua avaliação.'}), 400
+
+    if not comment:
+        return jsonify({'success': False, 'message': 'Por favor, escreva um comentário sobre sua experiência.'}), 400
+
     try:
         rating = int(data.get('rating', 5))
     except (ValueError, TypeError):
         rating = 5
-        
-    comment = str(escape(data.get('comment', '')))
-    
-    if rating < 1 or rating > 5: rating = 5
-    
+
+    if rating < 1 or rating > 5:
+        rating = 5
+
     conn = get_db_connection()
-    conn.execute('INSERT INTO reviews (business_id, author_name, rating, comment) VALUES (?, ?, ?, ?)',
-                 (id, author, rating, comment))
-    
+    # Anti-spam: verificar se esse mesmo e-mail já enviou uma avaliação para essa empresa nos últimos 10 minutos
+    recent = conn.execute('''
+        SELECT id FROM reviews 
+        WHERE business_id = ? AND author_email = ? AND created_at >= datetime('now', '-10 minutes')
+    ''', (id, email)).fetchone()
+    if recent:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Você já enviou uma avaliação recentemente para esta empresa. Obrigado!'}), 429
+
+    conn.execute('INSERT INTO reviews (business_id, author_name, author_email, rating, comment) VALUES (?, ?, ?, ?, ?)',
+                 (id, author, email, rating, comment))
+
     # Atualiza a nota média da empresa
     avg_row = conn.execute('SELECT AVG(rating) as avg, COUNT(id) as count FROM reviews WHERE business_id = ?', (id,)).fetchone()
     new_avg = round(avg_row['avg'], 1) if avg_row['avg'] else 0.0
-    
+
     conn.execute('UPDATE businesses SET rating = ? WHERE id = ?', (new_avg, id))
     conn.commit()
     conn.close()
-    
+
     return jsonify({'success': True, 'new_rating': new_avg})
 
 @app.route('/api/businesses/<int:id>/reviews/<int:review_id>/reply', methods=['POST'])
