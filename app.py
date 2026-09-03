@@ -395,8 +395,95 @@ def reply_review(id, review_id):
     return jsonify({'success': True})
 
 
+
+# ============================================================
+# API — Google OAuth
+# ============================================================
+import os
+from dotenv import load_dotenv
+load_dotenv()
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = 'https://tuumweb.pythonanywhere.com/api/auth/google/callback'
+import requests
+import uuid
+
+@app.route('/api/auth/google/login')
+def google_login():
+    auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
+        f"response_type=code&"
+        f"scope=email%20profile"
+    )
+    return redirect(auth_url)
+
+@app.route('/api/auth/google/callback')
+def google_callback():
+    code = request.args.get('code')
+    if not code:
+        return "Erro: Autorização negada.", 400
+        
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        'code': code,
+        'client_id': GOOGLE_CLIENT_ID,
+        'client_secret': GOOGLE_CLIENT_SECRET,
+        'redirect_uri': GOOGLE_REDIRECT_URI,
+        'grant_type': 'authorization_code'
+    }
+    
+    token_res = requests.post(token_url, data=token_data)
+    if token_res.status_code != 200:
+        return "Erro ao comunicar com Google.", 400
+        
+    access_token = token_res.json().get('access_token')
+    
+    user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+    user_info_res = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
+    user_info = user_info_res.json()
+    
+    email = user_info.get('email')
+    name = user_info.get('name', 'Nova Empresa')
+    
+    if email == 'admin@tuumweb.com':
+        session['user_id'] = 0
+        session['role'] = 'superadmin'
+        return redirect('/super_admin.html')
+    
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    
+    if user:
+        session['user_id'] = user['id']
+        session['business_id'] = user['business_id']
+        session['role'] = user['role']
+        conn.close()
+        return redirect('/admin.html')
+    else:
+        cursor = conn.execute('INSERT INTO businesses (name, email) VALUES (?, ?)', (name, email))
+        business_id = cursor.lastrowid
+        
+        random_pass = str(uuid.uuid4())
+        hashed = generate_password_hash(random_pass)
+        
+        cursor = conn.execute(
+            'INSERT INTO users (business_id, email, password, role, plan) VALUES (?, ?, ?, ?, ?)',
+            (business_id, email, hashed, 'admin', 'GRATUITO')
+        )
+        user_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        session['user_id'] = user_id
+        session['business_id'] = business_id
+        session['role'] = 'admin'
+        return redirect('/admin.html')
+
 # ============================================================
 # API — Autenticação
+
 # ============================================================
 
 @app.route('/api/auth/login', methods=['POST'])
