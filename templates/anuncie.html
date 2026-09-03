@@ -11,97 +11,141 @@
     .pricing-hero {
       background: var(--color-primary);
       color: white;
-      padding: 6rem 0 10rem;
+      padding: 5rem 0 9rem;
       text-align: center;
       position: relative;
     }
     .pricing-hero::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at center, rgba(37,99,235,0.1) 0%, transparent 70%);
+      background: radial-gradient(circle at center, rgba(37,99,235,0.15) 0%, transparent 70%);
     }
     
     .pricing-section {
       padding: 0 0 6rem;
-      margin-top: -6rem; /* Pull up into the hero */
+      margin-top: -6rem;
       position: relative;
       z-index: 10;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      max-width: 1140px;
+      margin: 0 auto;
+      align-items: stretch;
+    }
+
+    @media (max-width: 960px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+      }
     }
 
     .pricing-card {
       background: var(--color-surface);
       border-radius: var(--radius-xl);
-      padding: 3rem 2.5rem;
+      padding: 2.75rem 2rem 2.25rem;
       border: 1px solid var(--color-border);
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
-      height: 100%;
-      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+      position: relative;
+      transition: all var(--transition-normal);
     }
 
     .pricing-card:hover {
-      box-shadow: var(--shadow-xl);
+      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.14);
+      transform: translateY(-4px);
     }
 
     .pricing-card.popular {
       border: 2px solid var(--color-secondary);
-      transform: scale(1.03);
-      position: relative;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 20px 40px -10px rgba(37,99,235,0.2);
     }
     
     .pricing-card.popular:hover {
-      transform: scale(1.05);
+      transform: translateY(-6px);
+      box-shadow: 0 24px 45px -10px rgba(37,99,235,0.28);
     }
-    
-    @media (max-width: 1024px) {
-      .pricing-card.popular { transform: scale(1); }
-      .pricing-card.popular:hover { transform: translateY(-4px); }
+
+    .pricing-card.elite-card {
+      border: 2px solid #f59e0b;
+      box-shadow: 0 20px 40px -10px rgba(245,158,11,0.18);
+    }
+
+    .pricing-card.elite-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 45px -10px rgba(245,158,11,0.26);
     }
 
     .pricing-badge {
       position: absolute;
-      top: -14px;
+      top: -13px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--color-secondary);
       color: white;
-      padding: 0.35rem 1.25rem;
+      padding: 0.35rem 1.15rem;
       border-radius: var(--radius-full);
-      font-size: 0.75rem;
+      font-size: 0.725rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+      white-space: nowrap;
     }
 
-    .price {
-      font-size: 3.5rem;
-      font-weight: 700;
-      color: var(--color-text-dark);
+    .pricing-badge.elite-badge {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+    }
+
+    .price-wrap {
       display: flex;
       align-items: baseline;
       justify-content: center;
-      gap: 0.25rem;
-      margin: 1.5rem 0;
+      gap: 0.2rem;
+      margin: 1.5rem 0 0.5rem;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      letter-spacing: -0.03em;
+      color: var(--color-text-dark);
     }
 
-    .price span {
-      font-size: 1.125rem;
-      color: var(--color-text-light);
+    .price-currency {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .price-amount {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .price-cents {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .price-period {
+      font-size: 0.95rem;
       font-weight: 500;
+      color: var(--color-text-light);
       font-family: 'Inter', sans-serif;
-      letter-spacing: normal;
+      margin-left: 0.15rem;
     }
 
     .feature-list {
       margin: 2rem 0;
-      flex-grow: 1;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1rem;
+      padding: 0;
+      list-style: none;
     }
 
     .feature-item {
@@ -109,7 +153,13 @@
       align-items: flex-start;
       gap: 0.75rem;
       color: var(--color-text);
-      font-size: 0.95rem;
+      font-size: 0.925rem;
+      line-height: 1.45;
+    }
+
+    .feature-item span {
+      flex: 1;
+      text-align: left;
     }
 
     .feature-icon {
@@ -175,29 +225,32 @@
     </section>
 
     <section class="pricing-section container">
-      <div class="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div class="pricing-grid">
         
         <!-- Plano Básico -->
         <div class="pricing-card">
           <div class="text-center">
             <h3 class="text-xl font-bold text-text-dark">Básico</h3>
             <p class="text-sm text-muted mt-2">Ideal para quem quer começar a ser encontrado online.</p>
-            <div class="price">
-              R$ 29<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            <div class="price-wrap">
+              <span class="price-currency">R$</span>
+              <span class="price-amount">29</span>
+              <span class="price-cents">,90</span>
+              <span class="price-period">/mês</span>
             </div>
           </div>
           <ul class="feature-list">
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Perfil completo na plataforma</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Aparecer nas buscas</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Receber avaliações de clientes</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Botão WhatsApp</strong> e Instagram</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Galeria com até <strong>5 fotos</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Até <strong>5 produtos/serviços</strong> com descrição e preço</li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Posição prioritária na busca</span></li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Google Maps no perfil</span></li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Selo de verificado</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Perfil completo na plataforma</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Aparecer nas buscas</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Receber avaliações de clientes</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Botão WhatsApp</strong> e Instagram</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Galeria com até <strong>5 fotos</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Até <strong>5 produtos/serviços</strong> com descrição e preço</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Posição prioritária na busca</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Google Maps no perfil</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Selo de verificado</span></li>
           </ul>
-          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=basico'" style="padding: 0.875rem;">Começar com o Básico</button>
+          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=basico'" style="padding: 0.875rem; font-weight: 600;">Começar com o Básico</button>
         </div>
 
         <!-- Plano PRO -->
@@ -206,43 +259,49 @@
           <div class="text-center">
             <h3 class="text-xl font-bold text-text-dark">PRO</h3>
             <p class="text-sm text-muted mt-2">Para quem quer crescer de verdade e se destacar.</p>
-            <div class="price">
-              R$ 49<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            <div class="price-wrap">
+              <span class="price-currency">R$</span>
+              <span class="price-amount">49</span>
+              <span class="price-cents">,90</span>
+              <span class="price-period">/mês</span>
             </div>
           </div>
           <ul class="feature-list">
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Tudo do Básico</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Posição prioritária</strong> nas buscas</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Até <strong>20 produtos/serviços</strong> com descrição e preço</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Google Maps</strong> com traçar rota no perfil</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Suporte prioritário</li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Galeria ilimitada (até 20 fotos)</span></li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Selo de Empresa Verificada</span></li>
-            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i> <span class="text-muted">Destaque na página inicial</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Tudo do Básico</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Posição prioritária</strong> nas buscas</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Até <strong>20 produtos/serviços</strong> com descrição e preço</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Google Maps</strong> com traçar rota no perfil</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Suporte prioritário</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Galeria ilimitada (até 20 fotos)</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Selo de Empresa Verificada</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Destaque na página inicial</span></li>
           </ul>
-          <button class="btn btn-primary w-full shadow-md" onclick="window.location.href='/checkout.html?plan=pro'" style="padding: 0.875rem;">Assinar Plano PRO</button>
+          <button class="btn btn-primary w-full shadow-md" onclick="window.location.href='/checkout.html?plan=pro'" style="padding: 0.875rem; font-weight: 700;">Assinar Plano PRO</button>
         </div>
 
         <!-- Plano Elite -->
-        <div class="pricing-card">
+        <div class="pricing-card elite-card">
+          <div class="pricing-badge elite-badge">Máximo Destaque</div>
           <div class="text-center">
-            <div style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 0.75rem; letter-spacing: 0.05em;">MÁXIMO DESTAQUE</div>
             <h3 class="text-xl font-bold text-text-dark">Elite</h3>
             <p class="text-sm text-muted mt-2">Visibilidade máxima. Sem limites. Sem concorrência.</p>
-            <div class="price">
-              R$ 99<span style="font-size: 1rem; font-weight: 600;">,90/mês</span>
+            <div class="price-wrap">
+              <span class="price-currency">R$</span>
+              <span class="price-amount">99</span>
+              <span class="price-cents">,90</span>
+              <span class="price-period">/mês</span>
             </div>
           </div>
           <ul class="feature-list">
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Tudo do PRO</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Galeria com até <strong>100 fotos</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Produtos/serviços ilimitados</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> <strong>Selo de Empresa Verificada ✓</strong></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Destaque na <strong>Página Inicial</strong> (sorteio semanal)</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Painel de Analytics avançado</li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i> Suporte VIP dedicado</li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Tudo do PRO</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Galeria com até <strong>100 fotos</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Produtos/serviços ilimitados</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Selo de Empresa Verificada ✓</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Destaque na <strong>Página Inicial</strong> (sorteio semanal)</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Painel de Analytics avançado</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Suporte VIP dedicado</span></li>
           </ul>
-          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=elite'" style="padding: 0.875rem; border-color: #f59e0b; color: #b45309; font-weight: 700;">Assinar Plano Elite ✦</button>
+          <button class="btn w-full" onclick="window.location.href='/checkout.html?plan=elite'" style="padding: 0.875rem; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; box-shadow: 0 4px 14px rgba(245,158,11,0.35);">Assinar Plano Elite ✦</button>
         </div>
         
       </div>
