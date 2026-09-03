@@ -1,11 +1,12 @@
 // Variável global para armazenar os dados carregados (útil para uso síncrono legado se precisar, mas preferimos fetch direto)
 let mockBusinesses = [];
 
-async function loadBusinesses(query = '', category = '') {
+async function loadBusinesses(query = '', category = '', local = '') {
   try {
     const params = new URLSearchParams();
     if (query) params.append('q', query);
     if (category) params.append('category', category);
+    if (local) params.append('local', local);
     
     // Sempre usamos o search porque ele junta a tabela de usuários
     // e já ordena por prioridade (Elite > Pro > Basico > Gratuito)
@@ -21,14 +22,14 @@ async function loadBusinesses(query = '', category = '') {
   }
 }
 
-async function renderBusinessCards(containerId, limit = null, query = '', category = '') {
+async function renderBusinessCards(containerId, limit = null, query = '', category = '', local = '') {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = '<p class="text-muted col-span-3 text-center">Buscando...</p>';
 
   // Sempre carrega dados frescos se tiver query/categoria
-  await loadBusinesses(query, category);
+  await loadBusinesses(query, category, local);
 
   const businessesToRender = limit ? mockBusinesses.slice(0, limit) : mockBusinesses;
   
@@ -80,9 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get('q') || '';
   const cat = urlParams.get('category') || '';
+  const loc = urlParams.get('local') || '';
 
   renderBusinessCards('featured-businesses', 4); // Homepage
-  renderBusinessCards('search-results', null, q, cat); // Search page
+  renderBusinessCards('search-results', null, q, cat, loc); // Search page
 
   // Update query display count and text in search.html if exists
   setTimeout(() => {
@@ -115,13 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function executarBusca() {
-  const query = document.getElementById('search-input')?.value;
-  const location = document.getElementById('location-input')?.value;
-  if (query) {
-    let url = 'search.html?q=' + encodeURIComponent(query);
-    if (location) url += '&local=' + encodeURIComponent(location);
-    window.location.href = url;
-  }
+  const query = document.getElementById('search-input')?.value.trim() || '';
+  const location = document.getElementById('location-input')?.value.trim() || '';
+  const params = new URLSearchParams();
+  if (query) params.append('q', query);
+  if (location) params.append('local', location);
+  
+  const queryStr = params.toString();
+  window.location.href = queryStr ? 'search.html?' + queryStr : 'search.html';
 }
 
 // Geolocalização do usuário

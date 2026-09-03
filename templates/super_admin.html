@@ -481,7 +481,7 @@
       }
     }
 
-    async function toggleStatus(businessId) {
+        async function toggleStatus(businessId) {
       if(!confirm('Deseja alterar o status desta empresa?')) return;
       try {
         const res = await fetch('/api/superadmin/businesses/' + businessId + '/status', { method: 'POST' });
@@ -491,32 +491,6 @@
         } else {
           alert('Erro ao alterar status.');
         }
-      
-        // Preencher Aba Empresas
-        document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
-        const empBody = document.getElementById('empresas-list-body');
-        if (empBody) {
-          empBody.innerHTML = data.subscriptions.map(sub => `
-            <tr class="border-b border-slate-100">
-              <td class="py-3 font-bold text-text-dark">${sub.business_name}</td>
-              <td class="py-3 text-muted">${sub.email}</td>
-              <td class="py-3"><span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span></td>
-              <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
-            </tr>
-          `).join('');
-        }
-
-        // Preencher Aba Categorias
-        const categoriasList = document.getElementById('categorias-list');
-        if (categoriasList) {
-          const categorias = [...new Set(data.subscriptions.map(s => s.category))];
-          categoriasList.innerHTML = categorias.map(c => `
-            <li class="p-3 border border-slate-200 rounded-lg font-medium text-text-dark flex items-center gap-2">
-              <i data-lucide="tag" class="w-4 h-4 text-secondary"></i> ${c}
-            </li>
-          `).join('');
-        }
-
       } catch (e) {
         alert('Erro de conexão.');
       }

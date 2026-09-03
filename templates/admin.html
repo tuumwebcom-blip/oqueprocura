@@ -409,12 +409,31 @@
   </script>
 
   <script>
-    // Pega o ID da empresa logada no LocalStorage
-    const BUSINESS_ID = localStorage.getItem('business_id');
+    // Suporte a login via Google (pega business_id da URL ou do localStorage)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('business_id')) {
+        localStorage.setItem('business_id', urlParams.get('business_id'));
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
     
-    // Se não estiver logado, manda pro login
+    let BUSINESS_ID = localStorage.getItem('business_id');
+    
+    // Se não tiver no localStorage, consulta a sessão no backend antes de redirecionar
     if (!BUSINESS_ID) {
-        window.location.href = '/login.html';
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                if (data.logged_in && data.business_id) {
+                    BUSINESS_ID = data.business_id;
+                    localStorage.setItem('business_id', BUSINESS_ID);
+                    carregarDados();
+                } else {
+                    window.location.href = '/login.html';
+                }
+            })
+            .catch(() => {
+                window.location.href = '/login.html';
+            });
     }
 
     async function fazerLogout() {

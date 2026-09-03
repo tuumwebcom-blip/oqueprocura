@@ -10,7 +10,7 @@ from functools import wraps
 import uuid
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', 'tuumweb-production-secret-key-2026')
 
 # Decorators de Segurança
 def login_required(f):
@@ -283,7 +283,6 @@ def update_business(id):
         return jsonify({'success': False, 'message': 'O nome da empresa não pode ser vazio.'}), 400
         
     category = str(escape(data.get('category', '')))
-    category = str(escape(data.get('category', '')))
     short_description = str(escape(data.get('short_description', '')))
     about_text = str(escape(data.get('about_text', '')))
     whatsapp = str(escape(data.get('whatsapp', '')))
@@ -399,20 +398,27 @@ def reply_review(id, review_id):
 # ============================================================
 # API — Google OAuth
 # ============================================================
-import os
-from dotenv import load_dotenv
-load_dotenv()
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_CLIENT_ID = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
+GOOGLE_CLIENT_SECRET = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
 GOOGLE_REDIRECT_URI = 'https://tuumweb.pythonanywhere.com/api/auth/google/callback'
-import requests
-import uuid
 
 @app.route('/api/auth/google/login')
 def google_login():
+    # Tenta recarregar chaves caso tenham sido salvas recentemente
+    cid = (os.environ.get('GOOGLE_CLIENT_ID') or GOOGLE_CLIENT_ID or '').strip()
+    if not cid:
+        basedir = os.path.dirname(os.path.abspath(__file__))
+        load_dotenv(os.path.join(basedir, '.env'))
+        if os.path.exists('/home/Tuumweb/.env'):
+            load_dotenv('/home/Tuumweb/.env')
+        cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
+
+    if not cid:
+        return "Erro: GOOGLE_CLIENT_ID não encontrado no arquivo .env do servidor.", 500
+
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
-        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"client_id={cid}&"
         f"redirect_uri={GOOGLE_REDIRECT_URI}&"
         f"response_type=code&"
         f"scope=email%20profile"
@@ -424,31 +430,51 @@ def google_callback():
     try:
         code = request.args.get('code')
         if not code:
-            return "Erro: Autorização negada.", 400
+            err = request.args.get('error', 'Autorização negada')
+            return f"Erro ao autorizar com Google: {err}", 400
             
+        cid = (os.environ.get('GOOGLE_CLIENT_ID') or GOOGLE_CLIENT_ID or '').strip()
+        csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or GOOGLE_CLIENT_SECRET or '').strip()
+        
+        if not cid or not csecret:
+            basedir = os.path.dirname(os.path.abspath(__file__))
+            load_dotenv(os.path.join(basedir, '.env'))
+            if os.path.exists('/home/Tuumweb/.env'):
+                load_dotenv('/home/Tuumweb/.env')
+            cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
+            csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
+
         token_url = "https://oauth2.googleapis.com/token"
         token_data = {
             'code': code,
-            'client_id': GOOGLE_CLIENT_ID,
-            'client_secret': GOOGLE_CLIENT_SECRET,
+            'client_id': cid,
+            'client_secret': csecret,
             'redirect_uri': GOOGLE_REDIRECT_URI,
             'grant_type': 'authorization_code'
         }
         
-        token_res = requests.post(token_url, data=token_data)
+        token_res = requests.post(token_url, data=token_data, timeout=10)
         if token_res.status_code != 200:
-            return f"Erro ao comunicar com Google. Resposta: {token_res.text}", 400
+            return f"Erro ao comunicar com Google ({token_res.status_code}): {token_res.text}", 400
             
         access_token = token_res.json().get('access_token')
+        if not access_token:
+            return "Erro: Token de acesso não retornado pelo Google.", 400
         
         user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
-        user_info_res = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
+        user_info_res = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'}, timeout=10)
+        if user_info_res.status_code != 200:
+            return "Erro ao obter informações do seu perfil no Google.", 400
+            
         user_info = user_info_res.json()
+        email = (user_info.get('email') or '').strip()
+        name = user_info.get('name') or (email.split('@')[0] if email else 'Minha Empresa')
         
-        email = user_info.get('email')
-        name = user_info.get('name', 'Nova Empresa')
+        if not email:
+            return "Erro: O Google não forneceu um e-mail válido para a sua conta.", 400
         
-        if email == 'admin@tuumweb.com':
+        # Super Admin Bypass
+        if email.lower() == 'admin@tuumweb.com':
             session['user_id'] = 0
             session['role'] = 'superadmin'
             return redirect('/super_admin.html')
@@ -457,11 +483,13 @@ def google_callback():
         user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         
         if user:
+            business_id = user['business_id']
             session['user_id'] = user['id']
-            session['business_id'] = user['business_id']
+            session['business_id'] = business_id
             session['role'] = 'business'
             conn.close()
-            return redirect('/admin.html')
+            # Passa o business_id na URL para o frontend salvar no localStorage
+            return redirect(f'/admin.html?business_id={business_id}')
         else:
             cursor = conn.execute('''
                 INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
@@ -483,10 +511,10 @@ def google_callback():
             session['user_id'] = user_id
             session['business_id'] = business_id
             session['role'] = 'business'
-            return redirect('/admin.html')
+            return redirect(f'/admin.html?business_id={business_id}')
     except Exception as e:
         import traceback
-        return f"<h1>Erro de Execução (Traceback):</h1><pre>{traceback.format_exc()}</pre>", 500
+        return f"<h1>Erro interno ao processar login:</h1><pre>{traceback.format_exc()}</pre>", 500
 
 # ============================================================
 # API — Autenticação
@@ -571,6 +599,17 @@ def register_api():
     conn.close()
     return jsonify({'success': True, 'business_id': business_id, 'plan': chosen_plan})
 
+@app.route('/api/auth/me')
+def auth_me():
+    if session.get('user_id') is not None:
+        return jsonify({
+            'logged_in': True,
+            'user_id': session.get('user_id'),
+            'business_id': session.get('business_id'),
+            'role': session.get('role')
+        })
+    return jsonify({'logged_in': False}), 401
+
 @app.route('/api/auth/logout', methods=['POST'])
 def logout_api():
     session.clear()
@@ -618,8 +657,26 @@ def superadmin_dashboard():
         'total_businesses': len(users_businesses),
         'total_views': total_views,
         'subscriptions': subscriptions
-    }), 400
+    })
 
+@app.route('/api/superadmin/businesses/add', methods=['POST'])
+@superadmin_required
+def superadmin_add_business():
+    data = request.json
+    business_name = str(escape(data.get('business_name', ''))).strip()
+    email = str(escape(data.get('email', ''))).strip()
+    password = data.get('password', '')
+    plan = data.get('plan', 'basico').lower()
+    
+    if not business_name or not email or not password:
+        return jsonify({'success': False, 'message': 'Preencha todos os campos obrigatórios.'}), 400
+        
+    conn = get_db_connection()
+    existing = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    if existing:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Email já cadastrado.'}), 400
+        
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
@@ -637,7 +694,6 @@ def superadmin_dashboard():
     conn.close()
     return jsonify({'success': True, 'business_id': business_id})
 
-# ============================================================
 
 @app.route('/api/superadmin/businesses/<int:id>/status', methods=['POST'])
 @superadmin_required
