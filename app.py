@@ -7,7 +7,15 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
 from functools import wraps
-import uuid
+
+try:
+    from dotenv import load_dotenv
+    basedir = os.path.dirname(os.path.abspath(__file__))
+    load_dotenv(os.path.join(basedir, '.env'))
+    if os.path.exists('/home/Tuumweb/.env'):
+        load_dotenv('/home/Tuumweb/.env')
+except Exception:
+    pass
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'tuumweb-production-secret-key-2026')
@@ -400,21 +408,27 @@ def reply_review(id, review_id):
 # ============================================================
 # API — Google OAuth
 # ============================================================
-GOOGLE_CLIENT_ID = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
-GOOGLE_CLIENT_SECRET = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
 GOOGLE_REDIRECT_URI = 'https://tuumweb.pythonanywhere.com/api/auth/google/callback'
+
+def get_google_credentials():
+    cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
+    csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
+    if not cid or not csecret:
+        try:
+            from dotenv import load_dotenv
+            basedir = os.path.dirname(os.path.abspath(__file__))
+            load_dotenv(os.path.join(basedir, '.env'))
+            if os.path.exists('/home/Tuumweb/.env'):
+                load_dotenv('/home/Tuumweb/.env')
+            cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
+            csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
+        except Exception:
+            pass
+    return cid, csecret
 
 @app.route('/api/auth/google/login')
 def google_login():
-    # Tenta recarregar chaves caso tenham sido salvas recentemente
-    cid = (os.environ.get('GOOGLE_CLIENT_ID') or GOOGLE_CLIENT_ID or '').strip()
-    if not cid:
-        basedir = os.path.dirname(os.path.abspath(__file__))
-        load_dotenv(os.path.join(basedir, '.env'))
-        if os.path.exists('/home/Tuumweb/.env'):
-            load_dotenv('/home/Tuumweb/.env')
-        cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
-
+    cid, _ = get_google_credentials()
     if not cid:
         return "Erro: GOOGLE_CLIENT_ID não encontrado no arquivo .env do servidor.", 500
 
@@ -435,16 +449,9 @@ def google_callback():
             err = request.args.get('error', 'Autorização negada')
             return f"Erro ao autorizar com Google: {err}", 400
             
-        cid = (os.environ.get('GOOGLE_CLIENT_ID') or GOOGLE_CLIENT_ID or '').strip()
-        csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or GOOGLE_CLIENT_SECRET or '').strip()
-        
+        cid, csecret = get_google_credentials()
         if not cid or not csecret:
-            basedir = os.path.dirname(os.path.abspath(__file__))
-            load_dotenv(os.path.join(basedir, '.env'))
-            if os.path.exists('/home/Tuumweb/.env'):
-                load_dotenv('/home/Tuumweb/.env')
-            cid = (os.environ.get('GOOGLE_CLIENT_ID') or '').strip()
-            csecret = (os.environ.get('GOOGLE_CLIENT_SECRET') or '').strip()
+            return "Erro: Credenciais do Google OAuth não configuradas no servidor.", 500
 
         token_url = "https://oauth2.googleapis.com/token"
         token_data = {
