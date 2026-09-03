@@ -127,8 +127,10 @@ def api_search():
         params.extend([val, val, val, val])
         
     if category:
-        sql += ' AND LOWER(b.category) = ?'
-        params.append(category)
+        # Permite busca flexível com ou sem acentuação (ex: alimentacao vs alimentação)
+        cat_clean = category.replace('ç', 'c').replace('ã', 'a').replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
+        sql += ' AND (LOWER(b.category) LIKE ? OR LOWER(b.category) LIKE ?)'
+        params.extend([f'%{category}%', f'%{cat_clean[:4]}%'])
 
     if local:
         sql += ' AND LOWER(b.address) LIKE ?'

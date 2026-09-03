@@ -6,6 +6,140 @@
   <title>Resultados da Busca - O Que Procura?</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .sidebar-card {
+      background: var(--color-surface);
+      padding: 1.5rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      position: sticky;
+      top: 100px;
+      box-shadow: 0 4px 20px -5px rgba(0,0,0,0.06);
+    }
+
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1rem;
+    }
+
+    .filter-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .filter-clear-btn {
+      background: none;
+      border: none;
+      color: var(--color-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .filter-clear-btn:hover {
+      background: #eff6ff;
+      color: var(--color-secondary-hover);
+    }
+
+    .filter-subtitle {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+
+    .filter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: var(--radius-md);
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.925rem;
+      background: var(--color-surface);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .filter-item:hover {
+      background-color: #f8fafc;
+      color: var(--color-secondary);
+      border-color: var(--color-border);
+      transform: translateX(3px);
+    }
+
+    .filter-item.active {
+      background-color: #eff6ff;
+      color: var(--color-secondary);
+      border-color: #bfdbfe;
+      font-weight: 600;
+    }
+
+    .filter-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-item:hover .filter-icon-box {
+      background: white;
+      color: var(--color-secondary);
+      box-shadow: 0 2px 8px rgba(37,99,235,0.15);
+    }
+
+    .filter-item.active .filter-icon-box {
+      background: var(--color-secondary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    }
+
+    .filter-name {
+      flex: 1;
+    }
+
+    .filter-arrow {
+      color: #cbd5e1;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-item:hover .filter-arrow,
+    .filter-item.active .filter-arrow {
+      color: var(--color-secondary);
+      transform: translateX(2px);
+    }
+  </style>
 </head>
 <body>
 
@@ -48,32 +182,38 @@
     <div class="grid" style="grid-template-columns: 260px 1fr; gap: 2.5rem;">
       <!-- Sidebar / Filters -->
       <aside class="sidebar">
-        <div style="background: var(--color-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); position: sticky; top: 100px; box-shadow: var(--shadow-sm);">
-          <div class="flex justify-between items-center mb-6 border-b border-color-border pb-4">
-            <h3 class="font-bold text-text-dark text-lg">Filtros</h3>
-            <button class="text-xs font-medium text-secondary hover:text-secondary-hover" onclick="window.location.href='search.html'">Limpar Busca</button>
+        <div class="sidebar-card">
+          <div class="filter-header">
+            <h3 class="filter-title">Filtros</h3>
+            <a href="search.html" class="filter-clear-btn" title="Limpar busca">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar
+            </a>
           </div>
           
-          <div class="mb-6">
-            <h4 class="font-semibold text-text-dark mb-3 text-sm uppercase tracking-wider">Categorias Populares</h4>
-            <ul class="flex-col gap-3 text-sm">
-              <li class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.location.href='search.html?category=alimentação'">
-                <i data-lucide="coffee" class="w-4 h-4 text-secondary"></i>
-                <span class="cursor-pointer text-text hover:text-secondary">Alimentação</span>
-              </li>
-              <li class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.location.href='search.html?category=saúde'">
-                <i data-lucide="heart" class="w-4 h-4 text-secondary"></i>
-                <span class="cursor-pointer text-text hover:text-secondary">Saúde e Bem-estar</span>
-              </li>
-              <li class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.location.href='search.html?category=fotografia'">
-                <i data-lucide="camera" class="w-4 h-4 text-secondary"></i>
-                <span class="cursor-pointer text-text hover:text-secondary">Fotografia e Eventos</span>
-              </li>
-              <li class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.location.href='search.html?category=mecânica'">
-                <i data-lucide="wrench" class="w-4 h-4 text-secondary"></i>
-                <span class="cursor-pointer text-text hover:text-secondary">Serviços e Mecânica</span>
-              </li>
-            </ul>
+          <div>
+            <h4 class="filter-subtitle">Categorias Populares</h4>
+            <div class="filter-list" id="category-filter-list">
+              <a href="search.html?category=alimentacao" class="filter-item" data-category="alimentacao">
+                <span class="filter-icon-box"><i data-lucide="utensils" class="w-4 h-4"></i></span>
+                <span class="filter-name">Alimentação</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+              <a href="search.html?category=saude" class="filter-item" data-category="saude">
+                <span class="filter-icon-box"><i data-lucide="heart-pulse" class="w-4 h-4"></i></span>
+                <span class="filter-name">Saúde e Bem-estar</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+              <a href="search.html?category=fotografia" class="filter-item" data-category="fotografia">
+                <span class="filter-icon-box"><i data-lucide="camera" class="w-4 h-4"></i></span>
+                <span class="filter-name">Fotografia e Eventos</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+              <a href="search.html?category=mecanica" class="filter-item" data-category="mecanica">
+                <span class="filter-icon-box"><i data-lucide="wrench" class="w-4 h-4"></i></span>
+                <span class="filter-name">Serviços e Mecânica</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+            </div>
           </div>
         </div>
       </aside>
@@ -120,6 +260,18 @@
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script>
     lucide.createIcons();
+    
+    // Destaque visual da categoria ativa no filtro
+    const activeCat = new URLSearchParams(window.location.search).get('category') || '';
+    if (activeCat) {
+      const cleanCat = activeCat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      document.querySelectorAll('#category-filter-list .filter-item').forEach(el => {
+        const itemCat = el.getAttribute('data-category');
+        if (cleanCat.includes(itemCat) || itemCat.includes(cleanCat)) {
+          el.classList.add('active');
+        }
+      });
+    }
     
     // Suporte para buscar pressionando Enter no campo do header de resultados
     document.getElementById('search-input-page').addEventListener('keypress', function(e) {
