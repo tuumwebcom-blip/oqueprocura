@@ -421,68 +421,72 @@ def google_login():
 
 @app.route('/api/auth/google/callback')
 def google_callback():
-    code = request.args.get('code')
-    if not code:
-        return "Erro: Autorização negada.", 400
+    try:
+        code = request.args.get('code')
+        if not code:
+            return "Erro: Autorização negada.", 400
+            
+        token_url = "https://oauth2.googleapis.com/token"
+        token_data = {
+            'code': code,
+            'client_id': GOOGLE_CLIENT_ID,
+            'client_secret': GOOGLE_CLIENT_SECRET,
+            'redirect_uri': GOOGLE_REDIRECT_URI,
+            'grant_type': 'authorization_code'
+        }
         
-    token_url = "https://oauth2.googleapis.com/token"
-    token_data = {
-        'code': code,
-        'client_id': GOOGLE_CLIENT_ID,
-        'client_secret': GOOGLE_CLIENT_SECRET,
-        'redirect_uri': GOOGLE_REDIRECT_URI,
-        'grant_type': 'authorization_code'
-    }
-    
-    token_res = requests.post(token_url, data=token_data)
-    if token_res.status_code != 200:
-        return "Erro ao comunicar com Google.", 400
+        token_res = requests.post(token_url, data=token_data)
+        if token_res.status_code != 200:
+            return f"Erro ao comunicar com Google. Resposta: {token_res.text}", 400
+            
+        access_token = token_res.json().get('access_token')
         
-    access_token = token_res.json().get('access_token')
-    
-    user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
-    user_info_res = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
-    user_info = user_info_res.json()
-    
-    email = user_info.get('email')
-    name = user_info.get('name', 'Nova Empresa')
-    
-    if email == 'admin@tuumweb.com':
-        session['user_id'] = 0
-        session['role'] = 'superadmin'
-        return redirect('/super_admin.html')
-    
-    conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-    
-    if user:
-        session['user_id'] = user['id']
-        session['business_id'] = user['business_id']
-        session['role'] = 'business'
-        conn.close()
-        return redirect('/admin.html')
-    else:
-        cursor = conn.execute('''
-            INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
-            VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
-        ''', (name,))
-        business_id = cursor.lastrowid
+        user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+        user_info_res = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
+        user_info = user_info_res.json()
         
-        random_pass = str(uuid.uuid4())
-        hashed = generate_password_hash(random_pass)
+        email = user_info.get('email')
+        name = user_info.get('name', 'Nova Empresa')
         
-        cursor = conn.execute(
-            'INSERT INTO users (email, password, business_id, plan) VALUES (?, ?, ?, ?)',
-            (email, hashed, business_id, 'gratuito')
-        )
-        user_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
+        if email == 'admin@tuumweb.com':
+            session['user_id'] = 0
+            session['role'] = 'superadmin'
+            return redirect('/super_admin.html')
         
-        session['user_id'] = user_id
-        session['business_id'] = business_id
-        session['role'] = 'business'
-        return redirect('/admin.html')
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+        
+        if user:
+            session['user_id'] = user['id']
+            session['business_id'] = user['business_id']
+            session['role'] = 'business'
+            conn.close()
+            return redirect('/admin.html')
+        else:
+            cursor = conn.execute('''
+                INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
+                VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
+            ''', (name,))
+            business_id = cursor.lastrowid
+            
+            random_pass = str(uuid.uuid4())
+            hashed = generate_password_hash(random_pass)
+            
+            cursor = conn.execute(
+                'INSERT INTO users (email, password, business_id, plan) VALUES (?, ?, ?, ?)',
+                (email, hashed, business_id, 'gratuito')
+            )
+            user_id = cursor.lastrowid
+            conn.commit()
+            conn.close()
+            
+            session['user_id'] = user_id
+            session['business_id'] = business_id
+            session['role'] = 'business'
+            return redirect('/admin.html')
+    except Exception as e:
+        import traceback
+        return f"<h1>Erro de Execução (Traceback):</h1><pre>{traceback.format_exc()}</pre>", 500
 
 # ============================================================
 # API — Autenticação
