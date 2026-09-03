@@ -213,14 +213,9 @@
           <p class="mt-4">Nossa equipe é formada por profissionais apaixonados por contar histórias através das lentes, entregando não apenas fotos, mas memórias que durarão para sempre. Venha conhecer nosso espaço criativo no coração da cidade.</p>
         </div>
 
-        <h2 class="section-title">Nossas Especialidades</h2>
-        <div class="feature-list">
-          <div class="feature-item"><i data-lucide="camera" class="w-5 h-5 text-secondary"></i> Ensaios de Casamento</div>
-          <div class="feature-item"><i data-lucide="user" class="w-5 h-5 text-secondary"></i> Retratos Corporativos</div>
-          <div class="feature-item"><i data-lucide="video" class="w-5 h-5 text-secondary"></i> Filmagem em 4K</div>
-          <div class="feature-item"><i data-lucide="image" class="w-5 h-5 text-secondary"></i> Edição Profissional</div>
-          <div class="feature-item"><i data-lucide="baby" class="w-5 h-5 text-secondary"></i> Ensaios Gestantes</div>
-          <div class="feature-item"><i data-lucide="drone" class="w-5 h-5 text-secondary"></i> Imagens Aéreas (Drone)</div>
+        <div id="specialties-wrapper" style="display:none; margin-bottom: 2rem;">
+          <h2 class="section-title">Destaques & Diferenciais</h2>
+          <div class="feature-list" id="specialties-container"></div>
         </div>
 
         <h2 class="section-title">Serviços e Preços Base</h2>
@@ -324,9 +319,18 @@
 
           <h4 class="font-bold text-text-dark mb-3">Informações</h4>
           <ul class="flex-col gap-3 text-sm">
-            <li class="flex items-center gap-2 text-text"><i data-lucide="clock" class="w-4 h-4 text-muted"></i> Seg - Sex: 09:00 às 18:00</li>
-            <li class="flex items-center gap-2 text-text" id="contact-address"><i data-lucide="map-pin" class="w-4 h-4 text-muted"></i> Endereço</li>
-            <li class="flex items-center gap-2 text-text"><i data-lucide="globe" class="w-4 h-4 text-muted"></i> lentelclara.com.br</li>
+            <li class="flex items-center gap-2 text-text" id="contact-hours" style="display:none;">
+              <i data-lucide="clock" class="w-4 h-4 text-muted"></i>
+              <span id="contact-hours-text"></span>
+            </li>
+            <li class="flex items-center gap-2 text-text" id="contact-address">
+              <i data-lucide="map-pin" class="w-4 h-4 text-muted"></i>
+              <span id="contact-address-text">Endereço</span>
+            </li>
+            <li class="flex items-center gap-2 text-text" id="contact-website" style="display:none;">
+              <i data-lucide="globe" class="w-4 h-4 text-muted"></i>
+              <a id="contact-website-link" href="#" target="_blank" class="text-secondary hover:underline" style="word-break: break-all;"></a>
+            </li>
           </ul>
         </div>
       </aside>
@@ -470,7 +474,54 @@
           if (btnInsta) btnInsta.innerHTML = `<i data-lucide="instagram" class="w-5 h-5"></i> ` + (business.instagram || 'Ver Instagram');
           
           const addressEl = document.getElementById('contact-address');
-          if (addressEl) addressEl.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-muted"></i> ` + (business.address || business.distance);
+          const addressText = document.getElementById('contact-address-text');
+          if (addressText) {
+            addressText.textContent = business.address || business.distance || 'Endereço sob consulta';
+          }
+
+          // Atualizar Horário de Funcionamento
+          const hoursEl = document.getElementById('contact-hours');
+          const hoursText = document.getElementById('contact-hours-text');
+          if (business.business_hours) {
+            if (hoursEl) hoursEl.style.display = 'flex';
+            if (hoursText) hoursText.textContent = business.business_hours;
+          } else {
+            if (hoursEl) hoursEl.style.display = 'none';
+          }
+
+          // Atualizar Site Oficial
+          const siteEl = document.getElementById('contact-website');
+          const siteLink = document.getElementById('contact-website-link');
+          if (business.website) {
+            if (siteEl) siteEl.style.display = 'flex';
+            if (siteLink) {
+              let href = business.website.trim();
+              if (!href.startsWith('http://') && !href.startsWith('https://')) {
+                href = 'https://' + href;
+              }
+              siteLink.href = href;
+              siteLink.textContent = business.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            }
+          } else {
+            if (siteEl) siteEl.style.display = 'none';
+          }
+
+          // Destaques / Especialidades Dinâmicas
+          const specWrapper = document.getElementById('specialties-wrapper');
+          const specContainer = document.getElementById('specialties-container');
+          if (business.services && business.services.length > 0) {
+            if (specWrapper) specWrapper.style.display = 'block';
+            if (specContainer) {
+              specContainer.innerHTML = business.services.map(s => `
+                <div class="feature-item">
+                  <i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i>
+                  ${s.name}
+                </div>
+              `).join('');
+            }
+          } else {
+            if (specWrapper) specWrapper.style.display = 'none';
+          }
 
           // Ativar Google Maps se a empresa tiver o link cadastrado
           if (business.maps_url) {

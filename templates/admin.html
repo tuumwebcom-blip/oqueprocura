@@ -407,6 +407,16 @@
             <label class="form-label">Endereço Completo</label>
             <input type="text" class="form-control" id="input-address" placeholder="Rua, Número - Bairro, Cidade - UF">
           </div>
+          <div class="grid grid-cols-2 gap-4 mb-4" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Site Oficial ou Link Externo (Opcional)</label>
+              <input type="text" class="form-control" id="input-website" placeholder="https://www.suaempresa.com.br">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Horário de Funcionamento</label>
+              <input type="text" class="form-control" id="input-hours" placeholder="Ex: Seg a Sex: 08h às 18h | Sáb: 08h às 12h">
+            </div>
+          </div>
           <!-- Campo Google Maps (Exclusivo Plano PRO e Elite) -->
           <div class="form-group" id="maps-field" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); display: none;">
             <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -730,6 +740,8 @@
         document.getElementById('input-whatsapp').value = data.whatsapp || '';
         document.getElementById('input-instagram').value = data.instagram || '';
         document.getElementById('input-address').value = data.address || '';
+        document.getElementById('input-website').value = data.website || '';
+        document.getElementById('input-hours').value = data.business_hours || '';
         document.getElementById('input-maps-url').value = data.maps_url || '';
 
         // Mostrar plano no badge
@@ -1043,6 +1055,8 @@
         whatsapp: document.getElementById('input-whatsapp').value,
         instagram: document.getElementById('input-instagram').value,
         address: document.getElementById('input-address').value,
+        website: document.getElementById('input-website').value,
+        business_hours: document.getElementById('input-hours').value,
         maps_url: document.getElementById('input-maps-url').value
       };
 

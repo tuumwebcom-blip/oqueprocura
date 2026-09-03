@@ -96,6 +96,21 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def check_db_schema():
+    try:
+        conn = get_db_connection()
+        cols = [c[1] for c in conn.execute('PRAGMA table_info(businesses)').fetchall()]
+        if 'website' not in cols:
+            conn.execute('ALTER TABLE businesses ADD COLUMN website TEXT')
+        if 'business_hours' not in cols:
+            conn.execute('ALTER TABLE businesses ADD COLUMN business_hours TEXT')
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+check_db_schema()
+
 def get_user_plan(business_id):
     conn = get_db_connection()
     user = conn.execute('SELECT plan FROM users WHERE business_id = ?', (business_id,)).fetchone()
@@ -298,15 +313,18 @@ def update_business(id):
     whatsapp = str(escape(data.get('whatsapp', '')))
     instagram = str(escape(data.get('instagram', '')))
     address = str(escape(data.get('address', '')))
+    website = str(escape(data.get('website', ''))).strip()
+    business_hours = str(escape(data.get('business_hours', ''))).strip()
     maps_url = data.get('maps_url', '') # Maps URL must be kept intact but we trust admin input here, could sanitize differently
 
     conn = get_db_connection()
     conn.execute('''
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
-            whatsapp = ?, instagram = ?, address = ?, maps_url = ?
+            whatsapp = ?, instagram = ?, address = ?, maps_url = ?,
+            website = ?, business_hours = ?
         WHERE id = ?
-    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, id))
+    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, id))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
