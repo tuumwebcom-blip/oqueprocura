@@ -462,15 +462,18 @@ def google_callback():
         conn.close()
         return redirect('/admin.html')
     else:
-        cursor = conn.execute('INSERT INTO businesses (name, email) VALUES (?, ?)', (name, email))
+        cursor = conn.execute('''
+            INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
+            VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
+        ''', (name,))
         business_id = cursor.lastrowid
         
         random_pass = str(uuid.uuid4())
         hashed = generate_password_hash(random_pass)
         
         cursor = conn.execute(
-            'INSERT INTO users (business_id, email, password, role, plan) VALUES (?, ?, ?, ?, ?)',
-            (business_id, email, hashed, 'admin', 'GRATUITO')
+            'INSERT INTO users (email, password, business_id, plan) VALUES (?, ?, ?, ?)',
+            (email, hashed, business_id, 'gratuito')
         )
         user_id = cursor.lastrowid
         conn.commit()
@@ -478,7 +481,7 @@ def google_callback():
         
         session['user_id'] = user_id
         session['business_id'] = business_id
-        session['role'] = 'admin'
+        session['role'] = 'business'
         return redirect('/admin.html')
 
 # ============================================================
