@@ -198,6 +198,9 @@ def check_db_schema():
             conn.execute('ALTER TABLE users ADD COLUMN verification_code TEXT')
         if 'verification_code_expires' not in cols_users:
             conn.execute('ALTER TABLE users ADD COLUMN verification_code_expires INTEGER')
+        if 'is_courtesy' not in cols_users:
+            conn.execute('ALTER TABLE users ADD COLUMN is_courtesy INTEGER DEFAULT 1')
+        conn.execute('UPDATE users SET is_courtesy = 1 WHERE is_courtesy IS NULL')
 
         # Limpa entidades HTML duplicadas no banco
         conn.execute("UPDATE businesses SET category = REPLACE(category, '&amp;amp;', '&') WHERE category LIKE '%&amp;amp;%'")
@@ -1396,7 +1399,7 @@ def logout_api():
 def superadmin_dashboard():
     conn = get_db_connection()
     users_businesses = conn.execute('''
-        SELECT u.email, u.plan, b.id as business_id, b.name as business_name, b.category, b.views, b.status, b.slug
+        SELECT u.email, u.plan, COALESCE(u.is_courtesy, 1) as is_courtesy, b.id as business_id, b.name as business_name, b.category, b.views, b.status, b.slug
         FROM users u
         JOIN businesses b ON u.business_id = b.id
         ORDER BY b.id DESC
@@ -1406,21 +1409,32 @@ def superadmin_dashboard():
     conn.close()
 
     prices = {'gratuito': 0.00, 'basico': 29.90, 'pro': 49.90, 'elite': 99.90}
-    mrr = sum(prices.get((row['plan'] or 'basico').lower(), 29.90) for row in users_businesses if row['status'] != 'suspended')
+    # Apenas planos pagos (NÃO cortesia) somam na receita recorrente mensal (MRR)
+    mrr = sum(prices.get((row['plan'] or 'basico').lower(), 0.00) for row in users_businesses if row['status'] != 'suspended' and not row['is_courtesy'])
 
     subscriptions = []
     for row in users_businesses:
         plan = (row['plan'] or 'basico').lower()
-        price_val = prices.get(plan, 29.90)
-        price_str = "R$ 0,00 (Grátis)" if price_val == 0 else f"R$ {price_val:.2f}".replace('.', ',')
+        is_courtesy = bool(row['is_courtesy'])
+        price_val = 0.00 if is_courtesy else prices.get(plan, 0.00)
+        
+        if is_courtesy:
+            price_str = "R$ 0,00"
+        elif plan == 'gratuito':
+            price_str = "R$ 0,00 (Grátis)"
+        else:
+            price_str = f"R$ {price_val:.2f}".replace('.', ',')
+
         subscriptions.append({
             'business_id': row['business_id'],
             'business_name': row['business_name'],
             'category': row['category'] or 'Sem categoria',
             'plan': plan.upper(),
             'plan_raw': plan,
+            'is_courtesy': is_courtesy,
             'slug': row['slug'] or '',
             'price': price_str,
+            'price_val': price_val,
             'email': row['email'],
             'views': row['views'] or 0,
             'status': row['status'] or 'active'
@@ -1438,7 +1452,8 @@ def superadmin_dashboard():
             plan = 'basico'
         if row['status'] != 'suspended':
             plans_stats[plan]['count'] += 1
-            plans_stats[plan]['mrr'] += prices.get(plan, 0.0)
+            if not row['is_courtesy']:
+                plans_stats[plan]['mrr'] += prices.get(plan, 0.0)
 
     for p, stats in plans_stats.items():
         stats['mrr_str'] = f"R$ {stats['mrr']:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
@@ -1467,6 +1482,8 @@ def superadmin_add_business():
     if plan not in ['gratuito', 'basico', 'pro', 'elite']:
         plan = 'elite'
     
+    # Se is_courtesy não for especificado, por padrão adicionado pelo admin é cortesia (is_courtesy = 1)
+    is_courtesy = 1 if str(data.get('is_courtesy', '1')) in ['1', 'true', 'True'] else 0
     category = str(escape(data.get('category', 'Geral'))).strip() or 'Geral'
     
     if not business_name or not email or not password:
@@ -1499,13 +1516,29 @@ def superadmin_add_business():
     hashed_pw = generate_password_hash(password)
     # is_verified = 1 para que o usuário não seja travado na verificação de e-mail
     cursor.execute('''
-        INSERT INTO users (email, password, business_id, plan, is_verified)
-        VALUES (?, ?, ?, ?, 1)
-    ''', (email, hashed_pw, business_id, plan))
+        INSERT INTO users (email, password, business_id, plan, is_verified, is_courtesy)
+        VALUES (?, ?, ?, ?, 1, ?)
+    ''', (email, hashed_pw, business_id, plan, is_courtesy))
 
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'business_id': business_id, 'slug': biz_slug, 'plan': plan})
+    return jsonify({'success': True, 'business_id': business_id, 'slug': biz_slug, 'plan': plan, 'is_courtesy': is_courtesy})
+
+@app.route('/api/superadmin/businesses/<int:id>/toggle-courtesy', methods=['POST'])
+@superadmin_required
+def superadmin_toggle_courtesy(id):
+    conn = get_db_connection()
+    user = conn.execute('SELECT id, is_courtesy FROM users WHERE business_id = ?', (id,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Empresa não encontrada'}), 404
+    
+    current_courtesy = user['is_courtesy'] if user['is_courtesy'] is not None else 1
+    new_courtesy = 0 if current_courtesy else 1
+    conn.execute('UPDATE users SET is_courtesy = ? WHERE business_id = ?', (new_courtesy, id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'is_courtesy': new_courtesy})
 
 @app.route('/api/superadmin/businesses/<int:id>/plan', methods=['POST'])
 @superadmin_required

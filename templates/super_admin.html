@@ -346,7 +346,7 @@
             <i data-lucide="dollar-sign" class="w-5 h-5 text-secondary"></i>
           </div>
           <div class="stat-value" id="stat-mrr">Carregando...</div>
-          <div class="stat-trend trend-up mt-2"><i data-lucide="trending-up" class="w-4 h-4"></i> Baseado nos planos ativos</div>
+          <div class="stat-trend trend-up mt-2"><i data-lucide="trending-up" class="w-4 h-4"></i> Baseado em assinaturas pagas</div>
         </div>
         
         <div class="stat-card">
@@ -875,16 +875,23 @@
             <label class="form-label font-semibold text-sm">Senha Provisória *</label>
             <input type="text" id="new-biz-password" class="form-control" value="123456">
           </div>
-          <div class="form-group mb-4">
+          <div class="form-group mb-3">
             <label class="form-label font-semibold text-sm">Plano de Acesso</label>
             <select id="new-biz-plan" class="form-control" style="font-weight: 600; padding: 0.6rem 0.75rem;">
-              <option value="elite" selected>⭐ Elite VIP (Cortesia Admin - 100% Gratuito)</option>
-              <option value="pro">PRO (Cortesia Admin - 100% Gratuito)</option>
-              <option value="basico">Básico (Cortesia Admin - 100% Gratuito)</option>
-              <option value="gratuito">Gratuito (Padrão)</option>
+              <option value="elite" selected>⭐ Elite VIP</option>
+              <option value="pro">PRO</option>
+              <option value="basico">Básico</option>
+              <option value="gratuito">Gratuito</option>
             </select>
-            <p class="text-xs text-emerald-600 font-semibold mt-1.5" style="display: flex; align-items: center; gap: 4px;">
-              ✓ Sem custos: acesso liberado imediatamente com todos os recursos do plano.
+          </div>
+          <div class="form-group mb-4">
+            <label class="form-label font-semibold text-sm">Cobrança / Receita no MRR</label>
+            <select id="new-biz-courtesy" class="form-control" style="font-weight: 600; padding: 0.6rem 0.75rem;">
+              <option value="1" selected>🎁 Cortesia Admin (100% Gratuito - R$ 0,00 no MRR)</option>
+              <option value="0">💳 Assinatura Paga (Gera Receita no MRR)</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-1.5">
+              ✓ Empresas como cortesia liberam todos os recursos do plano sem custos e <strong>não geram receita no MRR</strong>.
             </p>
           </div>
           <div class="flex gap-3">
@@ -1088,6 +1095,11 @@
               const btnText = isSuspended ? 'Ativar' : 'Suspender';
               const btnColor = isSuspended ? '#22c55e' : '#ef4444';
               
+              const isCortesia = Boolean(sub.is_courtesy);
+              const badgeCobranca = isCortesia 
+                ? `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Assinatura Paga" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">🎁 Grátis Admin</button>`
+                : `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Cortesia Grátis" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#e0e7ff; color:#3730a3; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">💳 Pagante</button>`;
+              
               return `
               <tr>
                 <td>
@@ -1113,7 +1125,7 @@
                 </td>
                 <td>
                   <div class="font-bold text-text-dark">${sub.price}</div>
-                  <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
+                  ${badgeCobranca}
                 </td>
                 <td class="font-bold text-text-dark">${sub.views}</td>
                 <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
@@ -1205,6 +1217,7 @@
         const isSuspended = sub.status === 'suspended';
         const badgeClass = isSuspended ? 'status-pending' : 'status-active';
         const badgeText = isSuspended ? 'Suspensa' : 'Ativa';
+        const isCortesia = Boolean(sub.is_courtesy);
 
         return `
           <tr>
@@ -1234,7 +1247,9 @@
             </td>
             <td>
               <div class="font-bold text-text-dark">${sub.price}</div>
-              <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
+              ${isCortesia 
+                ? `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Assinatura Paga" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">🎁 Grátis Admin</button>`
+                : `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Cortesia Grátis" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#e0e7ff; color:#3730a3; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">💳 Pagante</button>`}
             </td>
             <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
             <td>
@@ -1562,6 +1577,9 @@
       const catSelect = document.getElementById('new-biz-category');
       if (catSelect) catSelect.value = '';
 
+      const courtesySelect = document.getElementById('new-biz-courtesy');
+      if (courtesySelect) courtesySelect.value = '1';
+
       document.getElementById('modal-nova-empresa').style.display = 'flex';
       document.getElementById('new-biz-name').focus();
     }
@@ -1579,6 +1597,7 @@
       }
       const password = document.getElementById('new-biz-password').value.trim();
       const plan = document.getElementById('new-biz-plan').value;
+      const is_courtesy = document.getElementById('new-biz-courtesy')?.value || '1';
 
       if (!name || !email || !password) {
         alert('Preencha todos os campos obrigatórios (Nome, E-mail e Senha)!');
@@ -1595,13 +1614,14 @@
         const res = await fetch('/api/superadmin/businesses/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ business_name: name, email, password, plan, category })
+          body: JSON.stringify({ business_name: name, email, password, plan, category, is_courtesy })
         });
         const data = await res.json();
         
         if (data.success) {
           fecharModalNovaEmpresa();
-          alert('Empresa cadastrada com sucesso no plano ' + plan.toUpperCase() + ' (Acesso 100% Gratuito Admin)!');
+          const tipoMsg = is_courtesy === '1' ? ' (Cortesia Admin 100% Gratuito)' : ' (Assinatura Ativa)';
+          alert('Empresa cadastrada com sucesso no plano ' + plan.toUpperCase() + tipoMsg + '!');
           await carregarDashboard();
           carregarCategorias();
         } else {
@@ -1609,6 +1629,22 @@
         }
       } catch(e) {
         alert('Erro ao cadastrar empresa.');
+      }
+    }
+
+    async function alternarCortesia(businessId) {
+      try {
+        const res = await fetch('/api/superadmin/businesses/' + businessId + '/toggle-courtesy', {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          await carregarDashboard();
+        } else {
+          alert(data.message || 'Erro ao alterar cobrança.');
+        }
+      } catch (err) {
+        alert('Erro de conexão ao alterar modalidade de cobrança.');
       }
     }
 
