@@ -165,32 +165,68 @@ input, textarea, select { font-family: inherit; }
 .form-control::placeholder { color: #94a3b8; }
 .form-control:focus { outline: none; border-color: var(--color-secondary); box-shadow: var(--shadow-focus); }
 
-/* Main Header */
+/* Main Header - Identidade Oficial do Portal (NUNCA deve ser alterado) */
 .header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   position: sticky; top: 0; z-index: 50;
   padding: 0; /* Tight padding to let logo dictate height */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
 }
 .header .container {
   display: flex; justify-content: space-between; align-items: center; min-height: 70px;
 }
 .logo {
   display: flex; align-items: center; gap: 0.5rem; font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.25rem; font-weight: 700; color: var(--color-text-dark); letter-spacing: -0.02em;
+  font-size: 1.25rem; font-weight: 700; color: #0f172a !important; letter-spacing: -0.02em;
 }
 .logo img { height: 100px; width: auto; object-fit: contain; padding: 0.5rem 0; }
 .header-nav { display: flex; gap: 1.25rem; align-items: center; }
-.header-link { color: var(--color-text); font-weight: 500; font-size: 0.9rem; }
-.header-link:hover { color: var(--color-secondary); }
+.header-link { color: #334155 !important; font-weight: 500; font-size: 0.9rem; }
+.header-link:hover { color: #2563eb !important; }
 
-/* User Header Profile & Dropdown */
+/* Botões do Cabeçalho Oficiais */
+.header .btn-primary {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+.header .btn-primary:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+.header .btn-ghost {
+  color: #334155 !important;
+  background: transparent !important;
+}
+
+/* User Header Profile & Dropdown (Identidade Oficial do Usuário no Topo) */
+.header .user-avatar-trigger {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+}
+.header .user-avatar-trigger:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1 !important;
+}
+.header .user-avatar-trigger img {
+  border: 1.5px solid #2563eb !important;
+}
+.header .user-avatar-trigger span {
+  color: #0f172a !important;
+}
+.header .user-avatar-trigger i {
+  color: #64748b !important;
+}
+
 .user-dropdown-item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  color: #334155;
+  color: #334155 !important;
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
@@ -198,12 +234,12 @@ input, textarea, select { font-family: inherit; }
 }
 
 .user-dropdown-item:hover {
-  background: #f8fafc;
+  background: #f8fafc !important;
 }
 
-.user-avatar-trigger:hover {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  border-color: var(--color-secondary) !important;
+.user-dropdown-menu {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 /* Hero Section */
@@ -276,14 +312,14 @@ input, textarea, select { font-family: inherit; }
 }
 .category-pill:hover .category-icon-wrapper { background: var(--color-secondary); color: white; }
 
-/* Footer */
-.footer { background: var(--color-primary); color: white; padding: 5rem 0 2rem; margin-top: 5rem; border-top: 1px solid var(--color-primary-light); }
+/* Footer - Identidade Oficial do Portal (NUNCA alterado) */
+.footer { background: #0f172a !important; background-image: none !important; color: #ffffff !important; padding: 5rem 0 2rem; margin-top: 5rem; border-top: 1px solid #1e293b !important; }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4rem; margin-bottom: 4rem; }
-.footer-col h4 { font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; color: white; }
+.footer-col h4 { font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; color: #ffffff !important; }
 .footer-links { display: flex; flex-direction: column; gap: 1rem; }
-.footer-link { color: #94a3b8; font-size: 0.9rem; }
-.footer-link:hover { color: white; }
-.footer-bottom { padding-top: 2rem; border-top: 1px solid var(--color-primary-light); text-align: center; color: #64748b; font-size: 0.875rem; }
+.footer-link { color: #94a3b8 !important; font-size: 0.9rem; }
+.footer-link:hover { color: #ffffff !important; }
+.footer-bottom { padding-top: 2rem; border-top: 1px solid #1e293b !important; text-align: center; color: #64748b !important; font-size: 0.875rem; }
 
 /* Responsive Adjustments */
 @media (max-width: 1024px) {

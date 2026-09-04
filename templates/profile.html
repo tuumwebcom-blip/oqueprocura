@@ -7,6 +7,107 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    /* ==========================================================================
+       TRAVA DE SEGURANÇA ABSOLUTA: CABEÇALHO E RODAPÉ OFICIAIS DO PORTAL
+       Esta barra superior pertence exclusivamente ao portal "O Que Procura?".
+       NUNCA deve ser alterada por nenhuma personalização de cor, fundo ou tema.
+       ========================================================================== */
+    header.header {
+      --color-surface: #ffffff !important;
+      --color-border: #e2e8f0 !important;
+      --color-text-dark: #0f172a !important;
+      --color-text: #334155 !important;
+      --color-primary: #0f172a !important;
+      --color-secondary: #2563eb !important;
+      background-color: #ffffff !important;
+      background-image: none !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 999 !important;
+      width: 100% !important;
+    }
+    header.header .container {
+      background-color: transparent !important;
+    }
+    header.header .logo,
+    header.header .logo span {
+      color: #0f172a !important;
+    }
+    header.header .search-container {
+      background-color: #ffffff !important;
+      background-image: none !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: none !important;
+    }
+    header.header .search-input {
+      background-color: transparent !important;
+      color: #0f172a !important;
+    }
+    header.header .search-input::placeholder {
+      color: #94a3b8 !important;
+    }
+    header.header .search-icon {
+      color: #64748b !important;
+    }
+    header.header a.btn-primary,
+    header.header button.btn-primary,
+    header.header .btn-primary {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      border: none !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    }
+    header.header a.btn-primary:hover,
+    header.header button.btn-primary:hover,
+    header.header .btn-primary:hover {
+      background-color: #1e293b !important;
+      color: #ffffff !important;
+    }
+    header.header .btn-ghost {
+      color: #334155 !important;
+      background-color: transparent !important;
+    }
+    header.header .user-avatar-trigger {
+      background-color: #ffffff !important;
+      border: 1.5px solid #e2e8f0 !important;
+    }
+    header.header .user-avatar-trigger:hover {
+      border-color: #cbd5e1 !important;
+    }
+    header.header .user-avatar-trigger img {
+      border: 1.5px solid #2563eb !important;
+    }
+    header.header .user-avatar-trigger span {
+      color: #0f172a !important;
+    }
+    header.header .user-avatar-trigger i {
+      color: #64748b !important;
+    }
+    header.header .user-dropdown-menu {
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08) !important;
+    }
+    header.header .user-dropdown-item {
+      color: #334155 !important;
+    }
+    header.header .user-dropdown-item:hover {
+      background-color: #f8fafc !important;
+    }
+
+    /* Trava de segurança para o rodapé oficial */
+    footer.footer {
+      --color-surface: #1e293b !important;
+      --color-border: #334155 !important;
+      --color-primary: #0f172a !important;
+      --color-secondary: #2563eb !important;
+      background-color: #0f172a !important;
+      background-image: none !important;
+      color: #ffffff !important;
+    }
+
     body {
       background-color: var(--color-bg);
     }
@@ -619,6 +720,19 @@
         document.documentElement.style.setProperty('--color-text-dark', safeTitleColor);
         document.documentElement.style.setProperty('--color-text', safeTitleColor === '#0f172a' ? '#334155' : safeTitleColor);
         document.documentElement.style.setProperty('--color-text-light', '#64748b');
+      }
+
+      // Trava de segurança: Garante que o cabeçalho oficial do portal NUNCA herde variáveis do tema
+      const headerEl = document.querySelector('header.header');
+      if (headerEl) {
+        headerEl.style.setProperty('--color-surface', '#ffffff');
+        headerEl.style.setProperty('--color-border', '#e2e8f0');
+        headerEl.style.setProperty('--color-text-dark', '#0f172a');
+        headerEl.style.setProperty('--color-text', '#334155');
+        headerEl.style.setProperty('--color-primary', '#0f172a');
+        headerEl.style.setProperty('--color-secondary', '#2563eb');
+        headerEl.style.backgroundColor = '#ffffff';
+        headerEl.style.backgroundImage = 'none';
       }
     }
 
