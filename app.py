@@ -1037,7 +1037,7 @@ def google_callback():
                 biz_slug = get_unique_slug(conn, name)
                 cursor = conn.execute('''
                     INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
-                    VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+                    VALUES (?, 'Não Definida', 0.0, '', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
                 ''', (name, biz_slug))
                 business_id = cursor.lastrowid
                 conn.execute('UPDATE users SET business_id = ? WHERE id = ?', (business_id, user['id']))
@@ -1053,7 +1053,7 @@ def google_callback():
             biz_slug = get_unique_slug(conn, name)
             cursor = conn.execute('''
                 INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
-                VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+                VALUES (?, 'Não Definida', 0.0, '', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
             ''', (name, biz_slug))
             business_id = cursor.lastrowid
             
@@ -1192,7 +1192,7 @@ def register_api():
         attendance_type = 'ambos'
     cursor.execute('''
         INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, attendance_type)
-        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?, ?)
+        VALUES (?, 'Não Definida', 0.0, '', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?, ?)
     ''', (business_name, biz_slug, attendance_type))
     business_id = cursor.lastrowid
 

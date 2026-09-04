@@ -987,6 +987,25 @@
   <script>
     lucide.createIcons();
 
+    function escapeHtml(unsafe) {
+      return (unsafe || '').toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeJsAttr(unsafe) {
+      return (unsafe || '').toString()
+        .replace(/\\/g, "\\\\")
+        .replace(/&/g, "&amp;")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
     // Estado global
     window.todasAssinaturas = [];
     window.filtroPlanoAtual = 'todos';
@@ -1118,10 +1137,10 @@
               <tr>
                 <td>
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-bold text-text-dark text-base">${sub.business_name}</span>
+                    <span class="font-bold text-text-dark text-base">${escapeHtml(sub.business_name)}</span>
                     ${attBadge}
                   </div>
-                  <div class="text-xs text-muted mb-1">${sub.email}</div>
+                  <div class="text-xs text-muted mb-1">${escapeHtml(sub.email)}</div>
                   <div class="flex items-center gap-2 mt-1">
                     <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
                       <i data-lucide="external-link" class="w-3 h-3"></i> Ver Perfil
@@ -1151,7 +1170,7 @@
                     <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
                       ${btnText}
                     </button>
-                    <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                    <button onclick="excluirEmpresa(${sub.business_id}, '${escapeJsAttr(sub.business_name)}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
                       <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                   </div>
@@ -1176,7 +1195,7 @@
             <tr class="border-b border-slate-100">
               <td class="py-3">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-text-dark">${sub.business_name}</span>
+                  <span class="font-bold text-text-dark">${escapeHtml(sub.business_name)}</span>
                   ${attBadge}
                 </div>
                 <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
@@ -1185,7 +1204,7 @@
                   <a href="/admin.html?business_id=${sub.business_id}" class="text-indigo-600 hover:underline">Painel</a>
                 </div>
               </td>
-              <td class="py-3 text-muted text-sm">${sub.email}</td>
+              <td class="py-3 text-muted text-sm">${escapeHtml(sub.email)}</td>
               <td class="py-3">
                 <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1 px-2" style="border-radius: 6px; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1;">
                   <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE</option>
@@ -1196,7 +1215,7 @@
               </td>
               <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
               <td class="py-3">
-                <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                <button onclick="excluirEmpresa(${sub.business_id}, '${escapeJsAttr(sub.business_name)}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </td>
@@ -1249,8 +1268,8 @@
         return `
           <tr>
             <td>
-              <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
-              <div class="text-xs text-muted">${sub.category || 'Geral'}</div>
+              <div class="font-bold text-text-dark text-base">${escapeHtml(sub.business_name)}</div>
+              <div class="text-xs text-muted">${escapeHtml(sub.category || 'Geral')}</div>
               <div class="flex items-center gap-2 mt-1">
                 <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
                   <i data-lucide="external-link" class="w-3 h-3"></i> Perfil
@@ -1262,7 +1281,7 @@
               </div>
             </td>
             <td>
-              <div class="text-sm font-medium text-slate-700">${sub.email}</div>
+              <div class="text-sm font-medium text-slate-700">${escapeHtml(sub.email)}</div>
             </td>
             <td>
               <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1.5 px-2" style="border-radius: 6px; cursor: pointer; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1; color: var(--color-text-dark);">
@@ -1284,7 +1303,7 @@
                 <button onclick="toggleStatus(${sub.business_id})" style="background:${isSuspended ? '#22c55e' : '#ef4444'}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
                   ${isSuspended ? 'Ativar' : 'Suspender'}
                 </button>
-                <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                <button onclick="excluirEmpresa(${sub.business_id}, '${escapeJsAttr(sub.business_name)}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
@@ -1403,12 +1422,12 @@
               </div>
             </td>
             <td>
-              <div class="font-bold text-text-dark text-sm">${cat.name}</div>
+              <div class="font-bold text-text-dark text-sm">${escapeHtml(cat.name)}</div>
               <div class="text-xs text-slate-400">slug: ${cat.slug || '-'}</div>
             </td>
             <td>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                ${cat.group_name || 'Geral'}
+                ${escapeHtml(cat.group_name || 'Geral')}
               </span>
             </td>
             <td>

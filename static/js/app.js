@@ -1,3 +1,12 @@
+function escapeHtml(unsafe) {
+  return (unsafe || '').toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Variável global para armazenar os dados carregados (útil para uso síncrono legado se precisar, mas preferimos fetch direto)
 let mockBusinesses = [];
 
@@ -77,17 +86,17 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
     <a href="${cardLink}" class="card">
       <div class="card-img-wrapper">
         ${biz.featured ? '<div class="card-badge-container"><span class="badge badge-featured">Destaque</span></div>' : ''}
-        <img src="${biz.image}" alt="${biz.name}" class="card-img">
+        <img src="${biz.image}" alt="${escapeHtml(biz.name)}" class="card-img">
       </div>
       <div class="card-body">
         <div class="flex items-center justify-between gap-1 mb-1">
-          <span class="card-category">${biz.category}</span>
+          <span class="card-category">${escapeHtml(biz.category)}</span>
           ${attendanceTag}
         </div>
-        <h3 class="card-title">${biz.name}</h3>
+        <h3 class="card-title">${escapeHtml(biz.name)}</h3>
         <div class="card-info">
           <i data-lucide="${biz.attendance_type === 'online' ? 'wifi' : 'map-pin'}" class="w-4 h-4"></i>
-          ${biz.attendance_type === 'online' ? 'Atendimento Online (Brasil)' : (biz.address || (biz.distance && biz.distance !== 'Centro' && biz.distance !== '0 km' ? biz.distance : 'Local'))}
+          ${biz.attendance_type === 'online' ? 'Atendimento Online (Brasil)' : escapeHtml(biz.address || (biz.distance && biz.distance !== 'Centro' && biz.distance !== '0 km' ? biz.distance : 'Local'))}
         </div>
         <div class="card-footer">
           <div class="rating">
@@ -228,16 +237,16 @@ async function verificarHeaderAuth() {
         <!-- Botão com a Foto do Perfil e Menu Dropdown -->
         <div class="user-dropdown-wrapper" style="position: relative;">
           <button type="button" class="user-avatar-trigger" style="display: flex; align-items: center; gap: 8px; background: white; border: 1.5px solid var(--color-border); padding: 3px 10px 3px 4px; border-radius: 9999px; cursor: pointer; transition: all 0.2s; outline: none;" title="Minha Conta">
-            <img src="${avatarUrl}" alt="${name}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--color-secondary); background: #f1f5f9;">
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-dark); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
+            <img src="${avatarUrl}" alt="${escapeHtml(name)}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--color-secondary); background: #f1f5f9;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-dark); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(name)}</span>
             <i data-lucide="chevron-down" class="w-4 h-4 text-muted"></i>
           </button>
 
           <!-- Dropdown Flutuante -->
           <div class="user-dropdown-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 230px; background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; z-index: 9999; overflow: hidden; padding: 6px 0;">
             <div style="padding: 10px 16px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
-              <p style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</p>
-              <p style="font-size: 0.75rem; color: #64748b; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${email}</p>
+              <p style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(name)}</p>
+              <p style="font-size: 0.75rem; color: #64748b; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(email)}</p>
             </div>
             
             <a href="${panelUrl}" class="user-dropdown-item">
