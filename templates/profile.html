@@ -610,6 +610,10 @@
 
           <h4 class="font-bold text-text-dark mb-3">Informações</h4>
           <ul class="flex-col gap-3 text-sm">
+            <li class="flex items-center gap-2 text-text" id="contact-attendance">
+              <i data-lucide="briefcase" class="w-4 h-4 text-muted"></i>
+              <span id="contact-attendance-text" class="font-medium">Atendimento Presencial & Online</span>
+            </li>
             <li class="flex items-center gap-2 text-text" id="contact-hours" style="display:none;">
               <i data-lucide="clock" class="w-4 h-4 text-muted"></i>
               <span id="contact-hours-text"></span>
@@ -878,12 +882,23 @@
             const cleanCat = unescapeHtml(business.category || 'Geral');
             const cleanDist = unescapeHtml(business.distance || 'Centro');
             
+            let attBadge = '';
+            if (business.attendance_type === 'online') {
+              attBadge = `<span class="profile-category-pill" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i data-lucide="laptop" class="w-3.5 h-3.5 inline mr-1"></i>100% Online</span>`;
+            } else if (business.attendance_type === 'presencial') {
+              attBadge = `<span class="profile-category-pill" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;"><i data-lucide="map-pin" class="w-3.5 h-3.5 inline mr-1"></i>Presencial</span>`;
+            } else {
+              attBadge = `<span class="profile-category-pill" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;"><i data-lucide="globe" class="w-3.5 h-3.5 inline mr-1"></i>Presencial & Online</span>`;
+            }
+
             metaContainer.innerHTML = `
               <span class="profile-meta-item font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
               <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${cleanDist}</span>
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
               <span class="profile-category-pill">${cleanCat}</span>
+              <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
+              ${attBadge}
             `;
           }
 
@@ -994,6 +1009,17 @@
             }
           }
           
+          const attendanceText = document.getElementById('contact-attendance-text');
+          if (attendanceText) {
+            if (business.attendance_type === 'online') {
+              attendanceText.textContent = '100% Online / Remoto';
+            } else if (business.attendance_type === 'presencial') {
+              attendanceText.textContent = 'Somente Presencial no Local';
+            } else {
+              attendanceText.textContent = 'Presencial e Online';
+            }
+          }
+
           const addressEl = document.getElementById('contact-address');
           const addressText = document.getElementById('contact-address-text');
           if (addressText) {

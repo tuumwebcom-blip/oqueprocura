@@ -1,12 +1,13 @@
 // Variável global para armazenar os dados carregados (útil para uso síncrono legado se precisar, mas preferimos fetch direto)
 let mockBusinesses = [];
 
-async function loadBusinesses(query = '', category = '', local = '') {
+async function loadBusinesses(query = '', category = '', local = '', attendance = '') {
   try {
     const params = new URLSearchParams();
     if (query) params.append('q', query);
     if (category) params.append('category', category);
     if (local) params.append('local', local);
+    if (attendance) params.append('attendance', attendance);
     
     // Sempre usamos o search porque ele junta a tabela de usuários
     // e já ordena por prioridade (Elite > Pro > Basico > Gratuito)
@@ -22,14 +23,14 @@ async function loadBusinesses(query = '', category = '', local = '') {
   }
 }
 
-async function renderBusinessCards(containerId, limit = null, query = '', category = '', local = '') {
+async function renderBusinessCards(containerId, limit = null, query = '', category = '', local = '', attendance = '') {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = '<p class="text-muted col-span-3 text-center">Buscando...</p>';
 
   // Sempre carrega dados frescos se tiver query/categoria
-  await loadBusinesses(query, category, local);
+  await loadBusinesses(query, category, local, attendance);
 
   const businessesToRender = limit ? mockBusinesses.slice(0, limit) : mockBusinesses;
   
@@ -56,18 +57,33 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
     return;
   }
   
-  container.innerHTML = businessesToRender.map(biz => `
-    <a href="profile.html?id=${biz.id}" class="card">
+  container.innerHTML = businessesToRender.map(biz => {
+    let attendanceTag = '';
+    if (biz.attendance_type === 'online') {
+      attendanceTag = '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:11px; padding:2px 7px; border-radius:999px; font-weight:600; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="laptop" class="w-3 h-3"></i> Online</span>';
+    } else if (biz.attendance_type === 'presencial') {
+      attendanceTag = '<span class="badge" style="background:#fef3c7; color:#92400e; font-size:11px; padding:2px 7px; border-radius:999px; font-weight:600; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="map-pin" class="w-3 h-3"></i> Presencial</span>';
+    } else {
+      attendanceTag = '<span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; padding:2px 7px; border-radius:999px; font-weight:600; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="globe" class="w-3 h-3"></i> Ambos</span>';
+    }
+
+    const cardLink = biz.slug ? `/p/${biz.slug}` : `profile.html?id=${biz.id}`;
+
+    return `
+    <a href="${cardLink}" class="card">
       <div class="card-img-wrapper">
         ${biz.featured ? '<div class="card-badge-container"><span class="badge badge-featured">Destaque</span></div>' : ''}
         <img src="${biz.image}" alt="${biz.name}" class="card-img">
       </div>
       <div class="card-body">
-        <span class="card-category">${biz.category}</span>
+        <div class="flex items-center justify-between gap-1 mb-1">
+          <span class="card-category">${biz.category}</span>
+          ${attendanceTag}
+        </div>
         <h3 class="card-title">${biz.name}</h3>
         <div class="card-info">
-          <i data-lucide="map-pin" class="w-4 h-4"></i>
-          ${biz.distance}
+          <i data-lucide="${biz.attendance_type === 'online' ? 'wifi' : 'map-pin'}" class="w-4 h-4"></i>
+          ${biz.attendance_type === 'online' ? 'Atendimento Online (Brasil)' : (biz.distance || 'Local')}
         </div>
         <div class="card-footer">
           <div class="rating">
@@ -78,7 +94,7 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
         </div>
       </div>
     </a>
-  `).join('');
+  `;}).join('');
   
   // Re-renderizar icones recém injetados
   if (typeof lucide !== 'undefined') {
@@ -94,9 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const q = urlParams.get('q') || '';
   const cat = urlParams.get('category') || '';
   const loc = urlParams.get('local') || '';
+  const att = urlParams.get('attendance') || '';
 
   renderBusinessCards('featured-businesses', 4); // Homepage
-  renderBusinessCards('search-results', null, q, cat, loc); // Search page
+  renderBusinessCards('search-results', null, q, cat, loc, att); // Search page
 
   // Update query display count and text in search.html if exists
   setTimeout(() => {

@@ -189,6 +189,15 @@
             </div>
             
             <div class="form-group">
+              <label for="attendance-type" class="form-label">Formato de Atendimento</label>
+              <select id="attendance-type" class="form-control" style="font-weight: 500;">
+                <option value="ambos" selected>🌐 Ambos (Presencial e Online)</option>
+                <option value="presencial">📍 Somente Presencial (no endereço)</option>
+                <option value="online">💻 100% Online / Remoto (todo o Brasil)</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
               <label for="password" class="form-label">Senha</label>
               <input type="password" id="password" class="form-control" placeholder="Crie uma senha forte" required>
             </div>
@@ -308,6 +317,7 @@
       // Pega plano pré-selecionado na URL se houver
       const urlParams = new URLSearchParams(window.location.search);
       const plan = urlParams.get('plan') || 'gratuito';
+      const attendance_type = document.getElementById('attendance-type') ? document.getElementById('attendance-type').value : 'ambos';
 
       btn.disabled = true;
       btn.textContent = 'Enviando código...';
@@ -316,7 +326,7 @@
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, business_name: name, plan })
+          body: JSON.stringify({ email, password, business_name: name, plan, attendance_type })
         });
         const data = await res.json();
 

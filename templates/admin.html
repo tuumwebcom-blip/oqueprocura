@@ -871,6 +871,15 @@
               </select>
             </div>
           </div>
+          <div class="form-group mb-4">
+            <label class="form-label font-bold">Formato de Atendimento</label>
+            <select class="form-control" id="input-attendance" style="font-weight: 500;">
+              <option value="ambos">🌐 Ambos (Presencial e Online / Remoto)</option>
+              <option value="presencial">📍 Somente Presencial (no meu endereço físico)</option>
+              <option value="online">💻 100% Online / Remoto (atendo clientes de qualquer localidade)</option>
+            </select>
+            <p class="text-xs text-muted mt-1">💡 Quando configurado como <strong>Online</strong> ou <strong>Ambos</strong>, o seu anúncio é exibido nas buscas de qualquer cidade digitada pelo cliente.</p>
+          </div>
           <div class="form-group">
             <label class="form-label">Descrição Curta (Aparece nos cards de busca)</label>
             <textarea class="form-control" id="input-short" rows="2"></textarea>
@@ -1536,6 +1545,9 @@
           }
         }
         document.getElementById('input-short').value = data.short_description || '';
+        if (document.getElementById('input-attendance')) {
+          document.getElementById('input-attendance').value = data.attendance_type || 'ambos';
+        }
         document.getElementById('input-about').value = data.about_text || '';
         document.getElementById('input-whatsapp').value = data.whatsapp || '';
         document.getElementById('input-instagram').value = data.instagram || '';
@@ -2324,6 +2336,7 @@
       const data = {
         name: document.getElementById('input-name').value,
         category: document.getElementById('input-category').value,
+        attendance_type: document.getElementById('input-attendance') ? document.getElementById('input-attendance').value : 'ambos',
         short_description: document.getElementById('input-short').value,
         about_text: document.getElementById('input-about').value,
         whatsapp: document.getElementById('input-whatsapp').value,

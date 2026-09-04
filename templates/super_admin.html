@@ -872,6 +872,14 @@
             </div>
           </div>
           <div class="form-group mb-3">
+            <label class="form-label font-semibold text-sm">Formato de Atendimento *</label>
+            <select id="new-biz-attendance" class="form-control" style="font-weight: 600; padding: 0.6rem 0.75rem;">
+              <option value="ambos" selected>🌐 Ambos (Presencial e Online)</option>
+              <option value="presencial">📍 Somente Presencial (no endereço)</option>
+              <option value="online">💻 100% Online / Remoto (todo o Brasil)</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
             <label class="form-label font-semibold text-sm">Senha Provisória *</label>
             <input type="text" id="new-biz-password" class="form-control" value="123456">
           </div>
@@ -1100,10 +1108,19 @@
                 ? `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Assinatura Paga" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">🎁 Grátis Admin</button>`
                 : `<button onclick="alternarCortesia(${sub.business_id})" title="Clique para alternar para Cortesia Grátis" class="badge mt-0.5 inline-flex items-center gap-1 hover:opacity-80 transition-opacity" style="background:#e0e7ff; color:#3730a3; font-size:10px; padding:2px 8px; border-radius:4px; font-weight:700; border:none; cursor:pointer;">💳 Pagante</button>`;
               
+              const attBadge = sub.attendance_type === 'online'
+                ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">💻 Online</span>`
+                : (sub.attendance_type === 'presencial'
+                    ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">📍 Presencial</span>`
+                    : `<span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">🌐 Ambos</span>`);
+
               return `
               <tr>
                 <td>
-                  <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-bold text-text-dark text-base">${sub.business_name}</span>
+                    ${attBadge}
+                  </div>
                   <div class="text-xs text-muted mb-1">${sub.email}</div>
                   <div class="flex items-center gap-2 mt-1">
                     <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
@@ -1148,10 +1165,20 @@
         document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
         const empBody = document.getElementById('empresas-list-body');
         if (empBody) {
-          empBody.innerHTML = data.subscriptions.map(sub => `
+          empBody.innerHTML = data.subscriptions.map(sub => {
+            const attBadge = sub.attendance_type === 'online'
+              ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">💻 Online</span>`
+              : (sub.attendance_type === 'presencial'
+                  ? `<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">📍 Presencial</span>`
+                  : `<span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px; padding:1px 6px; border-radius:4px; font-weight:600;">🌐 Ambos</span>`);
+
+            return `
             <tr class="border-b border-slate-100">
               <td class="py-3">
-                <div class="font-bold text-text-dark">${sub.business_name}</div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-text-dark">${sub.business_name}</span>
+                  ${attBadge}
+                </div>
                 <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
                   <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-blue-600 hover:underline">Ver Perfil</a>
                   <span class="text-slate-300">•</span>
@@ -1174,7 +1201,7 @@
                 </button>
               </td>
             </tr>
-          `).join('');
+          `;}).join('');
         }
 
         // Preencher Tabela da Aba Planos Ativos
@@ -1580,6 +1607,9 @@
       const courtesySelect = document.getElementById('new-biz-courtesy');
       if (courtesySelect) courtesySelect.value = '1';
 
+      const attendanceSelect = document.getElementById('new-biz-attendance');
+      if (attendanceSelect) attendanceSelect.value = 'ambos';
+
       document.getElementById('modal-nova-empresa').style.display = 'flex';
       document.getElementById('new-biz-name').focus();
     }
@@ -1598,6 +1628,7 @@
       const password = document.getElementById('new-biz-password').value.trim();
       const plan = document.getElementById('new-biz-plan').value;
       const is_courtesy = document.getElementById('new-biz-courtesy')?.value || '1';
+      const attendance_type = document.getElementById('new-biz-attendance')?.value || 'ambos';
 
       if (!name || !email || !password) {
         alert('Preencha todos os campos obrigatórios (Nome, E-mail e Senha)!');
@@ -1614,7 +1645,7 @@
         const res = await fetch('/api/superadmin/businesses/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ business_name: name, email, password, plan, category, is_courtesy })
+          body: JSON.stringify({ business_name: name, email, password, plan, category, is_courtesy, attendance_type })
         });
         const data = await res.json();
         

@@ -241,6 +241,19 @@
       </a>
     </div>
 
+    <!-- Mobile Attendance Tabs -->
+    <div class="flex items-center gap-2 mb-3 overflow-x-auto pb-1" style="scrollbar-width:none;">
+      <a href="javascript:void(0)" onclick="filtrarAtendimento('');" id="mob-att-all" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 whitespace-nowrap shadow-sm hover:border-primary transition-all">
+        🌐 Todos os formatos
+      </a>
+      <a href="javascript:void(0)" onclick="filtrarAtendimento('online');" id="mob-att-online" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 whitespace-nowrap shadow-sm hover:border-primary transition-all">
+        💻 100% Online
+      </a>
+      <a href="javascript:void(0)" onclick="filtrarAtendimento('presencial');" id="mob-att-presencial" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-700 whitespace-nowrap shadow-sm hover:border-primary transition-all">
+        📍 Somente Presencial
+      </a>
+    </div>
+
     <!-- Resultados Header -->
     <div class="flex justify-between items-center mb-6 search-header-row">
       <div>
@@ -266,6 +279,28 @@
             </a>
           </div>
           
+          <!-- Filtro Formato de Atendimento -->
+          <div class="mb-5 pb-4 border-b border-slate-100">
+            <h4 class="filter-subtitle">Formato de Atendimento</h4>
+            <div class="filter-list" id="attendance-filter-list">
+              <a href="javascript:void(0)" onclick="filtrarAtendimento('');" class="filter-item active" data-attendance="">
+                <span class="filter-icon-box"><i data-lucide="layout-grid" class="w-4 h-4"></i></span>
+                <span class="filter-name">Todos os Formatos</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+              <a href="javascript:void(0)" onclick="filtrarAtendimento('online');" class="filter-item" data-attendance="online">
+                <span class="filter-icon-box"><i data-lucide="laptop" class="w-4 h-4"></i></span>
+                <span class="filter-name">💻 Online / Remoto</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+              <a href="javascript:void(0)" onclick="filtrarAtendimento('presencial');" class="filter-item" data-attendance="presencial">
+                <span class="filter-icon-box"><i data-lucide="map-pin" class="w-4 h-4"></i></span>
+                <span class="filter-name">📍 Somente Presencial</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
           <div>
             <h4 class="filter-subtitle">Categorias Populares</h4>
             <div class="filter-list" id="category-filter-list">
@@ -378,6 +413,42 @@
           chip.classList.add('active');
         }
       });
+    }
+
+    // Destaque visual do formato de atendimento ativo
+    const curAtt = new URLSearchParams(window.location.search).get('attendance') || '';
+    document.querySelectorAll('#attendance-filter-list .filter-item').forEach(el => {
+      el.classList.remove('active');
+      if (el.getAttribute('data-attendance') === curAtt) {
+        el.classList.add('active');
+      }
+    });
+
+    const mobAttAll = document.getElementById('mob-att-all');
+    const mobAttOnline = document.getElementById('mob-att-online');
+    const mobAttPresencial = document.getElementById('mob-att-presencial');
+    if (!curAtt && mobAttAll) {
+      mobAttAll.style.background = 'var(--color-primary)';
+      mobAttAll.style.color = '#ffffff';
+      mobAttAll.style.borderColor = 'var(--color-primary)';
+    } else if (curAtt === 'online' && mobAttOnline) {
+      mobAttOnline.style.background = 'var(--color-primary)';
+      mobAttOnline.style.color = '#ffffff';
+      mobAttOnline.style.borderColor = 'var(--color-primary)';
+    } else if (curAtt === 'presencial' && mobAttPresencial) {
+      mobAttPresencial.style.background = 'var(--color-primary)';
+      mobAttPresencial.style.color = '#ffffff';
+      mobAttPresencial.style.borderColor = 'var(--color-primary)';
+    }
+
+    function filtrarAtendimento(tipo) {
+      const url = new URL(window.location.href);
+      if (tipo) {
+        url.searchParams.set('attendance', tipo);
+      } else {
+        url.searchParams.delete('attendance');
+      }
+      window.location.href = url.pathname + url.search;
     }
     
     // Suporte para buscar pressionando Enter ou botão (Desktop & Mobile)

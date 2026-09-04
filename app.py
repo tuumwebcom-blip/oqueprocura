@@ -175,6 +175,9 @@ def check_db_schema():
             conn.execute("ALTER TABLE businesses ADD COLUMN color_text TEXT DEFAULT '#0f172a'")
         if 'bg_image' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN bg_image TEXT DEFAULT ''")
+        if 'attendance_type' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN attendance_type TEXT DEFAULT 'ambos'")
+        conn.execute("UPDATE businesses SET attendance_type = 'ambos' WHERE attendance_type IS NULL OR attendance_type = ''")
 
         # Garante slug para todas as empresas existentes
         rows_without_slug = conn.execute("SELECT id, name FROM businesses WHERE slug IS NULL OR slug = ''").fetchall()
@@ -479,6 +482,7 @@ def api_search():
     query = request.args.get('q', '').strip().lower()
     category = request.args.get('category', '').strip().lower()
     local = request.args.get('local', '').strip().lower()
+    attendance = request.args.get('attendance', '').strip().lower()
     
     conn = get_db_connection()
     
@@ -501,9 +505,16 @@ def api_search():
         sql += ' AND (LOWER(b.category) LIKE ? OR LOWER(b.category) LIKE ?)'
         params.extend([f'%{category}%', f'%{cat_clean[:4]}%'])
 
+    if attendance:
+        if attendance == 'online':
+            sql += " AND b.attendance_type IN ('online', 'ambos')"
+        elif attendance == 'presencial':
+            sql += " AND b.attendance_type IN ('presencial', 'ambos')"
+
     if local:
-        sql += ' AND LOWER(b.address) LIKE ?'
-        params.append(f'%{local}%')
+        # Se o usuário pesquisar por localização, traz empresas cujo endereço coincide OU empresas que atendem online/ambos (pois online não depende da localização)
+        sql += " AND (LOWER(b.address) LIKE ? OR LOWER(b.distance) LIKE ? OR b.attendance_type IN ('online', 'ambos'))"
+        params.extend([f'%{local}%', f'%{local}%'])
         
     rows = conn.execute(sql, params).fetchall()
     conn.close()
@@ -517,6 +528,7 @@ def api_search():
         b = dict(row)
         plan = (b.get('plan') or 'basico').lower()
         b['priority'] = plan_priority.get(plan, 1)
+        b['attendance_type'] = b.get('attendance_type') or 'ambos'
         
         # Colocamos o badge de destaque automaticamente se for elite
         if plan == 'elite':
@@ -552,6 +564,7 @@ def api_business(id):
     business['services'] = [dict(s) for s in services_rows]
     business['gallery'] = [dict(g) for g in gallery_rows]
     business['reviews'] = [dict(r) for r in reviews_rows]
+    business['attendance_type'] = business.get('attendance_type') or 'ambos'
 
     # Parsing de amenities para lista
     try:
@@ -783,6 +796,10 @@ def update_business(id):
             conn.close()
             return jsonify({'success': False, 'message': f'O link "{custom_slug}" já está em uso por outra empresa. Por favor, escolha outro.'}), 400
 
+    attendance_type = clean(data.get('attendance_type', 'ambos')).lower()
+    if attendance_type not in ('online', 'presencial', 'ambos'):
+        attendance_type = 'ambos'
+
     conn.execute('''
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
@@ -790,15 +807,16 @@ def update_business(id):
             website = ?, business_hours = ?, color_primary = ?,
             whatsapp_cta = ?, whatsapp_message = ?,
             facebook = ?, tiktok = ?, linkedin = ?, youtube = ?, catalog_url = ?,
-            amenities = ?, slug = ?, color_bg = ?, color_text = ?, bg_image = ?
+            amenities = ?, slug = ?, color_bg = ?, color_text = ?, bg_image = ?,
+            attendance_type = ?
         WHERE id = ?
     ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, 
           website, business_hours, color_primary, whatsapp_cta, whatsapp_message,
           facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug,
-          color_bg, color_text, bg_image, id))
+          color_bg, color_text, bg_image, attendance_type, id))
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'slug': custom_slug})
+    return jsonify({'success': True, 'slug': custom_slug, 'attendance_type': attendance_type})
 
 # ============================================================
 # API — Serviços
@@ -1166,10 +1184,13 @@ def register_api():
 
     cursor = conn.cursor()
     biz_slug = get_unique_slug(conn, business_name)
+    attendance_type = (data.get('attendance_type') or 'ambos').strip().lower()
+    if attendance_type not in ('online', 'presencial', 'ambos'):
+        attendance_type = 'ambos'
     cursor.execute('''
-        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
-        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
-    ''', (business_name, biz_slug))
+        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, attendance_type)
+        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?, ?)
+    ''', (business_name, biz_slug, attendance_type))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
@@ -1399,7 +1420,7 @@ def logout_api():
 def superadmin_dashboard():
     conn = get_db_connection()
     users_businesses = conn.execute('''
-        SELECT u.email, u.plan, COALESCE(u.is_courtesy, 1) as is_courtesy, b.id as business_id, b.name as business_name, b.category, b.views, b.status, b.slug
+        SELECT u.email, u.plan, COALESCE(u.is_courtesy, 1) as is_courtesy, b.id as business_id, b.name as business_name, b.category, b.views, b.status, b.slug, COALESCE(b.attendance_type, 'ambos') as attendance_type
         FROM users u
         JOIN businesses b ON u.business_id = b.id
         ORDER BY b.id DESC
@@ -1432,6 +1453,7 @@ def superadmin_dashboard():
             'plan': plan.upper(),
             'plan_raw': plan,
             'is_courtesy': is_courtesy,
+            'attendance_type': row['attendance_type'] or 'ambos',
             'slug': row['slug'] or '',
             'price': price_str,
             'price_val': price_val,
@@ -1485,6 +1507,9 @@ def superadmin_add_business():
     # Se is_courtesy não for especificado, por padrão adicionado pelo admin é cortesia (is_courtesy = 1)
     is_courtesy = 1 if str(data.get('is_courtesy', '1')) in ['1', 'true', 'True'] else 0
     category = str(escape(data.get('category', 'Geral'))).strip() or 'Geral'
+    attendance_type = str(escape(data.get('attendance_type', 'ambos'))).strip().lower()
+    if attendance_type not in ('online', 'presencial', 'ambos'):
+        attendance_type = 'ambos'
     
     if not business_name or not email or not password:
         return jsonify({'success': False, 'message': 'Preencha todos os campos obrigatórios.'}), 400
@@ -1508,9 +1533,9 @@ def superadmin_add_business():
     biz_slug = get_unique_slug(conn, business_name)
     is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''
-        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status)
-        VALUES (?, ?, 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active')
-    ''', (business_name, category, is_featured, biz_slug))
+        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status, attendance_type)
+        VALUES (?, ?, 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active', ?)
+    ''', (business_name, category, is_featured, biz_slug, attendance_type))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
@@ -1522,7 +1547,7 @@ def superadmin_add_business():
 
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'business_id': business_id, 'slug': biz_slug, 'plan': plan, 'is_courtesy': is_courtesy})
+    return jsonify({'success': True, 'business_id': business_id, 'slug': biz_slug, 'plan': plan, 'is_courtesy': is_courtesy, 'attendance_type': attendance_type})
 
 @app.route('/api/superadmin/businesses/<int:id>/toggle-courtesy', methods=['POST'])
 @superadmin_required
