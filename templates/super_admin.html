@@ -173,8 +173,18 @@
       font-weight: 700;
     }
 
+    .mobile-logout-item {
+      display: none !important;
+    }
+
     /* Mobile Responsive Super Admin */
     @media (max-width: 992px) {
+      .mobile-logout-item {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.35rem;
+        color: #fda4af !important;
+      }
       .admin-layout {
         display: flex;
         flex-direction: column;
@@ -264,11 +274,6 @@
         <a href="/" class="logo px-4 text-white" style="filter: brightness(0) invert(1);">
           <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="height: 52px;">
         </a>
-        <div class="lg:hidden flex items-center">
-          <a href="#" onclick="fazerLogout(); return false;" class="text-xs font-semibold text-rose-300 p-2 hover:bg-white/10 rounded-lg flex items-center gap-1">
-            <i data-lucide="log-out" class="w-4 h-4"></i> Sair
-          </a>
-        </div>
       </div>
       
       <div class="user-info-box px-4 my-4">
@@ -299,6 +304,9 @@
         </a>
         <a href="#" class="admin-nav-item" data-target="configuracoes">
           <i data-lucide="settings" class="w-5 h-5"></i> Configurações
+        </a>
+        <a href="#" onclick="fazerLogout(); return false;" class="admin-nav-item mobile-logout-item">
+          <i data-lucide="log-out" class="w-5 h-5"></i> Sair
         </a>
       </nav>
       
