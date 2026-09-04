@@ -172,6 +172,87 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       font-weight: 700;
     }
+
+    /* Mobile Responsive Super Admin */
+    @media (max-width: 992px) {
+      .admin-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .admin-sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: auto;
+        padding: 0.75rem 1rem;
+      }
+      .admin-sidebar .sidebar-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+      .admin-sidebar .logo {
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+      }
+      .admin-sidebar .logo img {
+        height: 38px !important;
+      }
+      .admin-sidebar .user-info-box {
+        display: none;
+      }
+      .admin-sidebar .sidebar-logout-btn {
+        display: none;
+      }
+      .admin-nav {
+        margin-top: 0.6rem;
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.35rem;
+        gap: 0.35rem;
+        -webkit-overflow-scrolling: touch;
+      }
+      .admin-nav::-webkit-scrollbar {
+        height: 3px;
+      }
+      .admin-nav::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 9999px;
+      }
+      .admin-nav-item {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.825rem;
+        white-space: nowrap;
+        border-radius: 9999px;
+        flex-shrink: 0;
+      }
+      .admin-content {
+        padding: 1.25rem 0.875rem !important;
+        width: 100% !important;
+      }
+      .data-table-container {
+        overflow-x: auto;
+      }
+      .data-table {
+        min-width: 600px;
+      }
+      .grid.grid-cols-4, .grid.grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid.grid-cols-4, .grid.grid-cols-3 {
+        grid-template-columns: 1fr !important;
+      }
+      .admin-content h1 {
+        font-size: 1.5rem !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -179,11 +260,18 @@
   <div class="admin-layout">
     <!-- Sidebar -->
     <aside class="admin-sidebar">
-      <a href="/" class="logo mb-6 px-4 text-white" style="filter: brightness(0) invert(1);">
-        <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="height: 60px;">
-      </a>
+      <div class="sidebar-top-bar">
+        <a href="/" class="logo px-4 text-white" style="filter: brightness(0) invert(1);">
+          <img src="{{ url_for('static', filename='images/LOGO.png') }}" alt="O Que Procura?" style="height: 52px;">
+        </a>
+        <div class="lg:hidden flex items-center">
+          <a href="#" onclick="fazerLogout(); return false;" class="text-xs font-semibold text-rose-300 p-2 hover:bg-white/10 rounded-lg flex items-center gap-1">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+          </a>
+        </div>
+      </div>
       
-      <div class="px-4 mb-6">
+      <div class="user-info-box px-4 my-4">
         <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Administração Global</p>
         <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800">
           <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold">
@@ -214,7 +302,7 @@
         </a>
       </nav>
       
-      <div class="mt-auto px-4 mb-4">
+      <div class="sidebar-logout-btn mt-auto px-4 mb-4">
         <a href="#" onclick="fazerLogout(); return false;" class="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
           <i data-lucide="log-out" class="w-4 h-4"></i> Sair do sistema
         </a>
@@ -507,6 +595,10 @@
                 <li class="flex items-center gap-2">
                   <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
                   <span>Selo Dourado Elite VIP</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                  <span>Personalização Visual Completa (Cores & Fundo)</span>
                 </li>
                 <li class="flex items-center gap-2">
                   <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>

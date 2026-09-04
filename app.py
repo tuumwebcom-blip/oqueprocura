@@ -76,6 +76,7 @@ PLAN_LIMITS = {
         'verified': False,
         'featured_home': False,
         'analytics': False,
+        'advanced_customization': False,
     },
     'basico': {
         'photos': 5,
@@ -84,6 +85,7 @@ PLAN_LIMITS = {
         'verified': False,
         'featured_home': False,
         'analytics': False,
+        'advanced_customization': False,
     },
     'pro': {
         'photos': 20,
@@ -92,6 +94,7 @@ PLAN_LIMITS = {
         'verified': False,
         'featured_home': False,
         'analytics': False,
+        'advanced_customization': False,
     },
     'elite': {
         'photos': 100,
@@ -100,6 +103,7 @@ PLAN_LIMITS = {
         'verified': True,
         'featured_home': True,
         'analytics': True,
+        'advanced_customization': True,
     }
 }
 
@@ -612,6 +616,10 @@ def upload_main_image(id):
 @app.route('/api/businesses/<int:id>/upload-bg', methods=['POST'])
 @login_required
 def upload_bg_image(id):
+    plan = get_user_plan(id)
+    if plan != 'elite':
+        return jsonify({'success': False, 'message': 'A imagem de fundo é um recurso exclusivo do Plano Elite VIP.'}), 403
+
     if 'image' not in request.files:
         return jsonify({'success': False, 'message': 'Nenhuma imagem enviada'}), 400
     file = request.files['image']
@@ -733,13 +741,21 @@ def update_business(id):
     linkedin = clean(data.get('linkedin', ''))
     youtube = clean(data.get('youtube', ''))
     catalog_url = clean(data.get('catalog_url', ''))
-    color_bg = clean(data.get('color_bg', '#f8fafc'))
-    if not color_bg.startswith('#') or len(color_bg) not in (4, 7):
+
+    # Recursos Visuais Avançados (Exclusivos do Plano Elite)
+    plan = get_user_plan(id)
+    if plan == 'elite':
+        color_bg = clean(data.get('color_bg', '#f8fafc'))
+        if not color_bg.startswith('#') or len(color_bg) not in (4, 7):
+            color_bg = '#f8fafc'
+        color_text = clean(data.get('color_text', '#0f172a'))
+        if not color_text.startswith('#') or len(color_text) not in (4, 7):
+            color_text = '#0f172a'
+        bg_image = clean(data.get('bg_image', ''))
+    else:
         color_bg = '#f8fafc'
-    color_text = clean(data.get('color_text', '#0f172a'))
-    if not color_text.startswith('#') or len(color_text) not in (4, 7):
         color_text = '#0f172a'
-    bg_image = clean(data.get('bg_image', ''))
+        bg_image = ''
 
     # Amenities (lista de strings)
     raw_amenities = data.get('amenities', [])
