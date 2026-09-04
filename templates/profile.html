@@ -46,19 +46,16 @@
 
     .profile-header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 1.5rem;
       margin-bottom: 2.5rem;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, var(--color-brand-light, rgba(37, 99, 235, 0.05)) 0%, var(--color-surface) 100%);
-      border: 1px solid var(--color-brand-border, var(--color-border));
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-sm);
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border);
     }
 
     .profile-logo {
-      width: 90px;
-      height: 90px;
+      width: 88px;
+      height: 88px;
       border-radius: 50%;
       object-fit: cover;
       box-shadow: var(--shadow-sm);
@@ -72,15 +69,39 @@
       font-weight: 700;
       color: var(--color-text-dark);
       font-family: 'Plus Jakarta Sans', sans-serif;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
+      line-height: 1.2;
     }
 
     .profile-meta {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       color: var(--color-text-light);
-      font-size: 0.95rem;
+      font-size: 0.925rem;
+      flex-wrap: wrap;
+    }
+
+    .profile-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .profile-category-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--color-brand-light, #eff6ff);
+      color: var(--color-secondary, #2563eb);
+      border: 1px solid var(--color-brand-border, #bfdbfe);
+      text-transform: none;
+      letter-spacing: normal;
+      white-space: nowrap;
     }
 
     .section-title {
@@ -466,16 +487,29 @@
           // Aplicar identidade visual personalizada da empresa
           aplicarCorMarca(business.color_primary);
           
+          // Helper para decodificar entidades HTML (&amp; -> &)
+          function unescapeHtml(text) {
+            if (!text) return '';
+            const doc = new DOMParser().parseFromString(text, 'text/html');
+            let res = doc.documentElement.textContent || text;
+            if (res.includes('&amp;')) {
+              const doc2 = new DOMParser().parseFromString(res, 'text/html');
+              res = doc2.documentElement.textContent || res;
+            }
+            return res;
+          }
+
           // Atualizar Título e Title da aba
+          const cleanName = unescapeHtml(business.name);
           const titleEl = document.querySelector('.profile-title');
-          if (titleEl) titleEl.textContent = business.name;
-          document.title = business.name + " - O Que Procura?";
+          if (titleEl) titleEl.textContent = cleanName;
+          document.title = cleanName + " - O Que Procura?";
 
           // Atualizar Imagem Principal
           const imgEl = document.querySelector('.gallery-main');
           if (imgEl) {
             imgEl.src = business.image;
-            imgEl.alt = business.name;
+            imgEl.alt = cleanName;
           }
           
           // Atualizar Meta Informações
@@ -483,13 +517,15 @@
           if (metaContainer) {
             const reviewCount = business.reviews ? business.reviews.length : 0;
             const ratingDisplay = business.rating > 0 ? parseFloat(business.rating).toFixed(1) : 'Novo';
+            const cleanCat = unescapeHtml(business.category || 'Geral');
+            const cleanDist = unescapeHtml(business.distance || 'Centro');
             
             metaContainer.innerHTML = `
-              <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
-              <span>•</span>
-              <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${business.distance}</span>
-              <span>•</span>
-              <span class="badge" style="background: var(--color-brand-light, #eff6ff); color: var(--color-secondary); border: 1px solid var(--color-brand-border, #bfdbfe); font-weight: 600;">${business.category}</span>
+              <span class="profile-meta-item font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
+              <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
+              <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${cleanDist}</span>
+              <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
+              <span class="profile-category-pill">${cleanCat}</span>
             `;
           }
 
@@ -543,10 +579,10 @@
               if (cleanPhone.length >= 10 && !cleanPhone.startsWith('55')) {
                 cleanPhone = '55' + cleanPhone;
               }
-              const bName = business.name || 'empresa';
+              const bName = unescapeHtml(business.name || 'empresa');
               const userMsg = business.whatsapp_message && business.whatsapp_message.trim()
-                ? business.whatsapp_message.trim()
-                : `Olá! Encontrei o perfil de vocês no O Que Procura e gostaria de tirar uma dúvida.`;
+                ? unescapeHtml(business.whatsapp_message.trim())
+                : `Olá! Encontrei o perfil da ${bName} no O Que Procura e gostaria de tirar uma dúvida.`;
               const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(userMsg)}`;
               
               btnWhatsapp.onclick = function(e) {

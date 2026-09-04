@@ -4,6 +4,7 @@ import requests
 import uuid
 import os
 import re
+import html
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
@@ -117,6 +118,12 @@ def check_db_schema():
         cols_rev = [c[1] for c in conn.execute('PRAGMA table_info(reviews)').fetchall()]
         if 'author_email' not in cols_rev:
             conn.execute('ALTER TABLE reviews ADD COLUMN author_email TEXT')
+
+        # Limpa entidades HTML duplicadas no banco
+        conn.execute("UPDATE businesses SET category = REPLACE(category, '&amp;amp;', '&') WHERE category LIKE '%&amp;amp;%'")
+        conn.execute("UPDATE businesses SET category = REPLACE(category, '&amp;', '&') WHERE category LIKE '%&amp;%'")
+        conn.execute("UPDATE businesses SET name = REPLACE(name, '&amp;amp;', '&') WHERE name LIKE '%&amp;amp;%'")
+        conn.execute("UPDATE businesses SET name = REPLACE(name, '&amp;', '&') WHERE name LIKE '%&amp;%'")
 
         conn.commit()
         conn.close()
@@ -324,25 +331,30 @@ def delete_gallery_image(id, photo_id):
 @login_required
 def update_business(id):
     data = request.json
-    name = str(escape(data.get('name', ''))).strip()
     
+    def clean(val):
+        if not val:
+            return ''
+        return html.unescape(str(val).strip())
+
+    name = clean(data.get('name', ''))
     if not name:
         return jsonify({'success': False, 'message': 'O nome da empresa não pode ser vazio.'}), 400
         
-    category = str(escape(data.get('category', '')))
-    short_description = str(escape(data.get('short_description', '')))
-    about_text = str(escape(data.get('about_text', '')))
-    whatsapp = str(escape(data.get('whatsapp', '')))
-    instagram = str(escape(data.get('instagram', '')))
-    address = str(escape(data.get('address', '')))
-    website = str(escape(data.get('website', ''))).strip()
-    business_hours = str(escape(data.get('business_hours', ''))).strip()
-    color_primary = str(escape(data.get('color_primary', '#2563eb'))).strip()
+    category = clean(data.get('category', ''))
+    short_description = clean(data.get('short_description', ''))
+    about_text = clean(data.get('about_text', ''))
+    whatsapp = clean(data.get('whatsapp', ''))
+    instagram = clean(data.get('instagram', ''))
+    address = clean(data.get('address', ''))
+    website = clean(data.get('website', ''))
+    business_hours = clean(data.get('business_hours', ''))
+    color_primary = clean(data.get('color_primary', '#2563eb'))
     if not color_primary.startswith('#') or len(color_primary) not in (4, 7):
         color_primary = '#2563eb'
-    whatsapp_cta = str(escape(data.get('whatsapp_cta', 'Conversar no WhatsApp'))).strip() or 'Conversar no WhatsApp'
-    whatsapp_message = str(escape(data.get('whatsapp_message', ''))).strip()
-    maps_url = data.get('maps_url', '') # Maps URL must be kept intact but we trust admin input here, could sanitize differently
+    whatsapp_cta = clean(data.get('whatsapp_cta', 'Conversar no WhatsApp')) or 'Conversar no WhatsApp'
+    whatsapp_message = clean(data.get('whatsapp_message', ''))
+    maps_url = data.get('maps_url', '').strip()
 
     conn = get_db_connection()
     conn.execute('''
