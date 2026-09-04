@@ -83,7 +83,7 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
         <h3 class="card-title">${biz.name}</h3>
         <div class="card-info">
           <i data-lucide="${biz.attendance_type === 'online' ? 'wifi' : 'map-pin'}" class="w-4 h-4"></i>
-          ${biz.attendance_type === 'online' ? 'Atendimento Online (Brasil)' : (biz.distance || 'Local')}
+          ${biz.attendance_type === 'online' ? 'Atendimento Online (Brasil)' : (biz.address || (biz.distance && biz.distance !== 'Centro' && biz.distance !== '0 km' ? biz.distance : 'Local'))}
         </div>
         <div class="card-footer">
           <div class="rating">

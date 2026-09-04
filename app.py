@@ -178,6 +178,7 @@ def check_db_schema():
         if 'attendance_type' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN attendance_type TEXT DEFAULT 'ambos'")
         conn.execute("UPDATE businesses SET attendance_type = 'ambos' WHERE attendance_type IS NULL OR attendance_type = ''")
+        conn.execute("UPDATE businesses SET distance = COALESCE(address, '') WHERE distance = 'Centro'")
 
         # Garante slug para todas as empresas existentes
         rows_without_slug = conn.execute("SELECT id, name FROM businesses WHERE slug IS NULL OR slug = ''").fetchall()
@@ -808,14 +809,14 @@ def update_business(id):
     conn.execute('''
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
-            whatsapp = ?, instagram = ?, address = ?, maps_url = ?,
+            whatsapp = ?, instagram = ?, address = ?, distance = ?, maps_url = ?,
             website = ?, business_hours = ?, color_primary = ?,
             whatsapp_cta = ?, whatsapp_message = ?,
             facebook = ?, tiktok = ?, linkedin = ?, youtube = ?, catalog_url = ?,
             amenities = ?, slug = ?, color_bg = ?, color_text = ?, bg_image = ?,
             attendance_type = ?
         WHERE id = ?
-    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, 
+    ''', (name, category, short_description, about_text, whatsapp, instagram, address, address or '', maps_url, 
           website, business_hours, color_primary, whatsapp_cta, whatsapp_message,
           facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug,
           color_bg, color_text, bg_image, attendance_type, id))
@@ -1539,7 +1540,7 @@ def superadmin_add_business():
     is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''
         INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status, attendance_type)
-        VALUES (?, ?, 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active', ?)
+        VALUES (?, ?, 5.0, '', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active', ?)
     ''', (business_name, category, is_featured, biz_slug, attendance_type))
     business_id = cursor.lastrowid
 

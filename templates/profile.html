@@ -444,13 +444,9 @@
         <div class="profile-header">
           <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200" alt="Logo Estúdio" class="profile-logo">
           <div>
-            <h1 class="profile-title">Estúdio Lente Clara</h1>
+            <h1 class="profile-title">Carregando...</h1>
             <div class="profile-meta">
-              <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> 4.9 (128 avaliações)</span>
-              <span>•</span>
-              <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> Centro, São Paulo</span>
-              <span>•</span>
-              <span class="badge badge-featured">Destaque</span>
+              <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> Carregando informações...</span>
             </div>
           </div>
         </div>
@@ -880,7 +876,20 @@
             const reviewCount = business.reviews ? business.reviews.length : 0;
             const ratingDisplay = business.rating > 0 ? parseFloat(business.rating).toFixed(1) : 'Novo';
             const cleanCat = unescapeHtml(business.category || 'Geral');
-            const cleanDist = unescapeHtml(business.distance || 'Centro');
+            
+            // Prioriza SEMPRE o endereço real cadastrado pelo anunciante
+            let realAddress = unescapeHtml(business.address || '');
+            if (!realAddress && business.distance && business.distance !== 'Centro' && business.distance !== '0 km') {
+              realAddress = unescapeHtml(business.distance);
+            }
+
+            let locationHtml = '';
+            if (realAddress) {
+              locationHtml = `
+                <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
+                <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${realAddress}</span>
+              `;
+            }
             
             let attBadge = '';
             if (business.attendance_type === 'online') {
@@ -893,10 +902,7 @@
 
             metaContainer.innerHTML = `
               <span class="profile-meta-item font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
-              ${(business.attendance_type !== 'online' || business.address) ? `
-                <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
-                <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${cleanDist}</span>
-              ` : ''}
+              ${locationHtml}
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
               <span class="profile-category-pill">${cleanCat}</span>
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
@@ -1025,16 +1031,12 @@
           const addressEl = document.getElementById('contact-address');
           const addressText = document.getElementById('contact-address-text');
           if (addressText) {
-            if (business.attendance_type === 'online') {
-              if (business.address) {
-                if (addressEl) addressEl.style.display = 'flex';
-                addressText.textContent = business.address;
-              } else {
-                if (addressEl) addressEl.style.display = 'none';
-              }
-            } else {
+            const validAddr = business.address || (business.distance && business.distance !== 'Centro' && business.distance !== '0 km' ? business.distance : '');
+            if (validAddr) {
               if (addressEl) addressEl.style.display = 'flex';
-              addressText.textContent = business.address || business.distance || 'Endereço sob consulta';
+              addressText.textContent = validAddr;
+            } else {
+              if (addressEl) addressEl.style.display = 'none';
             }
           }
 
