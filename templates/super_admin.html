@@ -168,9 +168,9 @@
           <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold">
             SA
           </div>
-          <div>
+          <div style="overflow: hidden;">
             <p class="text-sm font-bold text-white">Super Admin</p>
-            <p class="text-xs text-slate-400">Acesso Total</p>
+            <p class="text-xs text-slate-400 truncate" id="superadmin-email" title="tuumweb.com@gmail.com">tuumweb.com@gmail.com</p>
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@
       </nav>
       
       <div class="mt-auto px-4 mb-4">
-        <a href="login.html" class="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
+        <a href="#" onclick="fazerLogout(); return false;" class="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
           <i data-lucide="log-out" class="w-4 h-4"></i> Sair do sistema
         </a>
       </div>
@@ -289,7 +289,7 @@
       <section id="tab-empresas" class="tab-section" style="display:none;">
         <div class="flex justify-between items-center mb-6">
           <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Diretório de Empresas</h1>
-          <button class="btn btn-primary" onclick="document.getElementById('modal-add').style.display='flex'">+ Nova Empresa</button>
+          <button class="btn btn-primary" onclick="abrirModalNovaEmpresa()">+ Nova Empresa</button>
         </div>
         <div class="card">
           <table class="data-table w-full">
@@ -347,34 +347,37 @@
           <button class="btn btn-outline" onclick="alert('Funcionalidade em desenvolvimento!')">Exportar Banco de Dados</button>
         </div>
       </section>
-<!-- Modal Nova Empresa -->
+      <!-- Modal Nova Empresa -->
       <div id="modal-nova-empresa" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem;">
+        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem; box-shadow: var(--shadow-lg);">
           <h3 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Cadastrar Nova Empresa</h3>
           <div class="form-group mb-3">
-            <label class="form-label">Nome da Empresa</label>
+            <label class="form-label font-semibold text-sm">Nome da Empresa</label>
             <input type="text" id="new-biz-name" class="form-control" placeholder="Ex: Studio 54">
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Email de Acesso</label>
+            <label class="form-label font-semibold text-sm">Email de Acesso</label>
             <input type="email" id="new-biz-email" class="form-control" placeholder="contato@empresa.com">
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Senha de Acesso</label>
+            <label class="form-label font-semibold text-sm">Senha Provisória</label>
             <input type="text" id="new-biz-password" class="form-control" value="123456">
           </div>
-          <div class="form-group mb-5">
-            <label class="form-label">Plano</label>
-            <select id="new-biz-plan" class="form-control">
-              <option value="gratuito">Gratuito (Manual)</option>
-              <option value="basico">Básico</option>
-              <option value="pro">PRO</option>
-              <option value="elite">Elite</option>
+          <div class="form-group mb-4">
+            <label class="form-label font-semibold text-sm">Plano de Acesso</label>
+            <select id="new-biz-plan" class="form-control" style="font-weight: 600; padding: 0.6rem 0.75rem;">
+              <option value="elite" selected>⭐ Elite (Cortesia Admin - Gratuito)</option>
+              <option value="pro">PRO (Cortesia Admin - Gratuito)</option>
+              <option value="basico">Básico (Cortesia Admin - Gratuito)</option>
+              <option value="gratuito">Gratuito (Padrão)</option>
             </select>
+            <p class="text-xs text-emerald-600 font-semibold mt-1.5" style="display: flex; align-items: center; gap: 4px;">
+              ✓ Sem custos: acesso liberado imediatamente com recursos completos do plano escolhido.
+            </p>
           </div>
           <div class="flex gap-3">
             <button class="btn btn-outline flex-1" onclick="fecharModalNovaEmpresa()">Cancelar</button>
-            <button class="btn btn-primary flex-1" onclick="salvarNovaEmpresa()">Cadastrar</button>
+            <button class="btn btn-primary flex-1" onclick="salvarNovaEmpresa()">Cadastrar Empresa</button>
           </div>
         </div>
       </div>
@@ -407,6 +410,29 @@
 
     async function carregarDashboard() {
       try {
+        // Validar autenticação do Super Admin
+        try {
+          const authRes = await fetch('/api/auth/me');
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            if (authData.logged_in && authData.role === 'superadmin') {
+              const emailEl = document.getElementById('superadmin-email');
+              if (emailEl) {
+                emailEl.textContent = authData.email || 'tuumweb.com@gmail.com';
+                emailEl.title = authData.email || 'tuumweb.com@gmail.com';
+              }
+            } else {
+              window.location.href = '/login.html';
+              return;
+            }
+          } else {
+            window.location.href = '/login.html';
+            return;
+          }
+        } catch (authErr) {
+          console.warn('Aviso auth:', authErr);
+        }
+
         const response = await fetch('/api/superadmin/dashboard');
         const data = await response.json();
         
@@ -418,8 +444,8 @@
         // Atualizar tabela de empresas
         const tbody = document.getElementById('admin-table-body');
         
-        if (data.subscriptions.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhuma empresa cadastrada.</td></tr>';
+        if (!data.subscriptions || data.subscriptions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">Nenhuma empresa cadastrada.</td></tr>';
           return;
         }
 
@@ -433,22 +459,39 @@
           return `
           <tr>
             <td>
-              <div class="font-bold text-text-dark">${sub.business_name}</div>
-              <div class="text-sm text-muted">${sub.email}</div>
+              <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
+              <div class="text-xs text-muted mb-1">${sub.email}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                  <i data-lucide="external-link" class="w-3 h-3"></i> Ver Perfil
+                </a>
+                <span class="text-slate-300">•</span>
+                <a href="/admin.html?business_id=${sub.business_id}" class="text-xs text-indigo-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                  <i data-lucide="layout-dashboard" class="w-3 h-3"></i> Editar no Painel
+                </a>
+              </div>
             </td>
             <td>
-              <span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span>
+              <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1.5 px-2" style="border-radius: 6px; cursor: pointer; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1; color: var(--color-text-dark);">
+                <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE (VIP)</option>
+                <option value="pro" ${sub.plan_raw === 'pro' ? 'selected' : ''}>PRO</option>
+                <option value="basico" ${sub.plan_raw === 'basico' ? 'selected' : ''}>BÁSICO</option>
+                <option value="gratuito" ${sub.plan_raw === 'gratuito' ? 'selected' : ''}>GRATUITO</option>
+              </select>
             </td>
-            <td class="font-bold text-text-dark">${sub.price}</td>
+            <td>
+              <div class="font-bold text-text-dark">${sub.price}</div>
+              <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
+            </td>
             <td class="font-bold text-text-dark">${sub.views}</td>
             <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
             <td>
-              <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
+              <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
                 ${btnText}
               </button>
             </td>
           </tr>
-        `}).join('');
+        `;}).join('');
       
         // Preencher Aba Empresas
         document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
@@ -456,9 +499,23 @@
         if (empBody) {
           empBody.innerHTML = data.subscriptions.map(sub => `
             <tr class="border-b border-slate-100">
-              <td class="py-3 font-bold text-text-dark">${sub.business_name}</td>
-              <td class="py-3 text-muted">${sub.email}</td>
-              <td class="py-3"><span class="badge" style="background:#eff6ff; color:var(--color-secondary);">${sub.plan}</span></td>
+              <td class="py-3">
+                <div class="font-bold text-text-dark">${sub.business_name}</div>
+                <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
+                  <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-blue-600 hover:underline">Ver Perfil</a>
+                  <span class="text-slate-300">•</span>
+                  <a href="/admin.html?business_id=${sub.business_id}" class="text-indigo-600 hover:underline">Painel</a>
+                </div>
+              </td>
+              <td class="py-3 text-muted text-sm">${sub.email}</td>
+              <td class="py-3">
+                <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1 px-2" style="border-radius: 6px; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1;">
+                  <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE</option>
+                  <option value="pro" ${sub.plan_raw === 'pro' ? 'selected' : ''}>PRO</option>
+                  <option value="basico" ${sub.plan_raw === 'basico' ? 'selected' : ''}>BÁSICO</option>
+                  <option value="gratuito" ${sub.plan_raw === 'gratuito' ? 'selected' : ''}>GRATUITO</option>
+                </select>
+              </td>
               <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
             </tr>
           `).join('');
@@ -475,13 +532,33 @@
           `).join('');
         }
 
+        lucide.createIcons();
+
       } catch (e) {
         console.error('Erro ao carregar dashboard', e);
-        document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Erro ao conectar com o servidor.</td></tr>';
+        document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red; padding: 2rem;">Erro ao conectar com o servidor.</td></tr>';
       }
     }
 
-        async function toggleStatus(businessId) {
+    async function mudarPlano(businessId, novoPlano) {
+      try {
+        const res = await fetch('/api/superadmin/businesses/' + businessId + '/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: novoPlano })
+        });
+        const data = await res.json();
+        if (data.success) {
+          await carregarDashboard();
+        } else {
+          alert(data.message || 'Erro ao alterar o plano.');
+        }
+      } catch (e) {
+        alert('Erro de conexão ao alterar o plano.');
+      }
+    }
+
+    async function toggleStatus(businessId) {
       if(!confirm('Deseja alterar o status desta empresa?')) return;
       try {
         const res = await fetch('/api/superadmin/businesses/' + businessId + '/status', { method: 'POST' });
@@ -500,6 +577,8 @@
     function abrirModalNovaEmpresa() {
       document.getElementById('new-biz-name').value = '';
       document.getElementById('new-biz-email').value = '';
+      document.getElementById('new-biz-password').value = '123456';
+      document.getElementById('new-biz-plan').value = 'elite';
       document.getElementById('modal-nova-empresa').style.display = 'flex';
     }
 
@@ -528,6 +607,7 @@
         
         if (data.success) {
           fecharModalNovaEmpresa();
+          alert('Empresa cadastrada com sucesso no plano ' + plan.toUpperCase() + ' (Acesso 100% Gratuito Admin)!');
           carregarDashboard();
         } else {
           alert(data.message);
@@ -535,6 +615,13 @@
       } catch(e) {
         alert('Erro ao cadastrar empresa.');
       }
+    }
+
+    async function fazerLogout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch(e) {}
+      window.location.href = '/login.html';
     }
 
     document.addEventListener('DOMContentLoaded', carregarDashboard);

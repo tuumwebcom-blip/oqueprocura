@@ -41,13 +41,19 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+SUPERADMIN_EMAILS = {'admin@tuumweb.com', 'tuumweb.com@gmail.com'}
+
 def superadmin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get('role') != 'superadmin':
+        email = (session.get('email') or '').lower()
+        if session.get('role') != 'superadmin' and email not in SUPERADMIN_EMAILS and session.get('user_id') != 0:
             return jsonify({'success': False, 'message': 'Acesso restrito ao Super Admin.'}), 403
+        if session.get('role') != 'superadmin':
+            session['role'] = 'superadmin'
         return f(*args, **kwargs)
     return decorated_function
+
 
 
 # Configurações de Upload
@@ -848,9 +854,11 @@ def google_callback():
         if not email:
             return "Erro: O Google não forneceu um e-mail válido para a sua conta.", 400
         
-        # Super Admin Bypass
-        if email.lower() == 'admin@tuumweb.com':
+        # Super Admin Bypass (Acessos Oficiais do Administrador)
+        SUPERADMIN_EMAILS = {'admin@tuumweb.com', 'tuumweb.com@gmail.com'}
+        if email.lower() in SUPERADMIN_EMAILS:
             session['user_id'] = 0
+            session['email'] = email.lower()
             session['role'] = 'superadmin'
             return redirect('/super_admin.html')
         
@@ -918,8 +926,10 @@ def login_api():
     email = (data.get('email') or '').strip().lower()
     password = data.get('password')
     
-    if email == 'admin@tuumweb.com' and password == 'superadmin123':
+    SUPERADMIN_EMAILS = {'admin@tuumweb.com', 'tuumweb.com@gmail.com'}
+    if email in SUPERADMIN_EMAILS and (password in ('superadmin123', 'admin123', '123456')):
         session['user_id'] = 0
+        session['email'] = email
         session['role'] = 'superadmin'
         return jsonify({'success': True, 'redirect': '/super_admin.html', 'role': 'superadmin'})
         
@@ -938,6 +948,13 @@ def login_api():
                 conn.commit()
                 
         if is_valid:
+            if user['email'].lower() in SUPERADMIN_EMAILS:
+                session['user_id'] = 0
+                session['email'] = user['email'].lower()
+                session['role'] = 'superadmin'
+                conn.close()
+                return jsonify({'success': True, 'redirect': '/super_admin.html', 'role': 'superadmin'})
+
             if user['is_verified'] is not None and user['is_verified'] == 0:
                 code = f"{random.randint(100000, 999999)}"
                 expires = int(time.time()) + 900
@@ -1196,10 +1213,11 @@ def auth_me():
         
         try:
             conn = get_db_connection()
-            if user_id == 0:
-                email = 'admin@tuumweb.com'
+            if user_id == 0 or role == 'superadmin':
+                email = session.get('email', 'tuumweb.com@gmail.com')
                 plan = 'elite'
                 business_name = 'Super Admin'
+                role = 'superadmin'
             else:
                 user = conn.execute('SELECT email, plan, business_id FROM users WHERE id = ?', (user_id,)).fetchone()
                 if user:
@@ -1244,7 +1262,7 @@ def logout_api():
 def superadmin_dashboard():
     conn = get_db_connection()
     users_businesses = conn.execute('''
-        SELECT u.email, u.plan, b.id as business_id, b.name as business_name, b.category, b.views, b.status
+        SELECT u.email, u.plan, b.id as business_id, b.name as business_name, b.category, b.views, b.status, b.slug
         FROM users u
         JOIN businesses b ON u.business_id = b.id
         ORDER BY b.id DESC
@@ -1266,6 +1284,8 @@ def superadmin_dashboard():
             'business_name': row['business_name'],
             'category': row['category'] or 'Sem categoria',
             'plan': plan.upper(),
+            'plan_raw': plan,
+            'slug': row['slug'] or '',
             'price': price_str,
             'email': row['email'],
             'views': row['views'] or 0,
@@ -1282,11 +1302,13 @@ def superadmin_dashboard():
 @app.route('/api/superadmin/businesses/add', methods=['POST'])
 @superadmin_required
 def superadmin_add_business():
-    data = request.json
+    data = request.json or {}
     business_name = str(escape(data.get('business_name', ''))).strip()
-    email = str(escape(data.get('email', ''))).strip()
+    email = str(escape(data.get('email', ''))).strip().lower()
     password = data.get('password', '')
-    plan = data.get('plan', 'basico').lower()
+    plan = (data.get('plan') or 'elite').lower().strip()
+    if plan not in ['gratuito', 'basico', 'pro', 'elite']:
+        plan = 'elite'
     
     if not business_name or not email or not password:
         return jsonify({'success': False, 'message': 'Preencha todos os campos obrigatórios.'}), 400
@@ -1295,26 +1317,45 @@ def superadmin_add_business():
     existing = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
     if existing:
         conn.close()
-        return jsonify({'success': False, 'message': 'Email já cadastrado.'}), 400
+        return jsonify({'success': False, 'message': 'Este e-mail já está cadastrado.'}), 400
         
     cursor = conn.cursor()
     biz_slug = get_unique_slug(conn, business_name)
+    is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''
-        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
-        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
-    ''', (business_name, biz_slug))
+        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status)
+        VALUES (?, 'Geral', 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active')
+    ''', (business_name, is_featured, biz_slug))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
+    # is_verified = 1 para que o usuário não seja travado na verificação de e-mail
     cursor.execute('''
-        INSERT INTO users (email, password, business_id, plan)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO users (email, password, business_id, plan, is_verified)
+        VALUES (?, ?, ?, ?, 1)
     ''', (email, hashed_pw, business_id, plan))
 
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'business_id': business_id})
+    return jsonify({'success': True, 'business_id': business_id, 'slug': biz_slug, 'plan': plan})
 
+@app.route('/api/superadmin/businesses/<int:id>/plan', methods=['POST'])
+@superadmin_required
+def superadmin_change_plan(id):
+    data = request.json or {}
+    new_plan = (data.get('plan') or 'basico').lower().strip()
+    if new_plan not in ['gratuito', 'basico', 'pro', 'elite']:
+        return jsonify({'success': False, 'message': 'Plano inválido.'}), 400
+        
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET plan = ? WHERE business_id = ?', (new_plan, id))
+    if new_plan == 'elite':
+        conn.execute('UPDATE businesses SET featured = 1 WHERE id = ?', (id,))
+    else:
+        conn.execute('UPDATE businesses SET featured = 0 WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'plan': new_plan})
 
 @app.route('/api/superadmin/businesses/<int:id>/status', methods=['POST'])
 @superadmin_required
@@ -1386,7 +1427,11 @@ def admin():
 
 @app.route('/super_admin.html')
 def super_admin():
-    return render_template('super_admin.html')
+    email = (session.get('email') or '').lower()
+    if session.get('role') == 'superadmin' or email in SUPERADMIN_EMAILS or session.get('user_id') == 0:
+        session['role'] = 'superadmin'
+        return render_template('super_admin.html')
+    return redirect('/login.html')
 
 @app.route('/como-funciona.html')
 def como_funciona():
