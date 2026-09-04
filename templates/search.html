@@ -149,8 +149,8 @@
         <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
       </a>
       
-      <!-- Mini Search in Header -->
-      <div class="search-container" style="margin: 0; max-width: 450px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
+      <!-- Mini Search in Header (Desktop) -->
+      <div class="search-container desktop-search-header" style="margin: 0; max-width: 450px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
         <div class="search-input-group" style="padding: 0.35rem 0.75rem; border: none;">
           <i data-lucide="search" class="search-icon w-4 h-4"></i>
           <input type="text" id="search-input-page" class="search-input text-sm" placeholder="Buscar profissionais...">
@@ -165,23 +165,66 @@
     </div>
   </header>
 
-  <main class="container" style="margin-top: 2.5rem; margin-bottom: 5rem;">
-    <div class="flex justify-between items-center mb-8">
+  <main class="container" style="margin-top: 1.5rem; margin-bottom: 5rem;">
+    <!-- Mobile Search Bar (Apenas Celulares) -->
+    <div class="mobile-search-bar mb-3" style="display: none;">
+      <div style="display: flex; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding: 0.35rem; box-shadow: var(--shadow-sm); gap: 0.5rem; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; padding-left: 0.75rem; flex: 1;">
+          <i data-lucide="search" class="w-4 h-4 text-muted"></i>
+          <input type="text" id="search-input-mobile" class="search-input text-sm" placeholder="Buscar profissionais, lojas..." style="border: none; outline: none; width: 100%; background: transparent; padding: 0.4rem 0;">
+        </div>
+        <button class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem;" onclick="buscarNoMobile()">Buscar</button>
+      </div>
+    </div>
+
+    <!-- Mobile Category Slider (Estilo App) -->
+    <div class="mobile-categories-slider">
+      <a href="search.html" class="mobile-cat-chip active" data-category="">
+        <i data-lucide="compass" class="w-3.5 h-3.5"></i> Todas
+      </a>
+      <a href="search.html?category=alimentacao" class="mobile-cat-chip" data-category="alimentacao">
+        <i data-lucide="utensils" class="w-3.5 h-3.5"></i> Alimentação
+      </a>
+      <a href="search.html?category=saude" class="mobile-cat-chip" data-category="saude">
+        <i data-lucide="heart-pulse" class="w-3.5 h-3.5"></i> Saúde
+      </a>
+      <a href="search.html?category=fotografia" class="mobile-cat-chip" data-category="fotografia">
+        <i data-lucide="camera" class="w-3.5 h-3.5"></i> Fotografia
+      </a>
+      <a href="search.html?category=mecanica" class="mobile-cat-chip" data-category="mecanica">
+        <i data-lucide="wrench" class="w-3.5 h-3.5"></i> Serviços
+      </a>
+      <a href="search.html?category=tecnologia" class="mobile-cat-chip" data-category="tecnologia">
+        <i data-lucide="laptop" class="w-3.5 h-3.5"></i> Tecnologia
+      </a>
+      <a href="search.html?category=beleza" class="mobile-cat-chip" data-category="beleza">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Beleza
+      </a>
+      <a href="search.html?category=construcao" class="mobile-cat-chip" data-category="construcao">
+        <i data-lucide="hammer" class="w-3.5 h-3.5"></i> Construção
+      </a>
+      <a href="search.html?category=pet" class="mobile-cat-chip" data-category="pet">
+        <i data-lucide="paw-print" class="w-3.5 h-3.5"></i> Pets
+      </a>
+    </div>
+
+    <!-- Resultados Header -->
+    <div class="flex justify-between items-center mb-6 search-header-row">
       <div>
-        <h1 class="text-2xl font-bold text-text-dark">Resultados para <span id="query-display" class="text-secondary">Todas as empresas</span></h1>
+        <h1 class="text-2xl font-bold text-text-dark" style="line-height: 1.25;">Resultados para <span id="query-display" class="text-secondary">Todas as empresas</span></h1>
         <p class="text-sm text-muted mt-1" id="query-subtitle">Carregando...</p>
       </div>
-      <div class="flex items-center gap-3 text-sm text-muted bg-surface border border-color-border p-1 pl-3 rounded-md shadow-sm">
-        <span class="font-medium">Ordenar por:</span>
+      <div class="flex items-center gap-2 text-sm text-muted bg-surface border border-color-border p-1.5 pl-3 rounded-md shadow-sm search-sort-box">
+        <span class="font-medium whitespace-nowrap">Ordenar por:</span>
         <select id="sort-select" class="border-none bg-transparent outline-none text-text-dark font-medium cursor-pointer pr-2">
           <option value="relevance">Relevância (Plano)</option>
         </select>
       </div>
     </div>
 
-    <div class="grid" style="grid-template-columns: 260px 1fr; gap: 2.5rem;">
-      <!-- Sidebar / Filters -->
-      <aside class="sidebar">
+    <div class="search-layout-grid">
+      <!-- Sidebar / Filters (Apenas Desktop) -->
+      <aside class="sidebar search-desktop-sidebar">
         <div class="sidebar-card">
           <div class="filter-header">
             <h3 class="filter-title">Filtros</h3>
@@ -239,7 +282,7 @@
       </aside>
 
       <!-- Results Grid -->
-      <div class="results-content">
+      <div class="results-content" style="width: 100%;">
         <div class="grid grid-cols-3 gap-6" id="search-results">
           <!-- Injetado via app.js -->
         </div>
@@ -281,25 +324,55 @@
   <script>
     lucide.createIcons();
     
-    // Destaque visual da categoria ativa no filtro
+    // Destaque visual da categoria ativa no filtro desktop e mobile
     const activeCat = new URLSearchParams(window.location.search).get('category') || '';
     if (activeCat) {
       const cleanCat = activeCat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
+      // Desktop
       document.querySelectorAll('#category-filter-list .filter-item').forEach(el => {
         const itemCat = el.getAttribute('data-category');
         if (cleanCat.includes(itemCat) || itemCat.includes(cleanCat)) {
           el.classList.add('active');
         }
       });
+
+      // Mobile Chips
+      document.querySelectorAll('.mobile-cat-chip').forEach(chip => {
+        chip.classList.remove('active');
+        const c = chip.getAttribute('data-category');
+        if (c && (cleanCat.includes(c) || c.includes(cleanCat))) {
+          chip.classList.add('active');
+        }
+      });
     }
     
     // Suporte para buscar pressionando Enter no campo do header de resultados
-    document.getElementById('search-input-page').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') buscarNaPagina();
-    });
+    const inputDesktop = document.getElementById('search-input-page');
+    if (inputDesktop) {
+      inputDesktop.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') buscarNaPagina();
+      });
+    }
 
     function buscarNaPagina() {
       const q = document.getElementById('search-input-page').value;
+      if (q) window.location.href = 'search.html?q=' + encodeURIComponent(q);
+      else window.location.href = 'search.html';
+    }
+
+    // Busca Mobile
+    const inputMobile = document.getElementById('search-input-mobile');
+    if (inputMobile) {
+      const curQ = new URLSearchParams(window.location.search).get('q') || '';
+      if (curQ) inputMobile.value = curQ;
+      inputMobile.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') buscarNoMobile();
+      });
+    }
+
+    function buscarNoMobile() {
+      const q = document.getElementById('search-input-mobile').value.trim();
       if (q) window.location.href = 'search.html?q=' + encodeURIComponent(q);
       else window.location.href = 'search.html';
     }

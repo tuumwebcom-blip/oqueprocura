@@ -298,6 +298,51 @@
       .gallery-main { grid-column: 1 / -1; }
     }
 
+    @media (max-width: 640px) {
+      .profile-gallery {
+        height: 240px !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr !important;
+        margin-top: 1rem !important;
+        margin-bottom: 1.5rem !important;
+        border-radius: var(--radius-lg) !important;
+      }
+      .profile-gallery img:not(.gallery-main) {
+        display: none !important;
+      }
+      .gallery-main {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 / -1 !important;
+        border-radius: var(--radius-lg) !important;
+      }
+      .profile-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+      }
+      .profile-logo {
+        width: 72px !important;
+        height: 72px !important;
+      }
+      .profile-title {
+        font-size: 1.6rem !important;
+        line-height: 1.25 !important;
+      }
+      .profile-meta {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        font-size: 0.85rem !important;
+      }
+      .amenities-profile-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .service-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+      }
+    }
+
     /* Comodidades & Diferenciais */
     .amenities-profile-grid {
       display: grid;
@@ -369,8 +414,8 @@
         <img src="{{ url_for('static', filename='images/LOGO AZUL.png') }}" alt="O Que Procura?">
       </a>
       
-      <!-- Mini Search in Header -->
-      <div class="search-container" style="margin: 0; max-width: 400px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
+      <!-- Mini Search in Header (Desktop) -->
+      <div class="search-container desktop-search-header" style="margin: 0; max-width: 400px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
         <div class="search-input-group" style="padding: 0.25rem 0.75rem; border: none;">
           <i data-lucide="search" class="search-icon w-4 h-4"></i>
           <input type="text" class="search-input text-sm" placeholder="Buscar...">
@@ -904,8 +949,32 @@
                 fetch(`/api/businesses/${business.id}/click-whatsapp`, { method: 'POST' }).catch(() => {});
                 window.open(waUrl, '_blank');
               };
+
+              // Conectar Barra Flutuante Mobile
+              const mobileSticky = document.getElementById('mobile-sticky-cta');
+              const mobileWa = document.getElementById('mobile-cta-whatsapp');
+              const mobileMaps = document.getElementById('mobile-cta-maps');
+              if (mobileSticky && mobileWa) {
+                document.body.classList.add('has-mobile-cta');
+                mobileSticky.style.display = 'flex';
+                mobileWa.onclick = function(e) {
+                  e.preventDefault();
+                  fetch(`/api/businesses/${business.id}/click-whatsapp`, { method: 'POST' }).catch(() => {});
+                  window.open(waUrl, '_blank');
+                };
+                if (mobileMaps) {
+                  if (business.address) {
+                    mobileMaps.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address)}`;
+                    mobileMaps.target = '_blank';
+                  } else {
+                    mobileMaps.style.display = 'none';
+                  }
+                }
+              }
             } else {
               btnWhatsapp.style.display = 'none';
+              const mobileSticky = document.getElementById('mobile-sticky-cta');
+              if (mobileSticky) mobileSticky.style.display = 'none';
             }
           }
           
@@ -1170,5 +1239,16 @@
       }
     }
   </script>
+
+  <!-- Barra Flutuante Mobile de Ação Rápida (Sticky Bottom Bar) -->
+  <div class="mobile-profile-cta-bar" id="mobile-sticky-cta" style="display: none;">
+    <a href="#" id="mobile-cta-whatsapp" class="btn btn-primary flex-1" style="background: #25d366 !important; border: 1px solid #22c55e !important; color: white !important; font-weight: 700; gap: 0.5rem; border-radius: var(--radius-full); box-shadow: 0 4px 14px rgba(37,211,102,0.35); text-decoration: none; padding: 0.75rem 1rem;">
+      <i data-lucide="message-circle" class="w-5 h-5"></i> WhatsApp
+    </a>
+    <a href="#" id="mobile-cta-maps" class="btn btn-outline" style="border-radius: var(--radius-full); padding: 0.65rem 0.95rem; text-decoration: none; background: white;" title="Como Chegar">
+      <i data-lucide="map-pin" class="w-5 h-5 text-secondary"></i>
+    </a>
+  </div>
+
 </body>
 </html>
