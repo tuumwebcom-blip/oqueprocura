@@ -550,7 +550,7 @@
       return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
 
-    function aplicarTemaVisual(primaryHex, bgHex, textHex) {
+    function aplicarTemaVisual(primaryHex, bgHex, textHex, bgImage) {
       // 1. Cor da Marca (Botões, detalhes, destaques)
       if (!primaryHex || !primaryHex.startsWith('#')) primaryHex = '#2563eb';
       let cBrand = primaryHex.replace('#', '').trim();
@@ -579,6 +579,18 @@
       const isDark = bgLum < 0.45;
 
       document.documentElement.style.setProperty('--color-bg', bgHex);
+
+      // Imagem de Fundo (Background Image)
+      if (bgImage) {
+        document.body.style.backgroundImage = `url("${bgImage}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center top';
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundRepeat = 'no-repeat';
+      } else {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = 'var(--color-bg)';
+      }
 
       // 3. Cor das Fontes, Textos e Contraste Adaptativo
       if (!textHex || !textHex.startsWith('#')) textHex = isDark ? '#f8fafc' : '#0f172a';
@@ -611,7 +623,7 @@
     }
 
     function aplicarCorMarca(hex) {
-      aplicarTemaVisual(hex, '#fafafa', '#0f172a');
+      aplicarTemaVisual(hex, '#fafafa', '#0f172a', '');
     }
 
     let CURRENT_PROFILE_BUSINESS_ID = null;
@@ -671,8 +683,8 @@
           const business = await response.json();
           CURRENT_PROFILE_BUSINESS_ID = business.id;
 
-          // Aplicar identidade visual personalizada da empresa (Destaque, Fundo & Fontes)
-          aplicarTemaVisual(business.color_primary, business.color_bg, business.color_text);
+          // Aplicar identidade visual personalizada da empresa (Destaque, Fundo, Fontes & Imagem de Fundo)
+          aplicarTemaVisual(business.color_primary, business.color_bg, business.color_text, business.bg_image);
           
           // Helper para decodificar entidades HTML (&amp; -> &)
           function unescapeHtml(text) {

@@ -163,6 +163,8 @@ def check_db_schema():
             conn.execute("ALTER TABLE businesses ADD COLUMN color_bg TEXT DEFAULT '#f8fafc'")
         if 'color_text' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN color_text TEXT DEFAULT '#0f172a'")
+        if 'bg_image' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN bg_image TEXT DEFAULT ''")
 
         # Garante slug para todas as empresas existentes
         rows_without_slug = conn.execute("SELECT id, name FROM businesses WHERE slug IS NULL OR slug = ''").fetchall()
@@ -483,6 +485,41 @@ def upload_main_image(id):
     
     return jsonify({'success': False, 'message': 'Formato não permitido'}), 400
 
+@app.route('/api/businesses/<int:id>/upload-bg', methods=['POST'])
+@login_required
+def upload_bg_image(id):
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'Nenhuma imagem enviada'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
+        
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"bg_{id}_{uuid.uuid4().hex[:8]}.{ext}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        file_url = f"/static/uploads/{filename}"
+        
+        conn = get_db_connection()
+        conn.execute('UPDATE businesses SET bg_image = ? WHERE id = ?', (file_url, id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'url': file_url})
+    
+    return jsonify({'success': False, 'message': 'Formato não permitido'}), 400
+
+@app.route('/api/businesses/<int:id>/remove-bg', methods=['POST'])
+@login_required
+def remove_bg_image(id):
+    conn = get_db_connection()
+    conn.execute('UPDATE businesses SET bg_image = "" WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/businesses/<int:id>/gallery/add', methods=['POST'])
 @login_required
 def add_gallery_image(id):
@@ -578,6 +615,7 @@ def update_business(id):
     color_text = clean(data.get('color_text', '#0f172a'))
     if not color_text.startswith('#') or len(color_text) not in (4, 7):
         color_text = '#0f172a'
+    bg_image = clean(data.get('bg_image', ''))
 
     # Amenities (lista de strings)
     raw_amenities = data.get('amenities', [])
@@ -609,12 +647,12 @@ def update_business(id):
             website = ?, business_hours = ?, color_primary = ?,
             whatsapp_cta = ?, whatsapp_message = ?,
             facebook = ?, tiktok = ?, linkedin = ?, youtube = ?, catalog_url = ?,
-            amenities = ?, slug = ?, color_bg = ?, color_text = ?
+            amenities = ?, slug = ?, color_bg = ?, color_text = ?, bg_image = ?
         WHERE id = ?
     ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, 
           website, business_hours, color_primary, whatsapp_cta, whatsapp_message,
           facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug,
-          color_bg, color_text, id))
+          color_bg, color_text, bg_image, id))
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'slug': custom_slug})
