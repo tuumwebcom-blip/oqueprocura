@@ -160,6 +160,63 @@
       color: #15803d;
       font-weight: 600;
     }
+    /* Estilos de Comodidades & Diferenciais */
+    .amenity-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-lg);
+      border: 1.5px solid var(--color-border);
+      background: white;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+    .amenity-chip:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+    .amenity-chip.active {
+      border-color: var(--color-secondary, #2563eb);
+      background: #eff6ff;
+      color: #1e40af;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12);
+    }
+    .amenity-chip .amenity-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+    }
+    .amenity-chip.active .amenity-icon-box {
+      background: white;
+      color: var(--color-secondary, #2563eb);
+    }
+    .amenity-chip .amenity-label {
+      font-size: 0.825rem;
+      flex: 1;
+      line-height: 1.25;
+    }
+    .amenity-chip .amenity-check {
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all var(--transition-fast);
+      color: var(--color-secondary, #2563eb);
+      flex-shrink: 0;
+    }
+    .amenity-chip.active .amenity-check {
+      opacity: 1;
+      transform: scale(1);
+    }
   </style>
 </head>
 <body>
@@ -318,6 +375,55 @@
             </div>
           </div>
 
+          <!-- Link Exclusivo & QR Code Oficial -->
+          <div class="card-section" style="border-left: 4px solid #6366f1; background: #fafafa;">
+            <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
+              <div class="flex items-center gap-2">
+                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1rem;">
+                  <i data-lucide="qr-code" class="w-4 h-4 inline mr-1 text-secondary"></i> Link Exclusivo & QR Code Oficial
+                </label>
+                <span class="badge" style="background: #eef2ff; color: #4f46e5; font-size: 0.7rem; font-weight: 700;">Mini-Site</span>
+              </div>
+              <span class="text-xs text-muted">Use no balcão, mesas e redes sociais</span>
+            </div>
+            <p class="text-xs text-muted mb-4">Seu endereço exclusivo na internet. Seus clientes podem acessar digitando o link direto ou escaneando o QR Code.</p>
+
+            <div class="flex gap-6 items-start" style="flex-wrap: wrap;">
+              <!-- Coluna Esquerda: Edição do Link e Ações -->
+              <div style="flex: 1; min-width: 260px;">
+                <label class="form-label text-xs font-semibold mb-1">Seu Link Curto Personalizado</label>
+                <div class="flex items-center gap-2 mb-3">
+                  <div style="display: flex; align-items: center; background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; width: 100%; box-shadow: var(--shadow-sm);">
+                    <span style="background: #f1f5f9; padding: 0.55rem 0.75rem; font-size: 0.825rem; font-weight: 600; color: var(--color-text-muted); border-right: 1px solid var(--color-border); white-space: nowrap;" id="domain-slug-prefix">
+                      tuumweb.com/p/
+                    </span>
+                    <input type="text" id="input-slug" class="form-control text-sm" style="border: none; border-radius: 0; padding: 0.55rem 0.75rem; font-family: monospace; font-weight: 600; color: #0f172a;" placeholder="sua-empresa" oninput="aoDigitarSlug(this.value)">
+                  </div>
+                </div>
+                <div class="flex gap-2 mb-3" style="flex-wrap: wrap;">
+                  <button type="button" class="btn btn-outline text-xs font-semibold" style="padding: 0.45rem 0.85rem;" onclick="copiarLinkExclusivo()">
+                    <i data-lucide="copy" class="w-3.5 h-3.5 mr-1"></i> <span id="btn-copy-label">Copiar Link</span>
+                  </button>
+                  <button type="button" class="btn btn-outline text-xs font-semibold" style="padding: 0.45rem 0.85rem;" onclick="abrirLinkExclusivo()">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1"></i> Testar Link
+                  </button>
+                </div>
+                <p class="text-xs text-muted" style="line-height: 1.4;">Dica: Digite apenas letras, números e hífens. Letras maiúsculas e espaços são convertidos automaticamente.</p>
+              </div>
+
+              <!-- Coluna Direita: Preview do QR Code e Download -->
+              <div class="flex flex-col items-center" style="background: white; padding: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); min-width: 170px;">
+                <div style="width: 140px; height: 140px; border-radius: 8px; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; margin-bottom: 0.75rem;">
+                  <img id="admin-qrcode-img" src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://tuumweb.com" alt="QR Code da Empresa" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <button type="button" class="btn btn-primary text-xs w-full" style="padding: 0.45rem 0.75rem; justify-content: center;" onclick="baixarQrCode()">
+                  <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i> Baixar QR Code
+                </button>
+                <span class="text-xs text-muted mt-1" style="font-size: 0.68rem;">PNG em alta resolução</span>
+              </div>
+            </div>
+          </div>
+
           <h2 class="text-xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Informações Básicas</h2>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div class="form-group">
@@ -443,6 +549,23 @@
             <textarea class="form-control" id="input-about" rows="5"></textarea>
           </div>
         </div>
+
+        <!-- ===== CARD: COMODIDADES & DIFERENCIAIS ===== -->
+        <div class="card-panel">
+          <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Comodidades & Diferenciais</h2>
+              <span class="badge" style="background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 700;">Selos no Perfil</span>
+            </div>
+            <span class="text-xs text-muted">Clique para ativar ou desativar</span>
+          </div>
+          <p class="text-xs text-muted mb-5">Marque as facilidades que o seu estabelecimento oferece. Elas aparecerão como selos visuais em destaque no seu mini-site.</p>
+
+          <div id="amenities-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.75rem;">
+            <!-- Renderizado dinamicamente via JS -->
+          </div>
+        </div>
+
         <div class="card-panel">
           <div class="flex justify-between items-center mb-6">
             <div>
@@ -545,6 +668,49 @@
               <input type="text" class="form-control" id="input-hours" placeholder="Ex: Seg a Sex: 08h às 18h | Sáb: 08h às 12h">
             </div>
           </div>
+
+          <!-- Outras Redes Sociais & Catálogo em PDF -->
+          <div class="mt-6 pt-6" style="border-top: 1px solid var(--color-border);">
+            <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
+              <h3 class="text-base font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                <i data-lucide="share-2" class="w-4 h-4 inline mr-1 text-secondary"></i> Outras Redes Sociais & Canais Digitais
+              </h3>
+              <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: 600;">Opcional</span>
+            </div>
+            <p class="text-xs text-muted mb-4">Adicione suas outras redes para que seus clientes sigam sua empresa em todas as plataformas.</p>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="form-group mb-0">
+                <label class="form-label text-xs flex items-center gap-1.5"><i data-lucide="facebook" class="w-3.5 h-3.5 text-blue-600"></i> Facebook</label>
+                <input type="text" class="form-control text-sm" id="input-facebook" placeholder="facebook.com/suaempresa ou @usuario">
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label text-xs flex items-center gap-1.5"><i data-lucide="music-2" class="w-3.5 h-3.5 text-gray-800"></i> TikTok</label>
+                <input type="text" class="form-control text-sm" id="input-tiktok" placeholder="@suaempresa ou tiktok.com/@suaempresa">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="form-group mb-0">
+                <label class="form-label text-xs flex items-center gap-1.5"><i data-lucide="linkedin" class="w-3.5 h-3.5 text-blue-700"></i> LinkedIn</label>
+                <input type="text" class="form-control text-sm" id="input-linkedin" placeholder="linkedin.com/company/suaempresa">
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label text-xs flex items-center gap-1.5"><i data-lucide="youtube" class="w-3.5 h-3.5 text-red-600"></i> YouTube</label>
+                <input type="text" class="form-control text-sm" id="input-youtube" placeholder="youtube.com/@seucanal">
+              </div>
+            </div>
+
+            <!-- Cardápio / Catálogo em PDF / Loja Virtual -->
+            <div class="form-group mb-0 mt-4 p-3.5 rounded-lg" style="background: #f8fafc; border: 1px solid var(--color-border);">
+              <label class="form-label text-xs font-bold text-text-dark flex items-center gap-1.5 mb-1">
+                <i data-lucide="file-text" class="w-4 h-4 text-secondary"></i> Link do Cardápio Digital / Catálogo em PDF / Loja Virtual
+              </label>
+              <p class="text-xs text-muted mb-2">Cole o link do seu PDF (Google Drive/Dropbox), cardápio digital, iFood ou loja virtual. Um botão de destaque exclusivo será adicionado ao seu perfil público.</p>
+              <input type="text" class="form-control text-sm" id="input-catalog-url" placeholder="https://drive.google.com/... ou https://loja.com/catalogo">
+            </div>
+          </div>
+
           <!-- Campo Google Maps (Exclusivo Plano PRO e Elite) -->
           <div class="form-group" id="maps-field" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); display: none;">
             <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -736,8 +902,134 @@
       window.location.href = '/login.html';
     }
 
+    let currentSlug = '';
+    let amenitiesSelecionadas = [];
+
+    const AMENITIES_LIST = [
+      { key: 'pix_card', label: 'Aceita Cartão & Pix', icon: 'credit-card' },
+      { key: 'parking', label: 'Estacionamento Próprio', icon: 'car' },
+      { key: 'ac', label: 'Ar-Condicionado', icon: 'wind' },
+      { key: 'wifi', label: 'Wi-Fi Gratuito', icon: 'wifi' },
+      { key: 'pet_friendly', label: 'Pet Friendly', icon: 'paw-print' },
+      { key: 'delivery', label: 'Fazemos Delivery', icon: 'truck' },
+      { key: 'accessibility', label: 'Acessibilidade Cadeirante', icon: 'accessibility' },
+      { key: 'kids', label: 'Espaço Kids', icon: 'smile' },
+      { key: 'coffee', label: 'Café / Água Cortesia', icon: 'coffee' },
+      { key: 'hours24', label: 'Atendimento 24h / Plantão', icon: 'clock' }
+    ];
+
+    function renderizarChipsComodidades() {
+      const container = document.getElementById('amenities-container');
+      if (!container) return;
+      container.innerHTML = AMENITIES_LIST.map(item => {
+        const isAtivo = amenitiesSelecionadas.includes(item.key);
+        return `
+          <div class="amenity-chip ${isAtivo ? 'active' : ''}" onclick="toggleAmenity('${item.key}')" id="chip-${item.key}">
+            <div class="amenity-icon-box"><i data-lucide="${item.icon}" class="w-4 h-4"></i></div>
+            <span class="amenity-label">${item.label}</span>
+            <i data-lucide="check" class="amenity-check w-4 h-4"></i>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function toggleAmenity(key) {
+      const idx = amenitiesSelecionadas.indexOf(key);
+      if (idx >= 0) {
+        amenitiesSelecionadas.splice(idx, 1);
+      } else {
+        amenitiesSelecionadas.push(key);
+      }
+      const chip = document.getElementById('chip-' + key);
+      if (chip) {
+        if (amenitiesSelecionadas.includes(key)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      }
+    }
+
+    function atualizarQrCode(slug) {
+      if (!slug) slug = currentSlug || 'empresa';
+      const domain = window.location.origin;
+      const fullUrl = `${domain}/p/${slug}`;
+      const qrImg = document.getElementById('admin-qrcode-img');
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
+      }
+      const prefixEl = document.getElementById('domain-slug-prefix');
+      if (prefixEl) {
+        const hostClean = window.location.host.replace(/\/$/, '');
+        prefixEl.textContent = `${hostClean}/p/`;
+      }
+    }
+
+    function aoDigitarSlug(val) {
+      let s = val.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+/, '');
+      const input = document.getElementById('input-slug');
+      if (input && input.value !== s) {
+        input.value = s;
+      }
+      currentSlug = s;
+      atualizarQrCode(s);
+    }
+
+    function copiarLinkExclusivo() {
+      const slug = (document.getElementById('input-slug')?.value || currentSlug || '').trim();
+      if (!slug) {
+        alert('Defina um link curto primeiro.');
+        return;
+      }
+      const fullUrl = `${window.location.origin}/p/${slug}`;
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        const lbl = document.getElementById('btn-copy-label');
+        if (lbl) {
+          lbl.textContent = 'Copiado!';
+          setTimeout(() => { lbl.textContent = 'Copiar Link'; }, 2500);
+        }
+      }).catch(() => {
+        prompt('Copie seu link exclusivo:', fullUrl);
+      });
+    }
+
+    function abrirLinkExclusivo() {
+      const slug = (document.getElementById('input-slug')?.value || currentSlug || '').trim();
+      if (slug) {
+        window.open(`/p/${slug}`, '_blank');
+      } else {
+        verPerfil();
+      }
+    }
+
+    async function baixarQrCode() {
+      const slug = (document.getElementById('input-slug')?.value || currentSlug || 'empresa').trim();
+      const fullUrl = `${window.location.origin}/p/${slug}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(fullUrl)}`;
+      try {
+        const res = await fetch(qrApiUrl);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `qrcode-${slug}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch(e) {
+        window.open(qrApiUrl, '_blank');
+      }
+    }
+
     function verPerfil() {
+      const slug = (document.getElementById('input-slug')?.value || currentSlug || '').trim();
+      if (slug) {
+        window.open('/p/' + slug, '_blank');
+      } else if (BUSINESS_ID) {
         window.open('/profile.html?id=' + BUSINESS_ID, '_blank');
+      }
     }
 
 
@@ -899,6 +1191,28 @@
         }
         const msgInput = document.getElementById('input-whatsapp-message');
         if (msgInput) msgInput.value = data.whatsapp_message || '';
+
+        // Slug e QR Code
+        currentSlug = data.slug || '';
+        const slugInput = document.getElementById('input-slug');
+        if (slugInput) slugInput.value = currentSlug;
+        atualizarQrCode(currentSlug);
+
+        // Comodidades & Diferenciais
+        amenitiesSelecionadas = Array.isArray(data.amenities) ? data.amenities : [];
+        renderizarChipsComodidades();
+
+        // Redes Sociais & Catálogo
+        const fbInput = document.getElementById('input-facebook');
+        if (fbInput) fbInput.value = data.facebook || '';
+        const ttInput = document.getElementById('input-tiktok');
+        if (ttInput) ttInput.value = data.tiktok || '';
+        const liInput = document.getElementById('input-linkedin');
+        if (liInput) liInput.value = data.linkedin || '';
+        const ytInput = document.getElementById('input-youtube');
+        if (ytInput) ytInput.value = data.youtube || '';
+        const catUrlInput = document.getElementById('input-catalog-url');
+        if (catUrlInput) catUrlInput.value = data.catalog_url || '';
 
         // Mostrar plano no badge
         const planBadge = document.getElementById('plan-badge');
@@ -1308,7 +1622,14 @@
         maps_url: document.getElementById('input-maps-url').value,
         color_primary: colorVal,
         whatsapp_cta: document.getElementById('input-whatsapp-cta') ? document.getElementById('input-whatsapp-cta').value.trim() : 'Conversar no WhatsApp',
-        whatsapp_message: document.getElementById('input-whatsapp-message') ? document.getElementById('input-whatsapp-message').value.trim() : ''
+        whatsapp_message: document.getElementById('input-whatsapp-message') ? document.getElementById('input-whatsapp-message').value.trim() : '',
+        facebook: document.getElementById('input-facebook') ? document.getElementById('input-facebook').value.trim() : '',
+        tiktok: document.getElementById('input-tiktok') ? document.getElementById('input-tiktok').value.trim() : '',
+        linkedin: document.getElementById('input-linkedin') ? document.getElementById('input-linkedin').value.trim() : '',
+        youtube: document.getElementById('input-youtube') ? document.getElementById('input-youtube').value.trim() : '',
+        catalog_url: document.getElementById('input-catalog-url') ? document.getElementById('input-catalog-url').value.trim() : '',
+        amenities: amenitiesSelecionadas,
+        slug: document.getElementById('input-slug') ? document.getElementById('input-slug').value.trim() : ''
       };
 
       try {
@@ -1320,6 +1641,12 @@
         
         const result = await response.json();
         if (result.success) {
+          if (result.slug) {
+            currentSlug = result.slug;
+            const sInput = document.getElementById('input-slug');
+            if (sInput) sInput.value = result.slug;
+            atualizarQrCode(result.slug);
+          }
           alert('Salvo com sucesso! Abra seu perfil público para ver as mudanças.');
         } else {
           alert('Atenção: ' + (result.message || 'Erro ao salvar.'));

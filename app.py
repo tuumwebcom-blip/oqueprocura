@@ -7,6 +7,8 @@ import re
 import html
 import random
 import time
+import unicodedata
+import json
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
@@ -100,6 +102,33 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def slugify(text):
+    if not text:
+        return ''
+    text = html.unescape(str(text))
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    text = re.sub(r'[-\s]+', '-', text)
+    return text.strip('-')
+
+def get_unique_slug(conn, base_text, business_id=None):
+    base_slug = slugify(base_text)
+    if not base_slug:
+        base_slug = f"empresa-{business_id or random.randint(1000, 9999)}"
+    slug = base_slug
+    counter = 1
+    while True:
+        query = "SELECT id FROM businesses WHERE slug = ? COLLATE NOCASE"
+        params = [slug]
+        if business_id:
+            query += " AND id != ?"
+            params.append(business_id)
+        existing = conn.execute(query, params).fetchone()
+        if not existing:
+            return slug
+        counter += 1
+        slug = f"{base_slug}-{counter}"
+
 def check_db_schema():
     try:
         conn = get_db_connection()
@@ -116,6 +145,31 @@ def check_db_schema():
             conn.execute("ALTER TABLE businesses ADD COLUMN whatsapp_cta TEXT DEFAULT 'Conversar no WhatsApp'")
         if 'whatsapp_message' not in cols:
             conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_message TEXT')
+        if 'amenities' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN amenities TEXT DEFAULT '[]'")
+        if 'facebook' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN facebook TEXT DEFAULT ''")
+        if 'tiktok' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN tiktok TEXT DEFAULT ''")
+        if 'linkedin' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN linkedin TEXT DEFAULT ''")
+        if 'youtube' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN youtube TEXT DEFAULT ''")
+        if 'catalog_url' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN catalog_url TEXT DEFAULT ''")
+        if 'slug' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN slug TEXT DEFAULT ''")
+
+        # Garante slug para todas as empresas existentes
+        rows_without_slug = conn.execute("SELECT id, name FROM businesses WHERE slug IS NULL OR slug = ''").fetchall()
+        for r in rows_without_slug:
+            s = get_unique_slug(conn, r['name'] or f"empresa-{r['id']}", business_id=r['id'])
+            conn.execute("UPDATE businesses SET slug = ? WHERE id = ?", (s, r['id']))
+
+        try:
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_businesses_slug ON businesses(slug)")
+        except Exception:
+            pass
 
         cols_rev = [c[1] for c in conn.execute('PRAGMA table_info(reviews)').fetchall()]
         if 'author_email' not in cols_rev:
@@ -137,8 +191,8 @@ def check_db_schema():
 
         conn.commit()
         conn.close()
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Erro no check_db_schema: {e}")
 
 check_db_schema()
 
@@ -362,11 +416,30 @@ def api_business(id):
     business['gallery'] = [dict(g) for g in gallery_rows]
     business['reviews'] = [dict(r) for r in reviews_rows]
 
+    # Parsing de amenities para lista
+    try:
+        if isinstance(business.get('amenities'), str):
+            business['amenities'] = json.loads(business['amenities'] or '[]')
+        elif not business.get('amenities'):
+            business['amenities'] = []
+    except Exception:
+        business['amenities'] = []
+
     plan = get_user_plan(id)
     business['plan'] = plan
     business['plan_limits'] = PLAN_LIMITS.get(plan, PLAN_LIMITS['basico'])
 
     return jsonify(business)
+
+@app.route('/api/businesses/slug/<slug>')
+def api_business_by_slug(slug):
+    conn = get_db_connection()
+    clean_slug = slug.strip().lower()
+    biz = conn.execute("SELECT id FROM businesses WHERE status != 'suspended' AND slug = ? COLLATE NOCASE", (clean_slug,)).fetchone()
+    conn.close()
+    if biz:
+        return api_business(biz['id'])
+    return jsonify({'error': 'Business not found'}), 404
 
 @app.route('/api/businesses/<int:id>/click-whatsapp', methods=['POST'])
 def track_whatsapp_click(id):
@@ -490,18 +563,50 @@ def update_business(id):
     whatsapp_message = clean(data.get('whatsapp_message', ''))
     maps_url = data.get('maps_url', '').strip()
 
+    facebook = clean(data.get('facebook', ''))
+    tiktok = clean(data.get('tiktok', ''))
+    linkedin = clean(data.get('linkedin', ''))
+    youtube = clean(data.get('youtube', ''))
+    catalog_url = clean(data.get('catalog_url', ''))
+
+    # Amenities (lista de strings)
+    raw_amenities = data.get('amenities', [])
+    if isinstance(raw_amenities, str):
+        try:
+            raw_amenities = json.loads(raw_amenities)
+        except Exception:
+            raw_amenities = []
+    if not isinstance(raw_amenities, list):
+        raw_amenities = []
+    valid_amenities = [clean(item) for item in raw_amenities if item]
+    amenities_json = json.dumps(valid_amenities)
+
+    # Slug
     conn = get_db_connection()
+    custom_slug = slugify(data.get('slug', ''))
+    if not custom_slug:
+        custom_slug = get_unique_slug(conn, name, business_id=id)
+    else:
+        existing = conn.execute("SELECT id FROM businesses WHERE slug = ? COLLATE NOCASE AND id != ?", (custom_slug, id)).fetchone()
+        if existing:
+            conn.close()
+            return jsonify({'success': False, 'message': f'O link "{custom_slug}" já está em uso por outra empresa. Por favor, escolha outro.'}), 400
+
     conn.execute('''
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
             whatsapp = ?, instagram = ?, address = ?, maps_url = ?,
             website = ?, business_hours = ?, color_primary = ?,
-            whatsapp_cta = ?, whatsapp_message = ?
+            whatsapp_cta = ?, whatsapp_message = ?,
+            facebook = ?, tiktok = ?, linkedin = ?, youtube = ?, catalog_url = ?,
+            amenities = ?, slug = ?
         WHERE id = ?
-    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, color_primary, whatsapp_cta, whatsapp_message, id))
+    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, 
+          website, business_hours, color_primary, whatsapp_cta, whatsapp_message,
+          facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug, id))
     conn.commit()
     conn.close()
-    return jsonify({'success': True})
+    return jsonify({'success': True, 'slug': custom_slug})
 
 # ============================================================
 # API — Serviços
@@ -711,10 +816,11 @@ def google_callback():
             
             # Auto-recuperação: se o usuário ficou sem empresa associada, cria uma agora
             if not biz:
+                biz_slug = get_unique_slug(conn, name)
                 cursor = conn.execute('''
-                    INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
-                    VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
-                ''', (name,))
+                    INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
+                    VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+                ''', (name, biz_slug))
                 business_id = cursor.lastrowid
                 conn.execute('UPDATE users SET business_id = ? WHERE id = ?', (business_id, user['id']))
                 conn.commit()
@@ -726,10 +832,11 @@ def google_callback():
             # Passa o business_id na URL para o frontend salvar no localStorage
             return redirect(f'/admin.html?business_id={business_id}')
         else:
+            biz_slug = get_unique_slug(conn, name)
             cursor = conn.execute('''
-                INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
-                VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
-            ''', (name,))
+                INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
+                VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+            ''', (name, biz_slug))
             business_id = cursor.lastrowid
             
             random_pass = str(uuid.uuid4())
@@ -855,10 +962,11 @@ def register_api():
             })
 
     cursor = conn.cursor()
+    biz_slug = get_unique_slug(conn, business_name)
     cursor.execute('''
-        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
-        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
-    ''', (business_name,))
+        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
+        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+    ''', (business_name, biz_slug))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
@@ -1141,10 +1249,11 @@ def superadmin_add_business():
         return jsonify({'success': False, 'message': 'Email já cadastrado.'}), 400
         
     cursor = conn.cursor()
+    biz_slug = get_unique_slug(conn, business_name)
     cursor.execute('''
-        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text)
-        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '')
-    ''', (business_name,))
+        INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug)
+        VALUES (?, 'Não Definida', 0.0, '0 km', 'https://placehold.co/600x400?text=Sem+Foto', False, '', ?)
+    ''', (business_name, biz_slug))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
@@ -1189,6 +1298,18 @@ def search():
 @app.route('/profile.html')
 def profile():
     return render_template('profile.html')
+
+@app.route('/p/<slug>')
+def profile_slug(slug):
+    conn = get_db_connection()
+    clean_slug = slug.strip().lower()
+    biz = conn.execute("SELECT id FROM businesses WHERE status != 'suspended' AND slug = ? COLLATE NOCASE", (clean_slug,)).fetchone()
+    if not biz and clean_slug.isdigit():
+        biz = conn.execute("SELECT id FROM businesses WHERE status != 'suspended' AND id = ?", (int(clean_slug),)).fetchone()
+    conn.close()
+    if biz:
+        return render_template('profile.html', current_business_id=biz['id'])
+    return redirect(f'/search.html?q={slug}')
 
 @app.route('/anuncie.html')
 @app.route('/planos.html')

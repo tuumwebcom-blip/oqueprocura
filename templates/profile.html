@@ -196,6 +196,68 @@
       .profile-gallery { grid-template-columns: 1fr 1fr; grid-template-rows: 250px 150px; }
       .gallery-main { grid-column: 1 / -1; }
     }
+
+    /* Comodidades & Diferenciais */
+    .amenities-profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+    .profile-amenity-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-fast);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .profile-amenity-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--color-brand-border, #bfdbfe);
+    }
+    .profile-amenity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--color-brand-light, #eff6ff);
+      color: var(--color-secondary, #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .profile-amenity-text {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-dark);
+    }
+
+    /* Ícones de Redes Sociais no Card de Contato */
+    .profile-social-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .profile-social-icon:hover {
+      background: var(--color-secondary);
+      color: white;
+      border-color: var(--color-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
   </style>
 </head>
 <body>
@@ -251,6 +313,12 @@
         <div class="about-text" id="about-text-container">
           <p>Somos um estúdio de fotografia especializado em capturar os melhores momentos da sua vida. Com mais de 10 anos de experiência, oferecemos ensaios fotográficos para casamentos, formaturas, gestantes e corporativos.</p>
           <p class="mt-4">Nossa equipe é formada por profissionais apaixonados por contar histórias através das lentes, entregando não apenas fotos, mas memórias que durarão para sempre. Venha conhecer nosso espaço criativo no coração da cidade.</p>
+        </div>
+
+        <!-- Comodidades & Diferenciais do Estabelecimento -->
+        <div id="amenities-wrapper" style="display:none; margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--color-border);">
+          <h2 class="section-title">Comodidades & Diferenciais</h2>
+          <div class="amenities-profile-grid" id="amenities-profile-container"></div>
         </div>
 
         <div id="specialties-wrapper" style="display:none; margin-bottom: 2rem;">
@@ -366,6 +434,28 @@
               <i data-lucide="instagram" class="w-5 h-5"></i>
               Ver Instagram
             </button>
+
+            <!-- Botão de Cardápio / Catálogo em PDF -->
+            <a id="btn-catalog" href="#" target="_blank" class="btn w-full flex items-center justify-center gap-2 mt-3" style="display: none; padding: 0.95rem; background: var(--color-brand-light, #eff6ff); color: var(--color-secondary, #2563eb); border: 1.5px solid var(--color-brand-border, #bfdbfe); font-weight: 700; border-radius: var(--radius-md); text-decoration: none; box-shadow: var(--shadow-sm);">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+              <span>Ver Cardápio / Catálogo</span>
+            </a>
+
+            <!-- Redes Sociais Adicionais -->
+            <div id="social-links-bar" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--color-border); justify-content: center; gap: 0.65rem; flex-wrap: wrap;">
+              <a id="social-facebook" href="#" target="_blank" class="profile-social-icon" style="display:none;" title="Facebook">
+                <i data-lucide="facebook" class="w-4 h-4"></i>
+              </a>
+              <a id="social-tiktok" href="#" target="_blank" class="profile-social-icon" style="display:none;" title="TikTok">
+                <i data-lucide="music-2" class="w-4 h-4"></i>
+              </a>
+              <a id="social-linkedin" href="#" target="_blank" class="profile-social-icon" style="display:none;" title="LinkedIn">
+                <i data-lucide="linkedin" class="w-4 h-4"></i>
+              </a>
+              <a id="social-youtube" href="#" target="_blank" class="profile-social-icon" style="display:none;" title="YouTube">
+                <i data-lucide="youtube" class="w-4 h-4"></i>
+              </a>
+            </div>
           </div>
           
           <div class="text-sm text-center text-muted mb-6 pb-6 border-b border-color-border">
@@ -460,19 +550,51 @@
       document.documentElement.style.setProperty('--color-brand-border', `rgba(${r}, ${g}, ${b}, 0.28)`);
     }
 
-    // Lógica para carregar os dados dinâmicos da API baseados no ID da URL
+    let CURRENT_PROFILE_BUSINESS_ID = null;
+
+    const AMENITIES_MAP = {
+      'pix_card': { label: 'Aceita Cartão & Pix', icon: 'credit-card' },
+      'parking': { label: 'Estacionamento Próprio', icon: 'car' },
+      'ac': { label: 'Ar-Condicionado', icon: 'wind' },
+      'wifi': { label: 'Wi-Fi Gratuito', icon: 'wifi' },
+      'pet_friendly': { label: 'Pet Friendly', icon: 'paw-print' },
+      'delivery': { label: 'Fazemos Delivery', icon: 'truck' },
+      'accessibility': { label: 'Acessibilidade Cadeirante', icon: 'accessibility' },
+      'kids': { label: 'Espaço Kids', icon: 'smile' },
+      'coffee': { label: 'Café / Água Cortesia', icon: 'coffee' },
+      'hours24': { label: 'Atendimento 24h / Plantão', icon: 'clock' }
+    };
+
+    // Lógica para carregar os dados dinâmicos da API baseados no ID ou Slug da URL
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const id = parseInt(urlParams.get('id'));
+      let id = urlParams.get('id');
+      let slug = urlParams.get('slug');
+
+      {% if current_business_id %}
+      id = id || '{{ current_business_id }}';
+      {% endif %}
+
+      let apiUrl = '';
+      if (id && id !== 'None' && id !== 'null') {
+        apiUrl = '/api/businesses/' + encodeURIComponent(id);
+      } else if (slug) {
+        apiUrl = '/api/businesses/slug/' + encodeURIComponent(slug);
+      } else {
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        if (pathParts.length >= 2 && pathParts[0] === 'p') {
+          apiUrl = '/api/businesses/slug/' + encodeURIComponent(pathParts[1]);
+        }
+      }
       
-      if (id) {
+      if (apiUrl) {
         try {
-          const response = await fetch('/api/businesses/' + id);
+          const response = await fetch(apiUrl);
           if (!response.ok) {
             // Se a empresa não for encontrada (Deletada ou ID errado)
             document.querySelector('.profile-layout').innerHTML = `
               <div style="text-align: center; padding: 5rem 2rem; width: 100%;">
-                <i data-lucide="search-X" style="width: 64px; height: 64px; color: var(--color-muted); margin: 0 auto 1rem;"></i>
+                <i data-lucide="search-x" style="width: 64px; height: 64px; color: var(--color-muted); margin: 0 auto 1rem;"></i>
                 <h1 style="font-size: 2rem; font-weight: bold; color: var(--color-text-dark);">Perfil não encontrado</h1>
                 <p style="color: var(--color-muted); margin-bottom: 2rem;">A empresa que você está procurando não existe ou foi removida.</p>
                 <a href="/" class="btn btn-primary">Voltar para o Início</a>
@@ -483,6 +605,7 @@
             return;
           }
           const business = await response.json();
+          CURRENT_PROFILE_BUSINESS_ID = business.id;
 
           // Aplicar identidade visual personalizada da empresa
           aplicarCorMarca(business.color_primary);
@@ -723,6 +846,69 @@
               `).join('');
           }
           
+          // Comodidades & Diferenciais do Estabelecimento
+          const amenitiesWrapper = document.getElementById('amenities-wrapper');
+          const amenitiesContainer = document.getElementById('amenities-profile-container');
+          if (amenitiesWrapper && amenitiesContainer) {
+            const rawList = Array.isArray(business.amenities) ? business.amenities : [];
+            const validItems = rawList.map(k => AMENITIES_MAP[k]).filter(Boolean);
+            if (validItems.length > 0) {
+              amenitiesWrapper.style.display = 'block';
+              amenitiesContainer.innerHTML = validItems.map(item => `
+                <div class="profile-amenity-card">
+                  <div class="profile-amenity-icon"><i data-lucide="${item.icon}" class="w-4 h-4"></i></div>
+                  <span class="profile-amenity-text">${item.label}</span>
+                </div>
+              `).join('');
+            } else {
+              amenitiesWrapper.style.display = 'none';
+            }
+          }
+
+          // Botão Cardápio / Catálogo em PDF / Loja
+          const btnCatalog = document.getElementById('btn-catalog');
+          if (btnCatalog) {
+            if (business.catalog_url && business.catalog_url.trim()) {
+              btnCatalog.style.display = 'flex';
+              let cUrl = business.catalog_url.trim();
+              if (!cUrl.startsWith('http://') && !cUrl.startsWith('https://')) {
+                cUrl = 'https://' + cUrl;
+              }
+              btnCatalog.href = cUrl;
+            } else {
+              btnCatalog.style.display = 'none';
+            }
+          }
+
+          // Redes Sociais Adicionais (Facebook, TikTok, LinkedIn, YouTube)
+          const socialBar = document.getElementById('social-links-bar');
+          let hasSocial = false;
+
+          const bindSocial = (elemId, val, prefix) => {
+            const el = document.getElementById(elemId);
+            if (!el) return;
+            if (val && val.trim()) {
+              let url = val.trim();
+              if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = prefix + url.replace(/^@/, '');
+              }
+              el.href = url;
+              el.style.display = 'inline-flex';
+              hasSocial = true;
+            } else {
+              el.style.display = 'none';
+            }
+          };
+
+          bindSocial('social-facebook', business.facebook, 'https://facebook.com/');
+          bindSocial('social-tiktok', business.tiktok, 'https://tiktok.com/@');
+          bindSocial('social-linkedin', business.linkedin, 'https://linkedin.com/in/');
+          bindSocial('social-youtube', business.youtube, 'https://youtube.com/');
+
+          if (socialBar) {
+            socialBar.style.display = hasSocial ? 'flex' : 'none';
+          }
+
           // Recriar os ícones
           lucide.createIcons(); 
           
@@ -733,7 +919,7 @@
     });
     async function enviarAvaliacao() {
       const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get('id');
+      const id = CURRENT_PROFILE_BUSINESS_ID || urlParams.get('id');
       
       const author_name = document.getElementById('review-name').value.trim();
       const author_email = document.getElementById('review-email').value.trim();
