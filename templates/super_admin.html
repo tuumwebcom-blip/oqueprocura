@@ -151,6 +151,27 @@
     }
     .status-active { background: #dcfce7; color: #166534; }
     .status-pending { background: #fef9c3; color: #854d0e; }
+
+    .btn-filtro-plano {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      transition: all 0.15s ease;
+    }
+    .btn-filtro-plano:hover {
+      color: var(--color-text-dark);
+    }
+    .btn-filtro-plano.active {
+      background: white;
+      color: var(--color-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -186,7 +207,7 @@
           <i data-lucide="dollar-sign" class="w-5 h-5"></i> Planos Ativos
         </a>
         <a href="#" class="admin-nav-item" data-target="categorias">
-          <i data-lucide="tag" class="w-5 h-5"></i> Categorias
+          <i data-lucide="tag" class="w-5 h-5"></i> <span id="nav-categorias-count">Categorias</span>
         </a>
         <a href="#" class="admin-nav-item" data-target="configuracoes">
           <i data-lucide="settings" class="w-5 h-5"></i> Configurações
@@ -307,35 +328,282 @@
         </div>
       </section>
 
-      <!-- ABA: ASSINATURAS -->
+      <!-- ABA: ASSINATURAS / PLANOS -->
       <section id="tab-assinaturas" class="tab-section" style="display:none;">
-        <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Planos da Plataforma</h1>
-        <div class="grid grid-cols-3 gap-6">
-          <div class="card">
-            <h3 class="font-bold text-text-dark text-lg">Básico</h3>
-            <p class="text-2xl font-bold text-secondary my-2">R$ 29,90</p>
-            <p class="text-sm text-muted">Ideal para quem está começando.</p>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Planos da Plataforma</h1>
+            <p class="text-muted mt-1">Gerencie os 4 planos oficiais, acompanhe o faturamento mensal e filtre empresas inscritas.</p>
           </div>
-          <div class="card" style="border: 2px solid var(--color-secondary);">
-            <h3 class="font-bold text-text-dark text-lg">PRO</h3>
-            <p class="text-2xl font-bold text-secondary my-2">R$ 49,90</p>
-            <p class="text-sm text-muted">Destaque nas buscas e 20 fotos.</p>
+        </div>
+
+        <!-- 4 Cards de Planos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          
+          <!-- Plano Gratuito -->
+          <div class="card" style="border: 1px solid #e2e8f0; border-top: 4px solid #94a3b8; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; text-transform: uppercase;">Entrada</span>
+                <span class="text-xs text-muted font-medium">Básico Grátis</span>
+              </div>
+              <h3 class="font-bold text-text-dark text-xl" style="font-family: 'Plus Jakarta Sans', sans-serif;">Gratuito</h3>
+              <div class="my-3">
+                <span class="text-3xl font-bold text-slate-800" style="font-family: 'Plus Jakarta Sans', sans-serif;">R$ 0,00</span>
+                <span class="text-xs text-muted">/mês</span>
+              </div>
+              
+              <div class="p-3 bg-slate-50 rounded-lg mb-4 border border-slate-100">
+                <div class="text-xs text-muted mb-0.5">Empresas ativas:</div>
+                <div class="text-lg font-bold text-slate-700" id="plan-count-gratuito">0 empresas</div>
+              </div>
+
+              <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recursos Inclusos:</div>
+              <ul class="text-xs text-slate-600 space-y-2 mb-4">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></i>
+                  <span>Página de perfil essencial</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></i>
+                  <span>1 foto de capa principal</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></i>
+                  <span>Link de WhatsApp e contatos</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></i>
+                  <span>Até 3 serviços/produtos</span>
+                </li>
+              </ul>
+            </div>
+            <button onclick="filtrarTabelaPlanos('gratuito')" class="btn btn-outline text-xs w-full py-2 font-semibold">
+              Filtrar Empresas (Gratuito)
+            </button>
           </div>
-          <div class="card" style="background: #1e293b; color: white;">
-            <h3 class="font-bold text-white text-lg">Elite</h3>
-            <p class="text-2xl font-bold text-purple-400 my-2">R$ 99,90</p>
-            <p class="text-sm text-slate-300">Máxima visibilidade e serviços ilimitados.</p>
+
+          <!-- Plano Básico -->
+          <div class="card" style="border: 1px solid #e2e8f0; border-top: 4px solid #3b82f6; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span style="background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; text-transform: uppercase;">Inicial</span>
+                <span class="text-xs text-muted font-medium">Crescimento</span>
+              </div>
+              <h3 class="font-bold text-text-dark text-xl" style="font-family: 'Plus Jakarta Sans', sans-serif;">Básico</h3>
+              <div class="my-3">
+                <span class="text-3xl font-bold text-blue-600" style="font-family: 'Plus Jakarta Sans', sans-serif;">R$ 29,90</span>
+                <span class="text-xs text-muted">/mês</span>
+              </div>
+              
+              <div class="p-3 bg-blue-50/60 rounded-lg mb-4 border border-blue-100">
+                <div class="flex justify-between text-xs text-muted mb-0.5">
+                  <span>Empresas: <strong class="text-blue-700" id="plan-count-basico">0</strong></span>
+                  <span>MRR: <strong class="text-blue-700" id="plan-mrr-basico">R$ 0,00</strong></span>
+                </div>
+              </div>
+
+              <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recursos Inclusos:</div>
+              <ul class="text-xs text-slate-600 space-y-2 mb-4">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-blue-500 shrink-0"></i>
+                  <span>Até 5 fotos na galeria</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-blue-500 shrink-0"></i>
+                  <span>Até 10 serviços no catálogo</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-blue-500 shrink-0"></i>
+                  <span>Métricas de visitas e cliques</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-blue-500 shrink-0"></i>
+                  <span>Suporte padrão por e-mail</span>
+                </li>
+              </ul>
+            </div>
+            <button onclick="filtrarTabelaPlanos('basico')" class="btn btn-outline text-xs w-full py-2 font-semibold">
+              Filtrar Empresas (Básico)
+            </button>
           </div>
+
+          <!-- Plano PRO -->
+          <div class="card" style="border: 2px solid var(--color-secondary); border-top: 4px solid var(--color-secondary); display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span style="background: rgba(99, 102, 241, 0.15); color: var(--color-secondary); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; text-transform: uppercase;">Mais Escolhido</span>
+                <span class="text-xs text-muted font-medium">Recomendado</span>
+              </div>
+              <h3 class="font-bold text-text-dark text-xl" style="font-family: 'Plus Jakarta Sans', sans-serif;">PRO</h3>
+              <div class="my-3">
+                <span class="text-3xl font-bold text-secondary" style="font-family: 'Plus Jakarta Sans', sans-serif;">R$ 49,90</span>
+                <span class="text-xs text-muted">/mês</span>
+              </div>
+              
+              <div class="p-3 bg-indigo-50/60 rounded-lg mb-4 border border-indigo-100">
+                <div class="flex justify-between text-xs text-muted mb-0.5">
+                  <span>Empresas: <strong class="text-indigo-700" id="plan-count-pro">0</strong></span>
+                  <span>MRR: <strong class="text-indigo-700" id="plan-mrr-pro">R$ 0,00</strong></span>
+                </div>
+              </div>
+
+              <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recursos Inclusos:</div>
+              <ul class="text-xs text-slate-600 space-y-2 mb-4">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
+                  <span>Até 20 fotos em alta resolução</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
+                  <span>Catálogo completo de serviços</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
+                  <span>Selo PRO de verificação</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
+                  <span>Prioridade nas buscas locais</span>
+                </li>
+              </ul>
+            </div>
+            <button onclick="filtrarTabelaPlanos('pro')" class="btn btn-outline text-xs w-full py-2 font-semibold">
+              Filtrar Empresas (PRO)
+            </button>
+          </div>
+
+          <!-- Plano Elite -->
+          <div class="card" style="background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%); color: white; border: 1px solid #4338ca; display:flex; flex-direction:column; justify-content:space-between; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px; text-transform: uppercase;">⭐ VIP / Máximo</span>
+                <span class="text-xs text-slate-400 font-medium">Exclusivo</span>
+              </div>
+              <h3 class="font-bold text-white text-xl" style="font-family: 'Plus Jakarta Sans', sans-serif;">Elite VIP</h3>
+              <div class="my-3">
+                <span class="text-3xl font-bold text-amber-400" style="font-family: 'Plus Jakarta Sans', sans-serif;">R$ 99,90</span>
+                <span class="text-xs text-slate-400">/mês</span>
+              </div>
+              
+              <div class="p-3 bg-slate-800/90 rounded-lg mb-4 border border-slate-700">
+                <div class="flex justify-between text-xs text-slate-300 mb-0.5">
+                  <span>Empresas: <strong class="text-amber-300" id="plan-count-elite">0</strong></span>
+                  <span>MRR: <strong class="text-amber-300" id="plan-mrr-elite">R$ 0,00</strong></span>
+                </div>
+              </div>
+
+              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Recursos Inclusos:</div>
+              <ul class="text-xs text-slate-300 space-y-2 mb-4">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                  <span>Destaque especial no topo da Home</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                  <span>Fotos e Serviços Ilimitados</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                  <span>Selo Dourado Elite VIP</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                  <span>Máxima prioridade nas buscas</span>
+                </li>
+              </ul>
+            </div>
+            <button onclick="filtrarTabelaPlanos('elite')" class="btn text-xs w-full py-2 font-bold" style="background: #fbbf24; color: #0f172a; border: none;">
+              Filtrar Empresas (Elite)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Tabela com Filtro por Plano -->
+        <div class="data-table-container">
+          <div class="data-table-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div>
+              <h2 class="text-lg font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Empresas por Plano</h2>
+              <p class="text-xs text-muted">Gerencie e altere o plano ativo de qualquer empresa em tempo real.</p>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
+              <button onclick="filtrarTabelaPlanos('todos')" id="btn-filtro-plano-todos" class="btn-filtro-plano active">Todos (<span id="total-planos-badge">0</span>)</button>
+              <button onclick="filtrarTabelaPlanos('gratuito')" id="btn-filtro-plano-gratuito" class="btn-filtro-plano">Gratuito</button>
+              <button onclick="filtrarTabelaPlanos('basico')" id="btn-filtro-plano-basico" class="btn-filtro-plano">Básico</button>
+              <button onclick="filtrarTabelaPlanos('pro')" id="btn-filtro-plano-pro" class="btn-filtro-plano">PRO</button>
+              <button onclick="filtrarTabelaPlanos('elite')" id="btn-filtro-plano-elite" class="btn-filtro-plano">Elite</button>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Contato</th>
+                <th>Plano Atual</th>
+                <th>Mensalidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="planos-table-body">
+              <tr><td colspan="6" style="text-align:center; padding: 2rem;">Carregando empresas...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <!-- ABA: CATEGORIAS -->
       <section id="tab-categorias" class="tab-section" style="display:none;">
-        <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Categorias Cadastradas</h1>
-        <div class="card">
-          <ul id="categorias-list" class="flex flex-col gap-3">
-            <li class="text-muted">Carregando categorias...</li>
-          </ul>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <div class="flex items-center gap-3">
+              <h1 class="text-3xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Categorias da Plataforma</h1>
+              <span id="badge-total-categorias" class="badge" style="background:#e0e7ff; color:#4338ca; font-weight:700; font-size:0.75rem; padding: 4px 10px; border-radius:9999px;">Carregando...</span>
+            </div>
+            <p class="text-muted mt-1">Consulte todas as 75 categorias oficiais da plataforma, organize por segmento ou cadastre novas categorias sob demanda.</p>
+          </div>
+          <div>
+            <button class="btn btn-primary flex items-center gap-2" onclick="abrirModalNovaCategoria()">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> + Nova Categoria
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra de Busca e Filtros de Categoria -->
+        <div class="card mb-6" style="padding: 1rem 1.5rem;">
+          <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="relative w-full md:w-96">
+              <input type="text" id="input-busca-categoria" oninput="filtrarCategoriasLista(this.value)" placeholder="Pesquisar categoria por nome ou segmento..." class="form-control" style="padding-left: 2.5rem;">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto">
+              <span class="text-xs text-muted font-medium whitespace-nowrap">Segmento:</span>
+              <select id="filtro-grupo-categoria" onchange="filtrarCategoriasPorGrupo(this.value)" class="form-control text-xs font-semibold" style="width: auto; padding: 0.5rem 0.75rem;">
+                <option value="todos">Todos os Segmentos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela de Categorias -->
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Ícone</th>
+                <th>Nome da Categoria</th>
+                <th>Segmento / Grupo</th>
+                <th style="width: 170px;">Empresas Cadastradas</th>
+                <th style="width: 100px; text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="categorias-table-body">
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 2.5rem;" class="text-muted">Carregando categorias oficiais...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -347,32 +615,42 @@
           <button class="btn btn-outline" onclick="alert('Funcionalidade em desenvolvimento!')">Exportar Banco de Dados</button>
         </div>
       </section>
+
       <!-- Modal Nova Empresa -->
-      <div id="modal-nova-empresa" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem; box-shadow: var(--shadow-lg);">
-          <h3 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Cadastrar Nova Empresa</h3>
-          <div class="form-group mb-3">
-            <label class="form-label font-semibold text-sm">Nome da Empresa</label>
-            <input type="text" id="new-biz-name" class="form-control" placeholder="Ex: Studio 54">
+      <div id="modal-nova-empresa" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(2px);">
+        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem; box-shadow: var(--shadow-xl); border: 1px solid var(--color-border);">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+            <h3 class="text-xl font-bold text-text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;">Cadastrar Nova Empresa</h3>
+            <button onclick="fecharModalNovaEmpresa()" class="text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
           </div>
           <div class="form-group mb-3">
-            <label class="form-label font-semibold text-sm">Email de Acesso</label>
+            <label class="form-label font-semibold text-sm">Nome da Empresa *</label>
+            <input type="text" id="new-biz-name" class="form-control" placeholder="Ex: Studio 54, Pizzaria do Chefe">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label font-semibold text-sm">Email de Acesso *</label>
             <input type="email" id="new-biz-email" class="form-control" placeholder="contato@empresa.com">
           </div>
           <div class="form-group mb-3">
-            <label class="form-label font-semibold text-sm">Senha Provisória</label>
+            <label class="form-label font-semibold text-sm">Categoria Principal</label>
+            <input type="text" id="new-biz-category" list="list-grupos-sugestoes" class="form-control" placeholder="Ex: Tecnologia, Restaurantes, etc." value="Geral">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label font-semibold text-sm">Senha Provisória *</label>
             <input type="text" id="new-biz-password" class="form-control" value="123456">
           </div>
           <div class="form-group mb-4">
             <label class="form-label font-semibold text-sm">Plano de Acesso</label>
             <select id="new-biz-plan" class="form-control" style="font-weight: 600; padding: 0.6rem 0.75rem;">
-              <option value="elite" selected>⭐ Elite (Cortesia Admin - Gratuito)</option>
-              <option value="pro">PRO (Cortesia Admin - Gratuito)</option>
-              <option value="basico">Básico (Cortesia Admin - Gratuito)</option>
+              <option value="elite" selected>⭐ Elite VIP (Cortesia Admin - 100% Gratuito)</option>
+              <option value="pro">PRO (Cortesia Admin - 100% Gratuito)</option>
+              <option value="basico">Básico (Cortesia Admin - 100% Gratuito)</option>
               <option value="gratuito">Gratuito (Padrão)</option>
             </select>
             <p class="text-xs text-emerald-600 font-semibold mt-1.5" style="display: flex; align-items: center; gap: 4px;">
-              ✓ Sem custos: acesso liberado imediatamente com recursos completos do plano escolhido.
+              ✓ Sem custos: acesso liberado imediatamente com todos os recursos do plano.
             </p>
           </div>
           <div class="flex gap-3">
@@ -382,11 +660,88 @@
         </div>
       </div>
 
+      <!-- Modal Nova Categoria -->
+      <div id="modal-nova-categoria" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(2px);">
+        <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:500px; margin:1rem; box-shadow: var(--shadow-xl); border: 1px solid var(--color-border);">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+            <h3 class="text-xl font-bold text-text-dark flex items-center gap-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+              <i data-lucide="folder-plus" class="w-5 h-5 text-secondary"></i> Nova Categoria
+            </h3>
+            <button onclick="fecharModalNovaCategoria()" class="text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label font-semibold text-sm">Nome da Categoria *</label>
+            <input type="text" id="new-cat-name" class="form-control" placeholder="Ex: Energia Solar, Pizzaria Artesanal, Estética Automotiva">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label font-semibold text-sm">Segmento / Grupo *</label>
+            <input type="text" id="new-cat-group" list="list-grupos-sugestoes" class="form-control" placeholder="Ex: Alimentação & Gastronomia, Tecnologia, etc.">
+            <datalist id="list-grupos-sugestoes">
+              <option value="Alimentação & Gastronomia">
+              <option value="Saúde & Medicina">
+              <option value="Beleza & Cuidados Pessoais">
+              <option value="Construção, Reformas & Imóveis">
+              <option value="Automotivo">
+              <option value="Tecnologia & Comunicação">
+              <option value="Serviços Profissionais & Negócios">
+              <option value="Educação, Idiomas & Treinamentos">
+              <option value="Moda & Vestuário">
+              <option value="Eventos, Festas & Entretenimento">
+              <option value="Comércio & Varejo">
+              <option value="Pet Care & Veterinária">
+              <option value="Esporte & Lazer">
+              <option value="Geral">
+            </datalist>
+            <span class="text-xs text-muted mt-1 block">Escolha uma sugestão ou digite um novo grupo personalizado.</span>
+          </div>
+          <div class="form-group mb-4">
+            <label class="form-label font-semibold text-sm">Ícone Representativo (Lucide)</label>
+            <select id="new-cat-icon" class="form-control" style="font-weight: 500;">
+              <option value="tag">🏷️ tag (Padrão)</option>
+              <option value="utensils">🍴 utensils (Alimentação / Restaurante)</option>
+              <option value="coffee">☕ coffee (Café / Padaria)</option>
+              <option value="pizza">🍕 pizza (Pizzaria / Lanches)</option>
+              <option value="beer">🍺 beer (Bares / Chopp)</option>
+              <option value="heart-pulse">🩺 heart-pulse (Saúde / Médicos)</option>
+              <option value="smile">🦷 smile (Odontologia / Estética)</option>
+              <option value="sparkles">✨ sparkles (Beleza / Salões)</option>
+              <option value="scissors">✂️ scissors (Barbearia / Cabeleireiro)</option>
+              <option value="wrench">🔧 wrench (Manutenção / Reformas)</option>
+              <option value="hammer">🔨 hammer (Construção)</option>
+              <option value="home">🏠 home (Imóveis / Residencial)</option>
+              <option value="car">🚗 car (Automotivo / Oficinas)</option>
+              <option value="bike">🚲 bike (Bicicletaria / Mobilidade)</option>
+              <option value="laptop">💻 laptop (Tecnologia / Informática)</option>
+              <option value="smartphone">📱 smartphone (Celulares / Eletrônicos)</option>
+              <option value="briefcase">💼 briefcase (Advocacia / Contabilidade)</option>
+              <option value="graduation-cap">🎓 graduation-cap (Educação / Cursos)</option>
+              <option value="shopping-bag">🛍️ shopping-bag (Lojas / Varejo)</option>
+              <option value="shirt">👕 shirt (Moda / Roupas)</option>
+              <option value="camera">📷 camera (Fotografia / Eventos)</option>
+              <option value="party-popper">🎉 party-popper (Festas / Buffet)</option>
+              <option value="dog">🐾 dog (Pet Shop / Veterinária)</option>
+              <option value="dumbbell">🏋️ dumbbell (Academias / Fitness)</option>
+            </select>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button class="btn btn-outline flex-1" onclick="fecharModalNovaCategoria()">Cancelar</button>
+            <button class="btn btn-primary flex-1" onclick="salvarNovaCategoria()">Salvar Categoria</button>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
   <script>
     lucide.createIcons();
+
+    // Estado global
+    window.todasAssinaturas = [];
+    window.filtroPlanoAtual = 'todos';
+    window.listaCategoriasOriginal = [];
 
     // Lógica de Abas
     document.querySelectorAll('.admin-nav-item').forEach(item => {
@@ -403,10 +758,18 @@
         
         // Mostra a selecionada
         const target = item.getAttribute('data-target');
-        document.getElementById('tab-' + target).style.display = 'block';
+        const targetSection = document.getElementById('tab-' + target);
+        if (targetSection) {
+          targetSection.style.display = 'block';
+        }
+
+        if (target === 'categorias') {
+          carregarCategorias();
+        } else if (target === 'assinaturas') {
+          filtrarTabelaPlanos(window.filtroPlanoAtual || 'todos');
+        }
       });
     });
-
 
     async function carregarDashboard() {
       try {
@@ -441,57 +804,94 @@
         document.getElementById('stat-empresas').textContent = data.total_businesses;
         document.getElementById('stat-views').textContent = data.total_views;
 
-        // Atualizar tabela de empresas
-        const tbody = document.getElementById('admin-table-body');
-        
-        if (!data.subscriptions || data.subscriptions.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">Nenhuma empresa cadastrada.</td></tr>';
-          return;
+        window.todasAssinaturas = data.subscriptions || [];
+
+        // Atualizar Métricas dos 4 Cards de Planos
+        if (data.plans_stats) {
+          const ps = data.plans_stats;
+          const countGratuito = ps.gratuito ? ps.gratuito.count : 0;
+          const elGratuito = document.getElementById('plan-count-gratuito');
+          if (elGratuito) elGratuito.textContent = `${countGratuito} ${countGratuito === 1 ? 'empresa' : 'empresas'}`;
+
+          const elBasicoCount = document.getElementById('plan-count-basico');
+          const elBasicoMrr = document.getElementById('plan-mrr-basico');
+          if (elBasicoCount) elBasicoCount.textContent = ps.basico ? ps.basico.count : 0;
+          if (elBasicoMrr) elBasicoMrr.textContent = ps.basico ? ps.basico.mrr_str : 'R$ 0,00';
+
+          const elProCount = document.getElementById('plan-count-pro');
+          const elProMrr = document.getElementById('plan-mrr-pro');
+          if (elProCount) elProCount.textContent = ps.pro ? ps.pro.count : 0;
+          if (elProMrr) elProMrr.textContent = ps.pro ? ps.pro.mrr_str : 'R$ 0,00';
+
+          const elEliteCount = document.getElementById('plan-count-elite');
+          const elEliteMrr = document.getElementById('plan-mrr-elite');
+          if (elEliteCount) elEliteCount.textContent = ps.elite ? ps.elite.count : 0;
+          if (elEliteMrr) elEliteMrr.textContent = ps.elite ? ps.elite.mrr_str : 'R$ 0,00';
         }
 
-        tbody.innerHTML = data.subscriptions.map(sub => {
-          const isSuspended = sub.status === 'suspended';
-          const badgeClass = isSuspended ? 'status-pending' : 'status-active';
-          const badgeText = isSuspended ? 'Suspensa' : 'Ativa';
-          const btnText = isSuspended ? 'Ativar' : 'Suspender';
-          const btnColor = isSuspended ? '#22c55e' : '#ef4444';
-          
-          return `
-          <tr>
-            <td>
-              <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
-              <div class="text-xs text-muted mb-1">${sub.email}</div>
-              <div class="flex items-center gap-2 mt-1">
-                <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
-                  <i data-lucide="external-link" class="w-3 h-3"></i> Ver Perfil
-                </a>
-                <span class="text-slate-300">•</span>
-                <a href="/admin.html?business_id=${sub.business_id}" class="text-xs text-indigo-600 hover:underline inline-flex items-center gap-1 font-semibold">
-                  <i data-lucide="layout-dashboard" class="w-3 h-3"></i> Editar no Painel
-                </a>
-              </div>
-            </td>
-            <td>
-              <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1.5 px-2" style="border-radius: 6px; cursor: pointer; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1; color: var(--color-text-dark);">
-                <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE (VIP)</option>
-                <option value="pro" ${sub.plan_raw === 'pro' ? 'selected' : ''}>PRO</option>
-                <option value="basico" ${sub.plan_raw === 'basico' ? 'selected' : ''}>BÁSICO</option>
-                <option value="gratuito" ${sub.plan_raw === 'gratuito' ? 'selected' : ''}>GRATUITO</option>
-              </select>
-            </td>
-            <td>
-              <div class="font-bold text-text-dark">${sub.price}</div>
-              <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
-            </td>
-            <td class="font-bold text-text-dark">${sub.views}</td>
-            <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
-            <td>
-              <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
-                ${btnText}
-              </button>
-            </td>
-          </tr>
-        `;}).join('');
+        const badgeTotalPlanos = document.getElementById('total-planos-badge');
+        if (badgeTotalPlanos) badgeTotalPlanos.textContent = data.total_businesses || 0;
+
+        if (data.total_categories) {
+          const navCat = document.getElementById('nav-categorias-count');
+          if (navCat) navCat.textContent = `Categorias (${data.total_categories})`;
+          const badgeCat = document.getElementById('badge-total-categorias');
+          if (badgeCat && badgeCat.textContent === 'Carregando...') {
+            badgeCat.textContent = `${data.total_categories} categorias`;
+          }
+        }
+
+        // Atualizar tabela principal de assinaturas (Aba Dashboard)
+        const tbody = document.getElementById('admin-table-body');
+        if (tbody) {
+          if (!data.subscriptions || data.subscriptions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">Nenhuma empresa cadastrada.</td></tr>';
+          } else {
+            tbody.innerHTML = data.subscriptions.map(sub => {
+              const isSuspended = sub.status === 'suspended';
+              const badgeClass = isSuspended ? 'status-pending' : 'status-active';
+              const badgeText = isSuspended ? 'Suspensa' : 'Ativa';
+              const btnText = isSuspended ? 'Ativar' : 'Suspender';
+              const btnColor = isSuspended ? '#22c55e' : '#ef4444';
+              
+              return `
+              <tr>
+                <td>
+                  <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
+                  <div class="text-xs text-muted mb-1">${sub.email}</div>
+                  <div class="flex items-center gap-2 mt-1">
+                    <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                      <i data-lucide="external-link" class="w-3 h-3"></i> Ver Perfil
+                    </a>
+                    <span class="text-slate-300">•</span>
+                    <a href="/admin.html?business_id=${sub.business_id}" class="text-xs text-indigo-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                      <i data-lucide="layout-dashboard" class="w-3 h-3"></i> Editar no Painel
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1.5 px-2" style="border-radius: 6px; cursor: pointer; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1; color: var(--color-text-dark);">
+                    <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE (VIP)</option>
+                    <option value="pro" ${sub.plan_raw === 'pro' ? 'selected' : ''}>PRO</option>
+                    <option value="basico" ${sub.plan_raw === 'basico' ? 'selected' : ''}>BÁSICO</option>
+                    <option value="gratuito" ${sub.plan_raw === 'gratuito' ? 'selected' : ''}>GRATUITO</option>
+                  </select>
+                </td>
+                <td>
+                  <div class="font-bold text-text-dark">${sub.price}</div>
+                  <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
+                </td>
+                <td class="font-bold text-text-dark">${sub.views}</td>
+                <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                <td>
+                  <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
+                    ${btnText}
+                  </button>
+                </td>
+              </tr>
+            `;}).join('');
+          }
+        }
       
         // Preencher Aba Empresas
         document.getElementById('nav-empresas-count').textContent = `Empresas (${data.total_businesses})`;
@@ -521,25 +921,253 @@
           `).join('');
         }
 
-        // Preencher Aba Categorias
-        const categoriasList = document.getElementById('categorias-list');
-        if (categoriasList) {
-          const categorias = [...new Set(data.subscriptions.map(s => s.category))];
-          categoriasList.innerHTML = categorias.map(c => `
-            <li class="p-3 border border-slate-200 rounded-lg font-medium text-text-dark flex items-center gap-2">
-              <i data-lucide="tag" class="w-4 h-4 text-secondary"></i> ${c}
-            </li>
-          `).join('');
-        }
+        // Preencher Tabela da Aba Planos Ativos
+        filtrarTabelaPlanos(window.filtroPlanoAtual || 'todos');
 
         lucide.createIcons();
 
       } catch (e) {
         console.error('Erro ao carregar dashboard', e);
-        document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red; padding: 2rem;">Erro ao conectar com o servidor.</td></tr>';
+        const tbody = document.getElementById('admin-table-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red; padding: 2rem;">Erro ao conectar com o servidor.</td></tr>';
       }
     }
 
+    // --- Filtros e Renderização da Tabela de Planos ---
+    function filtrarTabelaPlanos(plano) {
+      window.filtroPlanoAtual = plano;
+      document.querySelectorAll('.btn-filtro-plano').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-filtro-plano-' + plano);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      let filtradas = window.todasAssinaturas || [];
+      if (plano !== 'todos') {
+        filtradas = filtradas.filter(s => (s.plan_raw || '').toLowerCase() === plano.toLowerCase());
+      }
+
+      renderizarTabelaPlanos(filtradas);
+    }
+
+    function renderizarTabelaPlanos(subs) {
+      const tbody = document.getElementById('planos-table-body');
+      if (!tbody) return;
+
+      if (!subs || subs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;" class="text-muted">Nenhuma empresa encontrada para este plano.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = subs.map(sub => {
+        const isSuspended = sub.status === 'suspended';
+        const badgeClass = isSuspended ? 'status-pending' : 'status-active';
+        const badgeText = isSuspended ? 'Suspensa' : 'Ativa';
+
+        return `
+          <tr>
+            <td>
+              <div class="font-bold text-text-dark text-base">${sub.business_name}</div>
+              <div class="text-xs text-muted">${sub.category || 'Geral'}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <a href="/p/${sub.slug || sub.business_id}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                  <i data-lucide="external-link" class="w-3 h-3"></i> Perfil
+                </a>
+                <span class="text-slate-300">•</span>
+                <a href="/admin.html?business_id=${sub.business_id}" class="text-xs text-indigo-600 hover:underline inline-flex items-center gap-1 font-semibold">
+                  <i data-lucide="layout-dashboard" class="w-3 h-3"></i> Painel
+                </a>
+              </div>
+            </td>
+            <td>
+              <div class="text-sm font-medium text-slate-700">${sub.email}</div>
+            </td>
+            <td>
+              <select onchange="mudarPlano(${sub.business_id}, this.value)" class="form-control text-xs font-bold py-1.5 px-2" style="border-radius: 6px; cursor: pointer; width: auto; background-color: #f8fafc; border: 1px solid #cbd5e1; color: var(--color-text-dark);">
+                <option value="elite" ${sub.plan_raw === 'elite' ? 'selected' : ''}>⭐ ELITE (VIP)</option>
+                <option value="pro" ${sub.plan_raw === 'pro' ? 'selected' : ''}>PRO</option>
+                <option value="basico" ${sub.plan_raw === 'basico' ? 'selected' : ''}>BÁSICO</option>
+                <option value="gratuito" ${sub.plan_raw === 'gratuito' ? 'selected' : ''}>GRATUITO</option>
+              </select>
+            </td>
+            <td>
+              <div class="font-bold text-text-dark">${sub.price}</div>
+              <span class="badge mt-0.5 inline-block" style="background:#dcfce7; color:#166534; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;">Grátis Admin</span>
+            </td>
+            <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+            <td>
+              <button onclick="toggleStatus(${sub.business_id})" style="background:${isSuspended ? '#22c55e' : '#ef4444'}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                ${isSuspended ? 'Ativar' : 'Suspender'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- Gestão Completa de Categorias ---
+    async function carregarCategorias() {
+      try {
+        const res = await fetch('/api/superadmin/categories');
+        const data = await res.json();
+        if (data.success && data.categories) {
+          window.listaCategoriasOriginal = data.categories;
+          
+          const badgeTotal = document.getElementById('badge-total-categorias');
+          if (badgeTotal) badgeTotal.textContent = `${data.categories.length} categorias cadastradas`;
+          
+          const navCat = document.getElementById('nav-categorias-count');
+          if (navCat) navCat.textContent = `Categorias (${data.categories.length})`;
+
+          // Preencher opções no select de filtro de segmentos
+          const grupos = [...new Set(data.categories.map(c => c.group_name).filter(Boolean))].sort();
+          const selectGrupo = document.getElementById('filtro-grupo-categoria');
+          if (selectGrupo) {
+            const valorAtual = selectGrupo.value;
+            selectGrupo.innerHTML = '<option value="todos">Todos os Segmentos</option>' + 
+              grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+            selectGrupo.value = valorAtual || 'todos';
+          }
+
+          renderizarCategorias(window.listaCategoriasOriginal);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar categorias:', err);
+      }
+    }
+
+    function renderizarCategorias(cats) {
+      const tbody = document.getElementById('categorias-table-body');
+      if (!tbody) return;
+
+      if (!cats || cats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;" class="text-muted">Nenhuma categoria encontrada para a busca informada.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = cats.map(cat => {
+        const iconName = cat.icon || 'tag';
+        const hasBusinesses = cat.business_count > 0;
+        return `
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td>
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i data-lucide="${iconName}" class="w-4 h-4"></i>
+              </div>
+            </td>
+            <td>
+              <div class="font-bold text-text-dark text-sm">${cat.name}</div>
+              <div class="text-xs text-slate-400">slug: ${cat.slug || '-'}</div>
+            </td>
+            <td>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                ${cat.group_name || 'Geral'}
+              </span>
+            </td>
+            <td>
+              <span class="inline-flex items-center gap-1.5 text-xs font-bold ${hasBusinesses ? 'text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full' : 'text-slate-400'}">
+                ${hasBusinesses ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>' : ''}
+                ${cat.business_count} ${cat.business_count === 1 ? 'empresa' : 'empresas'}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <button onclick="excluirCategoria(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="text-xs text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Categoria">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function filtrarCategoriasLista(termo) {
+      const t = (termo || '').toLowerCase().trim();
+      const grupoFiltro = document.getElementById('filtro-grupo-categoria')?.value || 'todos';
+
+      let filtradas = window.listaCategoriasOriginal || [];
+
+      if (grupoFiltro !== 'todos') {
+        filtradas = filtradas.filter(c => (c.group_name || '') === grupoFiltro);
+      }
+
+      if (t) {
+        filtradas = filtradas.filter(c => 
+          (c.name || '').toLowerCase().includes(t) || 
+          (c.group_name || '').toLowerCase().includes(t)
+        );
+      }
+
+      renderizarCategorias(filtradas);
+    }
+
+    function filtrarCategoriasPorGrupo(grupo) {
+      const buscaTermo = document.getElementById('input-busca-categoria')?.value || '';
+      filtrarCategoriasLista(buscaTermo);
+    }
+
+    function abrirModalNovaCategoria() {
+      document.getElementById('new-cat-name').value = '';
+      document.getElementById('new-cat-group').value = '';
+      document.getElementById('new-cat-icon').value = 'tag';
+      document.getElementById('modal-nova-categoria').style.display = 'flex';
+      document.getElementById('new-cat-name').focus();
+    }
+
+    function fecharModalNovaCategoria() {
+      document.getElementById('modal-nova-categoria').style.display = 'none';
+    }
+
+    async function salvarNovaCategoria() {
+      const name = document.getElementById('new-cat-name').value.trim();
+      const group_name = document.getElementById('new-cat-group').value.trim() || 'Geral';
+      const icon = document.getElementById('new-cat-icon').value;
+
+      if (!name) {
+        alert('Por favor, informe o nome da categoria.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/categories/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, group_name, icon })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fecharModalNovaCategoria();
+          await carregarCategorias();
+          carregarDashboard();
+        } else {
+          alert(data.message || 'Erro ao cadastrar categoria.');
+        }
+      } catch (err) {
+        alert('Erro de conexão ao salvar categoria.');
+      }
+    }
+
+    async function excluirCategoria(id, nome) {
+      if (!confirm(`Tem certeza que deseja excluir a categoria "${nome}"?`)) return;
+
+      try {
+        const res = await fetch(`/api/superadmin/categories/${id}/delete`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          await carregarCategorias();
+          carregarDashboard();
+        } else {
+          alert(data.message || 'Erro ao excluir categoria.');
+        }
+      } catch (err) {
+        alert('Erro de conexão ao excluir categoria.');
+      }
+    }
+
+    // --- Funções de Empresas & Planos ---
     async function mudarPlano(businessId, novoPlano) {
       try {
         const res = await fetch('/api/superadmin/businesses/' + businessId + '/plan', {
@@ -573,13 +1201,15 @@
       }
     }
 
-    // Modal Funções
+    // Modal Nova Empresa
     function abrirModalNovaEmpresa() {
       document.getElementById('new-biz-name').value = '';
       document.getElementById('new-biz-email').value = '';
+      document.getElementById('new-biz-category').value = 'Geral';
       document.getElementById('new-biz-password').value = '123456';
       document.getElementById('new-biz-plan').value = 'elite';
       document.getElementById('modal-nova-empresa').style.display = 'flex';
+      document.getElementById('new-biz-name').focus();
     }
 
     function fecharModalNovaEmpresa() {
@@ -589,6 +1219,7 @@
     async function salvarNovaEmpresa() {
       const name = document.getElementById('new-biz-name').value.trim();
       const email = document.getElementById('new-biz-email').value.trim();
+      const category = (document.getElementById('new-biz-category')?.value || 'Geral').trim() || 'Geral';
       const password = document.getElementById('new-biz-password').value.trim();
       const plan = document.getElementById('new-biz-plan').value;
 
@@ -601,14 +1232,15 @@
         const res = await fetch('/api/superadmin/businesses/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ business_name: name, email, password, plan })
+          body: JSON.stringify({ business_name: name, email, password, plan, category })
         });
         const data = await res.json();
         
         if (data.success) {
           fecharModalNovaEmpresa();
           alert('Empresa cadastrada com sucesso no plano ' + plan.toUpperCase() + ' (Acesso 100% Gratuito Admin)!');
-          carregarDashboard();
+          await carregarDashboard();
+          carregarCategorias();
         } else {
           alert(data.message);
         }
@@ -624,7 +1256,10 @@
       window.location.href = '/login.html';
     }
 
-    document.addEventListener('DOMContentLoaded', carregarDashboard);
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarDashboard();
+      carregarCategorias();
+    });
   </script>
 </body>
 </html>

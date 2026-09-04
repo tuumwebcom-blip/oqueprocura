@@ -1310,6 +1310,36 @@
       }
 
       try {
+        // Carregar categorias oficiais cadastradas na plataforma
+        try {
+          const catRes = await fetch('/api/categories');
+          if (catRes.ok) {
+            const catData = await catRes.json();
+            if (catData.success && catData.categories && catData.categories.length > 0) {
+              const catSelect = document.getElementById('input-category');
+              if (catSelect) {
+                const grupos = {};
+                catData.categories.forEach(c => {
+                  const grp = c.group_name || 'Geral';
+                  if (!grupos[grp]) grupos[grp] = [];
+                  grupos[grp].push(c.name);
+                });
+                let html = '<option value="">Selecione uma categoria...</option>';
+                Object.keys(grupos).sort().forEach(grp => {
+                  html += `<optgroup label="${grp}">`;
+                  grupos[grp].sort().forEach(nome => {
+                    html += `<option value="${nome}">${nome}</option>`;
+                  });
+                  html += `</optgroup>`;
+                });
+                catSelect.innerHTML = html;
+              }
+            }
+          }
+        } catch(cErr) {
+          console.warn('Usando lista padrão de categorias:', cErr);
+        }
+
         const response = await fetch('/api/businesses/' + BUSINESS_ID);
         if (!response.ok) {
           console.error('Empresa não encontrada no banco:', response.status);

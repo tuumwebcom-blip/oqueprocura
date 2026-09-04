@@ -201,6 +201,115 @@ def check_db_schema():
         conn.execute("UPDATE businesses SET name = REPLACE(name, '&amp;amp;', '&') WHERE name LIKE '%&amp;amp;%'")
         conn.execute("UPDATE businesses SET name = REPLACE(name, '&amp;', '&') WHERE name LIKE '%&amp;%'")
 
+        # Tabela Oficial de Categorias
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS categories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                group_name TEXT DEFAULT 'Geral',
+                icon TEXT DEFAULT 'tag',
+                slug TEXT NOT NULL UNIQUE
+            )
+        ''')
+        
+        cat_count = conn.execute('SELECT COUNT(*) as count FROM categories').fetchone()['count']
+        if cat_count == 0:
+            default_categories = [
+                ('Tecnologia, Sites & Informática', 'Tecnologia & Comunicação', 'laptop'),
+                ('Marketing Digital & Redes Sociais', 'Tecnologia & Comunicação', 'megaphone'),
+                ('Gráfica & Comunicação Visual', 'Tecnologia & Comunicação', 'printer'),
+                ('Restaurantes & Bares', 'Alimentação & Gastronomia', 'utensils'),
+                ('Alimentação, Lanchonetes & Fast-Food', 'Alimentação & Gastronomia', 'coffee'),
+                ('Pizzarias & Hamburguerias', 'Alimentação & Gastronomia', 'pizza'),
+                ('Padarias, Confeitarias & Cafés', 'Alimentação & Gastronomia', 'croissant'),
+                ('Marmitarias & Comida Saudável', 'Alimentação & Gastronomia', 'salad'),
+                ('Oficina Mecânica & Auto Elétrica', 'Automotivo', 'wrench'),
+                ('Funilaria, Pintura & Estética Automotiva', 'Automotivo', 'car'),
+                ('Lava-Rápido & Detalhamento', 'Automotivo', 'droplets'),
+                ('Borracharia & Pneus', 'Automotivo', 'disc'),
+                ('Guincho & Socorro Mecânico', 'Automotivo', 'truck'),
+                ('Salão de Beleza & Cabeleireiro', 'Beleza & Cuidados Pessoais', 'scissors'),
+                ('Barbearia', 'Beleza & Cuidados Pessoais', 'smile'),
+                ('Clínica de Estética & Bronzeamento', 'Beleza & Cuidados Pessoais', 'sparkles'),
+                ('Manicure & Pedicure', 'Beleza & Cuidados Pessoais', 'heart'),
+                ('Tatuagem & Piercing', 'Beleza & Cuidados Pessoais', 'pen-tool'),
+                ('Massoterapia & Bem-estar', 'Beleza & Cuidados Pessoais', 'activity'),
+                ('Consultórios & Clínicas Médicas', 'Saúde & Medicina', 'stethoscope'),
+                ('Dentistas & Odontologia', 'Saúde & Medicina', 'smile'),
+                ('Fisioterapia & Pilates', 'Saúde & Medicina', 'activity'),
+                ('Psicologia & Terapia', 'Saúde & Medicina', 'brain'),
+                ('Farmácias & Manipulação', 'Saúde & Medicina', 'pill'),
+                ('Nutrição & Suplementos', 'Saúde & Medicina', 'apple'),
+                ('Óticas & Cuidados da Visão', 'Saúde & Medicina', 'glasses'),
+                ('Construção Civil, Pedreiro & Reformas', 'Construção & Reformas', 'hammer'),
+                ('Pintura & Acabamento', 'Construção & Reformas', 'paintbrush'),
+                ('Eletricista & Instalações', 'Construção & Reformas', 'zap'),
+                ('Encanador & Desentupidora', 'Construção & Reformas', 'droplet'),
+                ('Gesso & Drywall', 'Construção & Reformas', 'square'),
+                ('Marcenaria & Móveis Planejados', 'Construção & Reformas', 'box'),
+                ('Serralheria & Esquadrias', 'Construção & Reformas', 'shield'),
+                ('Vidraçaria & Box', 'Construção & Reformas', 'grid'),
+                ('Ar-Condicionado & Refrigeração', 'Construção & Reformas', 'wind'),
+                ('Marido de Aluguel & Reparos', 'Construção & Reformas', 'tool'),
+                ('Limpeza Residencial & Diaristas', 'Serviços Domésticos & Limpeza', 'home'),
+                ('Limpeza de Estofados & Carpetes', 'Serviços Domésticos & Limpeza', 'sparkles'),
+                ('Dedetizadora & Controle de Pragas', 'Serviços Domésticos & Limpeza', 'shield-alert'),
+                ('Lavanderia & Passadoria', 'Serviços Domésticos & Limpeza', 'shirt'),
+                ('Jardinagem & Paisagismo', 'Serviços Domésticos & Limpeza', 'flower'),
+                ('Piscineiro & Manutenção de Piscinas', 'Serviços Domésticos & Limpeza', 'waves'),
+                ('Fotografia & Filmagem', 'Eventos & Lazer', 'camera'),
+                ('Buffet & Catering', 'Eventos & Lazer', 'utensils'),
+                ('Decoração de Festas', 'Eventos & Lazer', 'party-popper'),
+                ('Espaço para Eventos & Chácaras', 'Eventos & Lazer', 'tent'),
+                ('DJ, Som & Iluminação', 'Eventos & Lazer', 'music'),
+                ('Cerimonial & Assessoria', 'Eventos & Lazer', 'calendar'),
+                ('Lojas de Roupas & Calçados', 'Comércio & Varejo', 'shopping-bag'),
+                ('Acessórios, Joias & Bijuterias', 'Comércio & Varejo', 'gem'),
+                ('Eletrônicos & Celulares', 'Comércio & Varejo', 'smartphone'),
+                ('Móveis & Decoração', 'Comércio & Varejo', 'armchair'),
+                ('Supermercados & Mercearias', 'Comércio & Varejo', 'shopping-cart'),
+                ('Bazar, Armarinho & Papelaria', 'Comércio & Varejo', 'book-open'),
+                ('Floricultura & Presentes', 'Comércio & Varejo', 'gift'),
+                ('Pet Shop, Banho & Tosa', 'Pets & Agro', 'paw-print'),
+                ('Clínica Veterinária', 'Pets & Agro', 'heart'),
+                ('Agropecuária & Rações', 'Pets & Agro', 'wheat'),
+                ('Adestramento & Hotel Pet', 'Pets & Agro', 'dog'),
+                ('Advocacia & Assessoria Jurídica', 'Serviços Profissionais & Jurídicos', 'scale'),
+                ('Contabilidade & Assessoria Fiscal', 'Serviços Profissionais & Jurídicos', 'calculator'),
+                ('Imobiliárias & Corretores de Imóveis', 'Serviços Profissionais & Jurídicos', 'building'),
+                ('Arquitetura & Engenharia', 'Serviços Profissionais & Jurídicos', 'compass'),
+                ('Consultoria Empresarial & RH', 'Serviços Profissionais & Jurídicos', 'briefcase'),
+                ('Seguros & Previdência', 'Serviços Profissionais & Jurídicos', 'shield-check'),
+                ('Despachante', 'Serviços Profissionais & Jurídicos', 'file-text'),
+                ('Chaveiro 24 Horas', 'Serviços Profissionais & Jurídicos', 'key'),
+                ('Segurança Eletrônica & Alarmes', 'Serviços Profissionais & Jurídicos', 'cctv'),
+                ('Escolas & Colégios', 'Educação & Treinamento', 'graduation-cap'),
+                ('Cursos Profissionalizantes & Idiomas', 'Educação & Treinamento', 'book'),
+                ('Aulas Particulares & Reforço', 'Educação & Treinamento', 'user-check'),
+                ('Autoescola (CFC)', 'Educação & Treinamento', 'car'),
+                ('Academias & Treinamento Físico', 'Educação & Treinamento', 'dumbbell'),
+                ('Artes Marciais & Dança', 'Educação & Treinamento', 'swords'),
+                ('Transporte, Mudanças & Fretes', 'Outros', 'truck')
+            ]
+            for cat_name, group_name, icon in default_categories:
+                cslug = slugify(cat_name)
+                try:
+                    conn.execute('INSERT OR IGNORE INTO categories (name, group_name, icon, slug) VALUES (?, ?, ?, ?)',
+                                 (cat_name, group_name, icon, cslug))
+                except Exception:
+                    pass
+
+        # Garante que qualquer categoria já utilizada nas empresas também esteja na tabela categories
+        try:
+            biz_cats = conn.execute("SELECT DISTINCT category FROM businesses WHERE category IS NOT NULL AND category != ''").fetchall()
+            for bc in biz_cats:
+                cname = bc['category'].strip()
+                if cname:
+                    conn.execute('INSERT OR IGNORE INTO categories (name, group_name, icon, slug) VALUES (?, ?, ?, ?)',
+                                 (cname, 'Geral', 'tag', slugify(cname)))
+        except Exception:
+            pass
+
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1292,10 +1401,33 @@ def superadmin_dashboard():
             'status': row['status'] or 'active'
         })
 
+    plans_stats = {
+        'gratuito': {'count': 0, 'mrr': 0.0, 'mrr_str': 'R$ 0,00'},
+        'basico': {'count': 0, 'mrr': 0.0, 'mrr_str': 'R$ 0,00'},
+        'pro': {'count': 0, 'mrr': 0.0, 'mrr_str': 'R$ 0,00'},
+        'elite': {'count': 0, 'mrr': 0.0, 'mrr_str': 'R$ 0,00'}
+    }
+    for row in users_businesses:
+        plan = (row['plan'] or 'basico').lower()
+        if plan not in plans_stats:
+            plan = 'basico'
+        if row['status'] != 'suspended':
+            plans_stats[plan]['count'] += 1
+            plans_stats[plan]['mrr'] += prices.get(plan, 0.0)
+
+    for p, stats in plans_stats.items():
+        stats['mrr_str'] = f"R$ {stats['mrr']:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+    conn = get_db_connection()
+    total_categories = conn.execute('SELECT COUNT(*) as count FROM categories').fetchone()['count']
+    conn.close()
+
     return jsonify({
         'mrr': f"R$ {mrr:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
         'total_businesses': len(users_businesses),
         'total_views': total_views,
+        'total_categories': total_categories,
+        'plans_stats': plans_stats,
         'subscriptions': subscriptions
     })
 
@@ -1309,6 +1441,8 @@ def superadmin_add_business():
     plan = (data.get('plan') or 'elite').lower().strip()
     if plan not in ['gratuito', 'basico', 'pro', 'elite']:
         plan = 'elite'
+    
+    category = str(escape(data.get('category', 'Geral'))).strip() or 'Geral'
     
     if not business_name or not email or not password:
         return jsonify({'success': False, 'message': 'Preencha todos os campos obrigatórios.'}), 400
@@ -1324,8 +1458,8 @@ def superadmin_add_business():
     is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''
         INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status)
-        VALUES (?, 'Geral', 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active')
-    ''', (business_name, is_featured, biz_slug))
+        VALUES (?, ?, 5.0, 'Centro', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active')
+    ''', (business_name, category, is_featured, biz_slug))
     business_id = cursor.lastrowid
 
     hashed_pw = generate_password_hash(password)
@@ -1371,6 +1505,64 @@ def toggle_status(id):
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'status': new_status})
+
+# --- Categorias (Público & Super Admin) ---
+
+@app.route('/api/categories')
+def get_categories():
+    conn = get_db_connection()
+    cats = conn.execute('SELECT id, name, group_name, icon, slug FROM categories ORDER BY group_name ASC, name ASC').fetchall()
+    conn.close()
+    return jsonify({'success': True, 'categories': [dict(c) for c in cats]})
+
+@app.route('/api/superadmin/categories')
+@superadmin_required
+def superadmin_categories():
+    conn = get_db_connection()
+    cats = conn.execute('''
+        SELECT c.id, c.name, c.group_name, c.icon, c.slug, COUNT(b.id) as business_count
+        FROM categories c
+        LEFT JOIN businesses b ON LOWER(TRIM(b.category)) = LOWER(TRIM(c.name))
+        GROUP BY c.id
+        ORDER BY c.group_name ASC, c.name ASC
+    ''').fetchall()
+    conn.close()
+    return jsonify({'success': True, 'categories': [dict(c) for c in cats]})
+
+@app.route('/api/superadmin/categories/add', methods=['POST'])
+@superadmin_required
+def superadmin_add_category():
+    data = request.json or {}
+    name = str(escape(data.get('name', ''))).strip()
+    group_name = str(escape(data.get('group_name', 'Geral'))).strip() or 'Geral'
+    icon = str(escape(data.get('icon', 'tag'))).strip() or 'tag'
+    
+    if not name:
+        return jsonify({'success': False, 'message': 'O nome da categoria é obrigatório.'}), 400
+    
+    conn = get_db_connection()
+    cslug = slugify(name)
+    try:
+        conn.execute('INSERT INTO categories (name, group_name, icon, slug) VALUES (?, ?, ?, ?)',
+                     (name, group_name, icon, cslug))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Categoria cadastrada com sucesso!'})
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Esta categoria já existe.'}), 400
+    except Exception as e:
+        conn.close()
+        return jsonify({'success': False, 'message': f'Erro ao salvar: {e}'}), 500
+
+@app.route('/api/superadmin/categories/<int:id>/delete', methods=['POST', 'DELETE'])
+@superadmin_required
+def superadmin_delete_category(id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM categories WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Categoria excluída com sucesso!'})
 
 # ============================================================
 # Rotas HTML
