@@ -54,6 +54,10 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
       </div>
     `;
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Atualizar subtitle com contagem (0)
+    const subtitle = document.getElementById('query-subtitle');
+    if (subtitle) subtitle.textContent = 'Nenhum resultado encontrado.';
     return;
   }
   
@@ -100,6 +104,10 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
   if (typeof lucide !== 'undefined') {
       lucide.createIcons();
   }
+
+  // Atualizar subtitle com contagem real (após fetch completar — BUG 7 fix)
+  const subtitle = document.getElementById('query-subtitle');
+  if (subtitle) subtitle.textContent = `Mostrando ${mockBusinesses.length} resultado(s) encontrados.`;
 }
 
 // Initialize on DOM load
@@ -115,19 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBusinessCards('featured-businesses', 4); // Homepage
   renderBusinessCards('search-results', null, q, cat, loc, att); // Search page
 
-  // Update query display count and text in search.html if exists
-  setTimeout(() => {
-    const display = document.getElementById('query-display');
-    const subtitle = document.getElementById('query-subtitle');
-    if (display) {
-      if (q) display.textContent = `"${q}"`;
-      else if (cat) display.textContent = `Categoria: ${cat}`;
-      else display.textContent = "Todas as empresas";
-    }
-    if (subtitle) {
-      subtitle.textContent = `Mostrando ${mockBusinesses.length} resultado(s) encontrados.`;
-    }
-  }, 500);
+  // Update query display text in search.html if exists
+  const display = document.getElementById('query-display');
+  if (display) {
+    if (q) display.textContent = `"${q}"`;
+    else if (cat) display.textContent = `Categoria: ${cat}`;
+    else display.textContent = "Todas as empresas";
+  }
 
   // Search button logic
   const searchBtn = document.getElementById('search-btn');
@@ -205,7 +207,7 @@ async function verificarHeaderAuth() {
     }
 
     const publicProfileHtml = (data.business_id && !isSuperAdmin) ? `
-      <a href="/profile.html?id=${data.business_id}" class="user-dropdown-item">
+      <a href="${data.business_slug ? '/p/' + data.business_slug : '/profile.html?id=' + data.business_id}" class="user-dropdown-item">
         <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i> Ver Perfil Público
       </a>
     ` : '';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estúdio Lente Clara - O Que Procura?</title>
+  <title>Perfil da Empresa - O Que Procura?</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -442,19 +442,18 @@
       <!-- Left Column: Content -->
       <div class="profile-content">
         <div class="profile-header">
-          <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200" alt="Logo Estúdio" class="profile-logo">
+          <img src="https://placehold.co/200x200?text=..." alt="Logo" class="profile-logo" id="profile-logo-img">
           <div>
-            <h1 class="profile-title">Carregando...</h1>
-            <div class="profile-meta">
+            <h1 class="profile-title" id="profile-title-el">Carregando...</h1>
+            <div class="profile-meta" id="profile-meta-el">
               <span class="flex items-center gap-1 font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> Carregando informações...</span>
             </div>
           </div>
         </div>
 
         <h2 class="section-title">Sobre nós</h2>
-        <div class="about-text" id="about-text-container">
-          <p>Somos um estúdio de fotografia especializado em capturar os melhores momentos da sua vida. Com mais de 10 anos de experiência, oferecemos ensaios fotográficos para casamentos, formaturas, gestantes e corporativos.</p>
-          <p class="mt-4">Nossa equipe é formada por profissionais apaixonados por contar histórias através das lentes, entregando não apenas fotos, mas memórias que durarão para sempre. Venha conhecer nosso espaço criativo no coração da cidade.</p>
+        <div class="about-text" id="about-text-container" style="min-height: 3rem;">
+          <!-- Preenchido dinamicamente via JS -->
         </div>
 
         <!-- Comodidades & Diferenciais do Estabelecimento -->
@@ -468,30 +467,13 @@
           <div class="feature-list" id="specialties-container"></div>
         </div>
 
-        <h2 class="section-title">Serviços e Preços Base</h2>
-        <div class="mb-8" id="services-container">
-          <div class="service-item">
-            <div>
-              <h4 class="font-bold text-text-dark">Ensaio Externo (2h)</h4>
-              <p class="text-sm text-muted">Sessão fotográfica em local externo, entrega de 50 fotos editadas.</p>
-            </div>
-            <div class="font-bold text-text-dark">A partir de R$ 450</div>
-          </div>
-          <div class="service-item">
-            <div>
-              <h4 class="font-bold text-text-dark">Cobertura de Casamento</h4>
-              <p class="text-sm text-muted">Fotografia e Filmagem completa. Making of, cerimônia e festa.</p>
-            </div>
-            <div class="font-bold text-text-dark">Sob consulta</div>
-          </div>
-          <div class="service-item">
-            <div>
-              <h4 class="font-bold text-text-dark">Retrato Corporativo</h4>
-              <p class="text-sm text-muted">Sessão em estúdio para LinkedIn e material de divulgação.</p>
-            </div>
-            <div class="font-bold text-text-dark">A partir de R$ 180</div>
+        <div id="services-wrapper" style="display:none;">
+          <h2 class="section-title">Serviços e Preços Base</h2>
+          <div class="mb-8" id="services-container">
+            <!-- Preenchido dinamicamente via JS -->
           </div>
         </div>
+
 
         <h2 class="section-title">Avaliações dos Clientes</h2>
         <div class="mb-8">
@@ -606,7 +588,7 @@
 
           <h4 class="font-bold text-text-dark mb-3">Informações</h4>
           <ul class="flex-col gap-3 text-sm">
-            <li class="flex items-center gap-2 text-text" id="contact-attendance">
+            <li class="flex items-center gap-2 text-text" id="contact-attendance" style="display:none;">
               <i data-lucide="briefcase" class="w-4 h-4 text-muted"></i>
               <span id="contact-attendance-text" class="font-medium">Atendimento Presencial & Online</span>
             </li>
@@ -910,40 +892,75 @@
             `;
           }
 
-          // Renderizar Avaliações
+          // Renderizar Avaliações — usa createElement/textContent para evitar XSS
           const reviewsContainer = document.getElementById('reviews-container');
           if (reviewsContainer) {
+            reviewsContainer.innerHTML = '';
             if (business.reviews && business.reviews.length > 0) {
-              reviewsContainer.innerHTML = business.reviews.map(r => {
-                const replyHtml = r.reply ? `
-                  <div style="margin-top: 1rem; padding: 1rem; background: var(--color-bg); border-left: 3px solid var(--color-secondary); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
-                    <p class="text-xs font-bold text-text-dark mb-1">Resposta do Proprietário</p>
-                    <p class="text-sm text-muted">${r.reply}</p>
-                  </div>
-                ` : '';
+              business.reviews.forEach(r => {
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'padding: 1rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1rem;';
 
-                return `
-                <div style="padding: 1rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1rem;">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="font-bold text-text-dark">${r.author_name}</span>
-                    <span class="text-sm text-warning flex items-center">
-                      ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
-                    </span>
-                  </div>
-                  <p class="text-sm text-muted">${r.comment}</p>
-                  ${replyHtml}
-                </div>
-                `;
-              }).join('');
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center mb-2';
+
+                const authorSpan = document.createElement('span');
+                authorSpan.className = 'font-bold text-text-dark';
+                authorSpan.textContent = r.author_name || 'Anônimo';
+
+                const starsSpan = document.createElement('span');
+                starsSpan.className = 'text-sm text-warning flex items-center';
+                starsSpan.textContent = '★'.repeat(Math.max(0, Math.min(5, r.rating || 5))) + '☆'.repeat(5 - Math.max(0, Math.min(5, r.rating || 5)));
+
+                header.appendChild(authorSpan);
+                header.appendChild(starsSpan);
+
+                const commentP = document.createElement('p');
+                commentP.className = 'text-sm text-muted';
+                commentP.textContent = r.comment || '';
+
+                wrapper.appendChild(header);
+                wrapper.appendChild(commentP);
+
+                if (r.reply) {
+                  const replyDiv = document.createElement('div');
+                  replyDiv.style.cssText = 'margin-top: 1rem; padding: 1rem; background: var(--color-bg); border-left: 3px solid var(--color-secondary); border-radius: 0 var(--radius-md) var(--radius-md) 0;';
+                  const replyLabel = document.createElement('p');
+                  replyLabel.className = 'text-xs font-bold text-text-dark mb-1';
+                  replyLabel.textContent = 'Resposta do Proprietário';
+                  const replyText = document.createElement('p');
+                  replyText.className = 'text-sm text-muted';
+                  replyText.textContent = r.reply;
+                  replyDiv.appendChild(replyLabel);
+                  replyDiv.appendChild(replyText);
+                  wrapper.appendChild(replyDiv);
+                }
+
+                reviewsContainer.appendChild(wrapper);
+              });
             } else {
               reviewsContainer.innerHTML = '<p class="text-muted text-sm">Nenhuma avaliação ainda. Seja o primeiro a avaliar!</p>';
             }
           }
 
-          // Atualizar Sobre Nós
+          // Atualizar Sobre Nós — usa textContent para evitar XSS
           const aboutEl = document.getElementById('about-text-container');
           if (aboutEl) {
-              aboutEl.innerHTML = `<p>${business.about_text}</p>`;
+            aboutEl.innerHTML = '';
+            const aboutText = unescapeHtml(business.about_text || '');
+            if (aboutText.trim()) {
+              // Divide por quebras de linha para preservar parágrafos, mas sem permitir HTML
+              aboutText.split(/\n\n+/).forEach(paragraph => {
+                const p = document.createElement('p');
+                p.textContent = paragraph.trim();
+                if (p.textContent) aboutEl.appendChild(p);
+              });
+            } else {
+              const p = document.createElement('p');
+              p.className = 'text-muted text-sm';
+              p.textContent = 'Informações sobre esta empresa em breve.';
+              aboutEl.appendChild(p);
+            }
           }
 
 
@@ -1017,6 +1034,7 @@
             }
           }
           
+          const attendanceEl = document.getElementById('contact-attendance');
           const attendanceText = document.getElementById('contact-attendance-text');
           if (attendanceText) {
             if (business.attendance_type === 'online') {
@@ -1026,6 +1044,7 @@
             } else {
               attendanceText.textContent = 'Presencial e Online';
             }
+            if (attendanceEl) attendanceEl.style.display = 'flex';
           }
 
           const addressEl = document.getElementById('contact-address');
@@ -1131,18 +1150,37 @@
             logoEl.src = business.image || 'https://placehold.co/200x200?text=Logo';
           }
 
-          // Atualizar Serviços
+          // Atualizar Serviços — exibe wrapper só quando há serviços, sanitiza via textContent
+          const servicesWrapper = document.getElementById('services-wrapper');
           const servicesEl = document.getElementById('services-container');
-          if (servicesEl && business.services) {
-              servicesEl.innerHTML = business.services.map(s => `
-                <div class="service-item">
-                  <div>
-                    <h4 class="font-bold text-text-dark">${s.name}</h4>
-                    <p class="text-sm text-muted">${s.description}</p>
-                  </div>
-                  <div class="font-bold" style="color: var(--color-secondary);">${s.price}</div>
-                </div>
-              `).join('');
+          if (servicesEl && business.services && business.services.length > 0) {
+            if (servicesWrapper) servicesWrapper.style.display = 'block';
+            servicesEl.innerHTML = '';
+            business.services.forEach(s => {
+              const item = document.createElement('div');
+              item.className = 'service-item';
+
+              const infoDiv = document.createElement('div');
+              const h4 = document.createElement('h4');
+              h4.className = 'font-bold text-text-dark';
+              h4.textContent = s.name || '';
+              const desc = document.createElement('p');
+              desc.className = 'text-sm text-muted';
+              desc.textContent = s.description || '';
+              infoDiv.appendChild(h4);
+              infoDiv.appendChild(desc);
+
+              const priceDiv = document.createElement('div');
+              priceDiv.className = 'font-bold';
+              priceDiv.style.color = 'var(--color-secondary)';
+              priceDiv.textContent = s.price || '';
+
+              item.appendChild(infoDiv);
+              item.appendChild(priceDiv);
+              servicesEl.appendChild(item);
+            });
+          } else {
+            if (servicesWrapper) servicesWrapper.style.display = 'none';
           }
           
           // Comodidades & Diferenciais do Estabelecimento

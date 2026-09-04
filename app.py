@@ -1088,11 +1088,8 @@ def login_api():
     password = data.get('password')
     
     SUPERADMIN_EMAILS = {'admin@tuumweb.com', 'tuumweb.com@gmail.com'}
-    if email in SUPERADMIN_EMAILS and (password in ('superadmin123', 'admin123', '123456')):
-        session['user_id'] = 0
-        session['email'] = email
-        session['role'] = 'superadmin'
-        return jsonify({'success': True, 'redirect': '/super_admin.html', 'role': 'superadmin'})
+    # Nota: Super Admin é autenticado pelo fluxo normal abaixo, via hash de senha no banco.
+    # O bypass por senha hardcoded foi removido por segurança.
         
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
@@ -1372,8 +1369,8 @@ def auth_me():
         email = ''
         plan = 'gratuito'
         business_name = ''
-        
         business_image = ''
+        business_slug = ''
         
         try:
             conn = get_db_connection()
@@ -1392,10 +1389,11 @@ def auth_me():
                         session['business_id'] = business_id
                         
             if business_id:
-                biz = conn.execute('SELECT name, image FROM businesses WHERE id = ?', (business_id,)).fetchone()
+                biz = conn.execute('SELECT name, image, slug FROM businesses WHERE id = ?', (business_id,)).fetchone()
                 if biz:
                     business_name = biz['name'] or ''
                     business_image = biz['image'] or ''
+                    business_slug = biz['slug'] or ''
             conn.close()
         except Exception:
             pass
@@ -1404,6 +1402,7 @@ def auth_me():
             'logged_in': True,
             'user_id': user_id,
             'business_id': business_id,
+            'business_slug': business_slug,
             'role': role,
             'email': email,
             'plan': plan,
