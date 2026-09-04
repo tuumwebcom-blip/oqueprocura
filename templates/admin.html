@@ -124,6 +124,42 @@
       box-shadow: 0 0 0 3px #0f172a;
       transform: scale(1.1);
     }
+    .card-section {
+      background-color: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .cta-quick-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.8rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-transform: none;
+      letter-spacing: normal;
+      user-select: none;
+      box-shadow: var(--shadow-sm);
+    }
+    .cta-quick-pill:hover {
+      border-color: #22c55e;
+      color: #15803d;
+      background-color: #f0fdf4;
+      transform: translateY(-1px);
+    }
+    .cta-quick-pill.active {
+      background-color: #dcfce7;
+      border-color: #22c55e;
+      color: #15803d;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -222,7 +258,7 @@
         </div>
         <div class="card-panel">
           <!-- Logotipo / Imagem Principal da Empresa -->
-          <div class="mb-6 p-4 rounded-xl border border-color-border bg-bg flex items-center gap-5" style="flex-wrap: wrap;">
+          <div class="card-section flex items-center gap-5" style="flex-wrap: wrap;">
             <div style="position: relative;">
               <img id="profile-logo-preview" src="https://placehold.co/120x120?text=Logo" alt="Logo da Empresa" style="width: 90px; height: 90px; border-radius: 16px; object-fit: cover; border: 2px solid var(--color-border); box-shadow: var(--shadow-sm); background: white;">
             </div>
@@ -243,7 +279,7 @@
           </div>
 
           <!-- Seletor de Cor da Marca -->
-          <div class="mb-6 p-4 rounded-xl border border-color-border bg-bg">
+          <div class="card-section" style="border-left: 4px solid var(--color-secondary);">
             <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
               <div class="flex items-center gap-2">
                 <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1rem;">
@@ -462,33 +498,36 @@
           </div>
 
           <!-- CTA Inteligente do WhatsApp -->
-          <div class="mb-4 p-4 rounded-xl border border-color-border bg-bg" style="border-left: 4px solid #25D366;">
+          <div class="card-section" style="border-left: 4px solid #22c55e; background-color: #f8fafc;">
             <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
               <div class="flex items-center gap-2">
-                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 0.95rem;">
-                  <i data-lucide="message-circle" class="w-4 h-4 inline mr-1 text-success"></i> Botão do WhatsApp Inteligente & Mensagem Pronta
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <i data-lucide="message-circle" class="w-4 h-4" style="color: #16a34a;"></i>
+                </div>
+                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 0.95rem; margin-bottom: 0;">
+                  Botão de WhatsApp Inteligente & Mensagem Pronta
                 </label>
-                <span class="badge" style="background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 700;">Alta Conversão</span>
               </div>
+              <span class="badge" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;">Alta Conversão</span>
             </div>
-            <p class="text-xs text-muted mb-3">Personalize o texto de chamada do botão principal e configure uma mensagem de abertura que já aparecerá pronta para o cliente no WhatsApp.</p>
+            <p class="text-xs text-muted mb-4" style="line-height: 1.5; margin-left: 36px;">Personalize o texto do botão principal de WhatsApp e configure uma mensagem de abertura que já aparecerá digitada para o cliente enviar.</p>
 
-            <div class="grid grid-cols-2 gap-4 mb-2">
-              <div class="form-group mb-2">
-                <label class="form-label text-xs font-semibold">Texto do Botão (Chamada para Ação)</label>
-                <input type="text" class="form-control text-sm" id="input-whatsapp-cta" placeholder="Ex: Pedir pelo WhatsApp, Agendar Horário..." value="Conversar no WhatsApp">
-                <div class="flex gap-1.5 mt-2" style="flex-wrap: wrap;">
-                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Conversar no WhatsApp')">Conversar no WhatsApp</button>
-                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Pedir pelo WhatsApp')">Pedir pelo WhatsApp</button>
-                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Agendar Horário')">Agendar Horário</button>
-                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Solicitar Orçamento')">Solicitar Orçamento</button>
-                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Falar com Atendente')">Falar com Atendente</button>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold" style="margin-bottom: 0.4rem;">Texto do Botão (Chamada para Ação)</label>
+                <input type="text" class="form-control text-sm" id="input-whatsapp-cta" placeholder="Ex: Pedir pelo WhatsApp, Agendar Horário..." value="Conversar no WhatsApp" oninput="atualizarPillAtiva(this.value)">
+                <div style="margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                  <button type="button" class="cta-quick-pill" onclick="definirCtaRapido('Conversar no WhatsApp')">Conversar no WhatsApp</button>
+                  <button type="button" class="cta-quick-pill" onclick="definirCtaRapido('Pedir pelo WhatsApp')">Pedir pelo WhatsApp</button>
+                  <button type="button" class="cta-quick-pill" onclick="definirCtaRapido('Agendar Horário')">Agendar Horário</button>
+                  <button type="button" class="cta-quick-pill" onclick="definirCtaRapido('Solicitar Orçamento')">Solicitar Orçamento</button>
+                  <button type="button" class="cta-quick-pill" onclick="definirCtaRapido('Falar com Atendente')">Falar com Atendente</button>
                 </div>
               </div>
-              <div class="form-group mb-2">
-                <label class="form-label text-xs font-semibold">Mensagem Inicial do Cliente (Opcional)</label>
-                <textarea class="form-control text-sm" id="input-whatsapp-message" rows="3" placeholder="Ex: Olá! Vi o perfil de vocês no O Que Procura e gostaria de solicitar um orçamento..."></textarea>
-                <span class="text-xs text-muted mt-1 block">O cliente não precisará pensar no que escrever — a mensagem já abrirá pronta.</span>
+              <div class="form-group mb-0">
+                <label class="form-label text-xs font-semibold" style="margin-bottom: 0.4rem;">Mensagem Inicial do Cliente (Opcional)</label>
+                <textarea class="form-control text-sm" id="input-whatsapp-message" rows="3" placeholder="Ex: Olá! Vi o perfil de vocês no O Que Procura e gostaria de tirar uma dúvida..." style="resize: vertical;"></textarea>
+                <span class="text-xs text-muted" style="display: block; margin-top: 0.35rem;">O cliente não precisará pensar no que escrever — o texto abrirá pronto no WhatsApp.</span>
               </div>
             </div>
           </div>
@@ -835,7 +874,10 @@
         definirCorMarca(data.color_primary || '#2563eb');
 
         const ctaInput = document.getElementById('input-whatsapp-cta');
-        if (ctaInput) ctaInput.value = data.whatsapp_cta || 'Conversar no WhatsApp';
+        if (ctaInput) {
+          ctaInput.value = data.whatsapp_cta || 'Conversar no WhatsApp';
+          atualizarPillAtiva(ctaInput.value);
+        }
         const msgInput = document.getElementById('input-whatsapp-message');
         if (msgInput) msgInput.value = data.whatsapp_message || '';
 
@@ -1211,8 +1253,20 @@
       const ctaInput = document.getElementById('input-whatsapp-cta');
       if (ctaInput) {
         ctaInput.value = texto;
+        atualizarPillAtiva(texto);
         ctaInput.focus();
       }
+    }
+
+    function atualizarPillAtiva(texto) {
+      const pills = document.querySelectorAll('.cta-quick-pill');
+      pills.forEach(p => {
+        if (p.textContent.trim().toLowerCase() === (texto || '').trim().toLowerCase()) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
     }
 
     document.addEventListener('DOMContentLoaded', carregarDados);
