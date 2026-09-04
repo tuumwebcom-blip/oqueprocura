@@ -397,6 +397,104 @@ body.has-mobile-cta {
   padding-bottom: 80px;
 }
 
+/* Header Desktop Search */
+.desktop-search-header,
+.header .search-container {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+/* Mobile Search Bar Component */
+.mobile-search-bar {
+  display: none;
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.mobile-search-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-full);
+  padding: 5px 6px 5px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+.mobile-search-box:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+}
+
+.mobile-search-icon {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.mobile-search-input {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 0.95rem;
+  color: var(--color-text-dark);
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  font-family: inherit;
+}
+
+.mobile-search-input::placeholder {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.mobile-search-clear {
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+
+.mobile-search-clear:hover {
+  background: #e2e8f0;
+}
+
+.mobile-search-btn {
+  background: var(--color-secondary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.mobile-search-btn:active {
+  transform: scale(0.96);
+}
+
 @media (max-width: 1024px) {
   .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -404,6 +502,17 @@ body.has-mobile-cta {
 }
 
 @media (max-width: 768px) {
+  /* Header Search Desktop - Ocultar no mobile para não espremer o menu */
+  .desktop-search-header,
+  .header .search-container {
+    display: none !important;
+  }
+
+  /* Mobile Search Bar - Exibir no mobile */
+  .mobile-search-bar {
+    display: block !important;
+  }
+
   /* Header Mobile Compacto & Horizontal */
   .header {
     min-height: 58px;

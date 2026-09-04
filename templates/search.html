@@ -139,6 +139,30 @@
       color: var(--color-secondary);
       transform: translateX(2px);
     }
+
+    /* Regras de Busca Responsiva (Mobile vs Desktop) */
+    .desktop-search-header {
+      display: flex !important;
+    }
+
+    .mobile-search-bar {
+      display: none;
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .desktop-search-header,
+      .header .search-container {
+        display: none !important;
+      }
+      .mobile-search-bar {
+        display: block !important;
+      }
+      .search-page-main {
+        margin-top: 1rem !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -165,16 +189,25 @@
     </div>
   </header>
 
-  <main class="container" style="margin-top: 1.5rem; margin-bottom: 5rem;">
-    <!-- Mobile Search Bar (Apenas Celulares) -->
-    <div class="mobile-search-bar mb-3" style="display: none;">
-      <div style="display: flex; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding: 0.35rem; box-shadow: var(--shadow-sm); gap: 0.5rem; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; padding-left: 0.75rem; flex: 1;">
-          <i data-lucide="search" class="w-4 h-4 text-muted"></i>
-          <input type="text" id="search-input-mobile" class="search-input text-sm" placeholder="Buscar profissionais, lojas..." style="border: none; outline: none; width: 100%; background: transparent; padding: 0.4rem 0;">
-        </div>
-        <button class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem;" onclick="buscarNoMobile()">Buscar</button>
-      </div>
+  <main class="container search-page-main" style="margin-top: 1.25rem; margin-bottom: 5rem;">
+    <!-- Mobile Search Bar (Exclusivo Celulares) -->
+    <div class="mobile-search-bar">
+      <form onsubmit="event.preventDefault(); buscarNoMobile();" class="mobile-search-box">
+        <i data-lucide="search" class="w-4 h-4 mobile-search-icon"></i>
+        <input 
+          type="text" 
+          id="search-input-mobile" 
+          class="mobile-search-input" 
+          placeholder="O que você procura? (ex: Dentista, Pizzaria)" 
+          autocomplete="off"
+        >
+        <button type="button" id="btn-clear-mobile-search" class="mobile-search-clear" onclick="limparBuscaMobile()" style="display:none;" title="Limpar busca">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+        <button type="submit" class="mobile-search-btn">
+          Buscar
+        </button>
+      </form>
     </div>
 
     <!-- Mobile Category Slider (Estilo App) -->
@@ -347,34 +380,55 @@
       });
     }
     
-    // Suporte para buscar pressionando Enter no campo do header de resultados
+    // Suporte para buscar pressionando Enter ou botão (Desktop & Mobile)
+    const curQ = new URLSearchParams(window.location.search).get('q') || '';
+    
     const inputDesktop = document.getElementById('search-input-page');
     if (inputDesktop) {
+      if (curQ) inputDesktop.value = curQ;
       inputDesktop.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') buscarNaPagina();
       });
     }
 
     function buscarNaPagina() {
-      const q = document.getElementById('search-input-page').value;
+      const q = (document.getElementById('search-input-page')?.value || '').trim();
       if (q) window.location.href = 'search.html?q=' + encodeURIComponent(q);
       else window.location.href = 'search.html';
     }
 
     // Busca Mobile
     const inputMobile = document.getElementById('search-input-mobile');
+    const btnClearMobile = document.getElementById('btn-clear-mobile-search');
     if (inputMobile) {
-      const curQ = new URLSearchParams(window.location.search).get('q') || '';
-      if (curQ) inputMobile.value = curQ;
+      if (curQ) {
+        inputMobile.value = curQ;
+        if (btnClearMobile) btnClearMobile.style.display = 'flex';
+      }
+      inputMobile.addEventListener('input', function() {
+        if (btnClearMobile) {
+          btnClearMobile.style.display = this.value.trim() ? 'flex' : 'none';
+        }
+      });
       inputMobile.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') buscarNoMobile();
       });
     }
 
     function buscarNoMobile() {
-      const q = document.getElementById('search-input-mobile').value.trim();
+      const q = (document.getElementById('search-input-mobile')?.value || '').trim();
       if (q) window.location.href = 'search.html?q=' + encodeURIComponent(q);
       else window.location.href = 'search.html';
+    }
+
+    function limparBuscaMobile() {
+      const inp = document.getElementById('search-input-mobile');
+      if (inp) {
+        inp.value = '';
+        inp.focus();
+        const btnClear = document.getElementById('btn-clear-mobile-search');
+        if (btnClear) btnClear.style.display = 'none';
+      }
     }
   </script>
 

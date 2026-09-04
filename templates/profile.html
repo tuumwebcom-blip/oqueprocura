@@ -418,7 +418,7 @@
       <div class="search-container desktop-search-header" style="margin: 0; max-width: 400px; padding: 0.25rem; flex: 1; box-shadow: none; border: 1px solid var(--color-border); border-radius: var(--radius-full);">
         <div class="search-input-group" style="padding: 0.25rem 0.75rem; border: none;">
           <i data-lucide="search" class="search-icon w-4 h-4"></i>
-          <input type="text" class="search-input text-sm" placeholder="Buscar...">
+          <input type="text" class="search-input text-sm" placeholder="Buscar..." onkeypress="if(event.key==='Enter'&&this.value.trim()){window.location.href='/search.html?q='+encodeURIComponent(this.value.trim());}">
         </div>
       </div>
 
