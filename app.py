@@ -107,6 +107,8 @@ def check_db_schema():
             conn.execute('ALTER TABLE businesses ADD COLUMN business_hours TEXT')
         if 'whatsapp_clicks' not in cols:
             conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_clicks INTEGER DEFAULT 0')
+        if 'color_primary' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN color_primary TEXT DEFAULT '#2563eb'")
 
         cols_rev = [c[1] for c in conn.execute('PRAGMA table_info(reviews)').fetchall()]
         if 'author_email' not in cols_rev:
@@ -331,6 +333,9 @@ def update_business(id):
     address = str(escape(data.get('address', '')))
     website = str(escape(data.get('website', ''))).strip()
     business_hours = str(escape(data.get('business_hours', ''))).strip()
+    color_primary = str(escape(data.get('color_primary', '#2563eb'))).strip()
+    if not color_primary.startswith('#') or len(color_primary) not in (4, 7):
+        color_primary = '#2563eb'
     maps_url = data.get('maps_url', '') # Maps URL must be kept intact but we trust admin input here, could sanitize differently
 
     conn = get_db_connection()
@@ -338,9 +343,9 @@ def update_business(id):
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
             whatsapp = ?, instagram = ?, address = ?, maps_url = ?,
-            website = ?, business_hours = ?
+            website = ?, business_hours = ?, color_primary = ?
         WHERE id = ?
-    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, id))
+    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, color_primary, id))
     conn.commit()
     conn.close()
     return jsonify({'success': True})

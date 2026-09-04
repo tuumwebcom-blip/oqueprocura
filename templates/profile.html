@@ -59,6 +59,8 @@
       border-radius: 50%;
       object-fit: cover;
       box-shadow: var(--shadow-sm);
+      border: 3px solid var(--color-secondary);
+      background: white;
     }
 
     .profile-title {
@@ -115,6 +117,7 @@
       border-radius: var(--radius-xl);
       padding: 2rem;
       border: 1px solid var(--color-border);
+      border-top: 4px solid var(--color-secondary);
       box-shadow: var(--shadow-xl);
       position: sticky;
       top: 100px;
@@ -393,6 +396,33 @@
   <script>
     lucide.createIcons();
 
+    function aplicarCorMarca(hex) {
+      if (!hex || !hex.startsWith('#')) hex = '#2563eb';
+      let c = hex.replace('#', '').trim();
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (c.length !== 6) {
+        c = '2563eb';
+        hex = '#2563eb';
+      }
+
+      const num = parseInt(c, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+
+      // Escurece 15% para efeito de hover
+      const rHover = Math.max(0, Math.floor(r * 0.85));
+      const gHover = Math.max(0, Math.floor(g * 0.85));
+      const bHover = Math.max(0, Math.floor(b * 0.85));
+      const hoverHex = '#' + ((1 << 24) + (rHover << 16) + (gHover << 8) + bHover).toString(16).slice(1);
+
+      document.documentElement.style.setProperty('--color-secondary', hex);
+      document.documentElement.style.setProperty('--color-secondary-hover', hoverHex);
+      document.documentElement.style.setProperty('--shadow-focus', `0 0 0 3px rgba(${r}, ${g}, ${b}, 0.25)`);
+      document.documentElement.style.setProperty('--color-brand-light', `rgba(${r}, ${g}, ${b}, 0.12)`);
+      document.documentElement.style.setProperty('--color-brand-border', `rgba(${r}, ${g}, ${b}, 0.28)`);
+    }
+
     // Lógica para carregar os dados dinâmicos da API baseados no ID da URL
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -416,6 +446,9 @@
             return;
           }
           const business = await response.json();
+
+          // Aplicar identidade visual personalizada da empresa
+          aplicarCorMarca(business.color_primary);
           
           // Atualizar Título e Title da aba
           const titleEl = document.querySelector('.profile-title');
@@ -440,7 +473,7 @@
               <span>•</span>
               <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${business.distance}</span>
               <span>•</span>
-              <span class="badge badge-featured">${business.category}</span>
+              <span class="badge" style="background: var(--color-brand-light, #eff6ff); color: var(--color-secondary); border: 1px solid var(--color-brand-border, #bfdbfe); font-weight: 600;">${business.category}</span>
             `;
           }
 

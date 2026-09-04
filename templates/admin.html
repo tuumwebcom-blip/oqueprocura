@@ -107,6 +107,23 @@
       align-items: center;
       justify-content: center;
     }
+    .color-preset-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 1px #cbd5e1;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+    .color-preset-btn:hover {
+      transform: scale(1.15);
+    }
+    .color-preset-btn.active {
+      box-shadow: 0 0 0 3px #0f172a;
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -221,6 +238,46 @@
                   <i data-lucide="upload" class="w-4 h-4"></i> Adicionar / Alterar Logo
                 </button>
                 <span id="logo-upload-status" class="text-xs font-semibold text-muted" style="display: none;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seletor de Cor da Marca -->
+          <div class="mb-6 p-4 rounded-xl border border-color-border bg-bg">
+            <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
+              <div class="flex items-center gap-2">
+                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1rem;">
+                  <i data-lucide="palette" class="w-4 h-4 inline mr-1 text-secondary"></i> Cor Principal da sua Marca
+                </label>
+                <span class="badge" style="background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700;">Identidade Visual</span>
+              </div>
+              <div id="brand-color-badge-preview" class="px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm flex items-center gap-1.5" style="background-color: #2563eb;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: white; display: inline-block;"></span>
+                Preview no Perfil
+              </div>
+            </div>
+            <p class="text-xs text-muted mb-3">Escolha a cor predominante da sua marca. Ela personalizará os botões, detalhes e destaques do seu perfil público.</p>
+
+            <div class="flex items-center gap-3" style="flex-wrap: wrap;">
+              <!-- Paletas Pré-definidas -->
+              <div class="flex items-center gap-2" id="color-presets-container">
+                <button type="button" class="color-preset-btn active" data-color="#2563eb" style="background-color: #2563eb;" title="Azul Real (Padrão)" onclick="selecionarCorPreset('#2563eb')"></button>
+                <button type="button" class="color-preset-btn" data-color="#0d9488" style="background-color: #0d9488;" title="Verde Petróleo (Saúde & Estética)" onclick="selecionarCorPreset('#0d9488')"></button>
+                <button type="button" class="color-preset-btn" data-color="#16a34a" style="background-color: #16a34a;" title="Verde Esmeralda (Sustentabilidade & Negócios)" onclick="selecionarCorPreset('#16a34a')"></button>
+                <button type="button" class="color-preset-btn" data-color="#7c3aed" style="background-color: #7c3aed;" title="Roxo Criativo (Tecnologia & Arte)" onclick="selecionarCorPreset('#7c3aed')"></button>
+                <button type="button" class="color-preset-btn" data-color="#e11d48" style="background-color: #e11d48;" title="Vermelho Rubi (Gastronomia & Paixão)" onclick="selecionarCorPreset('#e11d48')"></button>
+                <button type="button" class="color-preset-btn" data-color="#ea580c" style="background-color: #ea580c;" title="Laranja Vibrante (Energia & Delivery)" onclick="selecionarCorPreset('#ea580c')"></button>
+                <button type="button" class="color-preset-btn" data-color="#d97706" style="background-color: #d97706;" title="Dourado Âmbar (Elegância & Advocacia)" onclick="selecionarCorPreset('#d97706')"></button>
+                <button type="button" class="color-preset-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Grafite Nobre (Luxo & Corporativo)" onclick="selecionarCorPreset('#0f172a')"></button>
+              </div>
+
+              <!-- Divisor -->
+              <div style="height: 24px; width: 1px; background: var(--color-border);" class="hidden sm:block"></div>
+
+              <!-- Input personalizado -->
+              <div class="flex items-center gap-2">
+                <input type="color" id="input-color-picker" value="#2563eb" oninput="aoMudarColorPicker(this.value)" style="width: 36px; height: 36px; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; padding: 2px; background: white;">
+                <input type="text" id="input-color-primary" class="form-control text-xs font-mono" style="width: 90px; padding: 0.45rem 0.6rem; text-transform: uppercase;" value="#2563eb" placeholder="#2563eb" maxlength="7" oninput="aoDigitarHexCor(this.value)">
               </div>
             </div>
           </div>
@@ -743,6 +800,7 @@
         document.getElementById('input-website').value = data.website || '';
         document.getElementById('input-hours').value = data.business_hours || '';
         document.getElementById('input-maps-url').value = data.maps_url || '';
+        definirCorMarca(data.color_primary || '#2563eb');
 
         // Mostrar plano no badge
         const planBadge = document.getElementById('plan-badge');
@@ -1060,9 +1118,65 @@
       }
     }
 
+    // Funções de Identidade Visual / Cor da Marca
+    function definirCorMarca(cor) {
+      if (!cor || !cor.startsWith('#')) cor = '#2563eb';
+      cor = cor.toLowerCase();
+
+      const inputHex = document.getElementById('input-color-primary');
+      const inputPicker = document.getElementById('input-color-picker');
+      const badgePreview = document.getElementById('brand-color-badge-preview');
+
+      if (inputHex) inputHex.value = cor;
+      if (inputPicker) inputPicker.value = cor;
+      if (badgePreview) badgePreview.style.backgroundColor = cor;
+
+      // Atualiza estado ativo dos botões de preset
+      const presetBtns = document.querySelectorAll('.color-preset-btn');
+      presetBtns.forEach(btn => {
+        if (btn.getAttribute('data-color').toLowerCase() === cor) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function selecionarCorPreset(cor) {
+      definirCorMarca(cor);
+    }
+
+    function aoMudarColorPicker(cor) {
+      definirCorMarca(cor);
+    }
+
+    function aoDigitarHexCor(valor) {
+      valor = valor.trim();
+      if (!valor.startsWith('#')) valor = '#' + valor;
+      if (/^#[0-9A-Fa-f]{6}$/.test(valor) || /^#[0-9A-Fa-f]{3}$/.test(valor)) {
+        const inputPicker = document.getElementById('input-color-picker');
+        const badgePreview = document.getElementById('brand-color-badge-preview');
+        if (inputPicker) inputPicker.value = valor;
+        if (badgePreview) badgePreview.style.backgroundColor = valor;
+
+        const presetBtns = document.querySelectorAll('.color-preset-btn');
+        presetBtns.forEach(btn => {
+          if (btn.getAttribute('data-color').toLowerCase() === valor.toLowerCase()) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', carregarDados);
 
     async function salvarAlteracoes() {
+      const colorInput = document.getElementById('input-color-primary');
+      let colorVal = colorInput ? colorInput.value.trim() : '#2563eb';
+      if (!colorVal.startsWith('#')) colorVal = '#' + colorVal;
+
       const data = {
         name: document.getElementById('input-name').value,
         category: document.getElementById('input-category').value,
@@ -1073,7 +1187,8 @@
         address: document.getElementById('input-address').value,
         website: document.getElementById('input-website').value,
         business_hours: document.getElementById('input-hours').value,
-        maps_url: document.getElementById('input-maps-url').value
+        maps_url: document.getElementById('input-maps-url').value,
+        color_primary: colorVal
       };
 
       try {
