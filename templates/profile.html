@@ -523,31 +523,95 @@
   <script>
     lucide.createIcons();
 
-    function aplicarCorMarca(hex) {
-      if (!hex || !hex.startsWith('#')) hex = '#2563eb';
+    function getLuminance(hex) {
+      if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return 1;
       let c = hex.replace('#', '').trim();
       if (c.length === 3) c = c.split('').map(x => x + x).join('');
-      if (c.length !== 6) {
-        c = '2563eb';
-        hex = '#2563eb';
-      }
-
+      if (c.length !== 6) return 1;
       const num = parseInt(c, 16);
+      if (isNaN(num)) return 1;
       const r = (num >> 16) & 255;
       const g = (num >> 8) & 255;
       const b = num & 255;
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    }
 
-      // Escurece 15% para efeito de hover
-      const rHover = Math.max(0, Math.floor(r * 0.85));
-      const gHover = Math.max(0, Math.floor(g * 0.85));
-      const bHover = Math.max(0, Math.floor(b * 0.85));
+    function adjustBrightness(hex, percent) {
+      let c = (hex || '#000000').replace('#', '').trim();
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (c.length !== 6) return hex;
+      const num = parseInt(c, 16);
+      let r = (num >> 16) & 255;
+      let g = (num >> 8) & 255;
+      let b = num & 255;
+      r = Math.min(255, Math.max(0, Math.round(r + (percent * 255 / 100))));
+      g = Math.min(255, Math.max(0, Math.round(g + (percent * 255 / 100))));
+      b = Math.min(255, Math.max(0, Math.round(b + (percent * 255 / 100))));
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    function aplicarTemaVisual(primaryHex, bgHex, textHex) {
+      // 1. Cor da Marca (Botões, detalhes, destaques)
+      if (!primaryHex || !primaryHex.startsWith('#')) primaryHex = '#2563eb';
+      let cBrand = primaryHex.replace('#', '').trim();
+      if (cBrand.length === 3) cBrand = cBrand.split('').map(x => x + x).join('');
+      if (cBrand.length !== 6) { cBrand = '2563eb'; primaryHex = '#2563eb'; }
+
+      const numB = parseInt(cBrand, 16);
+      const rb = (numB >> 16) & 255;
+      const gb = (numB >> 8) & 255;
+      const bb = numB & 255;
+
+      const rHover = Math.max(0, Math.floor(rb * 0.85));
+      const gHover = Math.max(0, Math.floor(gb * 0.85));
+      const bHover = Math.max(0, Math.floor(bb * 0.85));
       const hoverHex = '#' + ((1 << 24) + (rHover << 16) + (gHover << 8) + bHover).toString(16).slice(1);
 
-      document.documentElement.style.setProperty('--color-secondary', hex);
+      document.documentElement.style.setProperty('--color-secondary', primaryHex);
       document.documentElement.style.setProperty('--color-secondary-hover', hoverHex);
-      document.documentElement.style.setProperty('--shadow-focus', `0 0 0 3px rgba(${r}, ${g}, ${b}, 0.25)`);
-      document.documentElement.style.setProperty('--color-brand-light', `rgba(${r}, ${g}, ${b}, 0.12)`);
-      document.documentElement.style.setProperty('--color-brand-border', `rgba(${r}, ${g}, ${b}, 0.28)`);
+      document.documentElement.style.setProperty('--shadow-focus', `0 0 0 3px rgba(${rb}, ${gb}, ${bb}, 0.25)`);
+      document.documentElement.style.setProperty('--color-brand-light', `rgba(${rb}, ${gb}, ${bb}, 0.12)`);
+      document.documentElement.style.setProperty('--color-brand-border', `rgba(${rb}, ${gb}, ${bb}, 0.28)`);
+
+      // 2. Cor de Fundo da Página (Background)
+      if (!bgHex || !bgHex.startsWith('#')) bgHex = '#fafafa';
+      const bgLum = getLuminance(bgHex);
+      const isDark = bgLum < 0.45;
+
+      document.documentElement.style.setProperty('--color-bg', bgHex);
+
+      // 3. Cor das Fontes, Textos e Contraste Adaptativo
+      if (!textHex || !textHex.startsWith('#')) textHex = isDark ? '#f8fafc' : '#0f172a';
+      const textLum = getLuminance(textHex);
+
+      if (isDark) {
+        // Dark Mode: eleva os cards/superfícies e ajusta bordas para visibilidade em fundo escuro
+        const surfaceColor = adjustBrightness(bgHex, 7);
+        document.documentElement.style.setProperty('--color-surface', surfaceColor);
+        document.documentElement.style.setProperty('--color-border', 'rgba(255, 255, 255, 0.12)');
+        document.documentElement.style.setProperty('--color-border-hover', 'rgba(255, 255, 255, 0.25)');
+
+        // Garante legibilidade se texto estiver muito escuro em fundo escuro
+        const safeTitleColor = textLum < 0.35 ? '#f8fafc' : textHex;
+        document.documentElement.style.setProperty('--color-text-dark', safeTitleColor);
+        document.documentElement.style.setProperty('--color-text', adjustBrightness(safeTitleColor, -15));
+        document.documentElement.style.setProperty('--color-text-light', 'rgba(255, 255, 255, 0.65)');
+      } else {
+        // Light Mode: mantém superfícies brancas e bordas suaves
+        document.documentElement.style.setProperty('--color-surface', '#ffffff');
+        document.documentElement.style.setProperty('--color-border', '#e2e8f0');
+        document.documentElement.style.setProperty('--color-border-hover', '#cbd5e1');
+
+        // Garante legibilidade se texto estiver muito claro em fundo claro
+        const safeTitleColor = textLum > 0.85 ? '#0f172a' : textHex;
+        document.documentElement.style.setProperty('--color-text-dark', safeTitleColor);
+        document.documentElement.style.setProperty('--color-text', safeTitleColor === '#0f172a' ? '#334155' : safeTitleColor);
+        document.documentElement.style.setProperty('--color-text-light', '#64748b');
+      }
+    }
+
+    function aplicarCorMarca(hex) {
+      aplicarTemaVisual(hex, '#fafafa', '#0f172a');
     }
 
     let CURRENT_PROFILE_BUSINESS_ID = null;
@@ -607,8 +671,8 @@
           const business = await response.json();
           CURRENT_PROFILE_BUSINESS_ID = business.id;
 
-          // Aplicar identidade visual personalizada da empresa
-          aplicarCorMarca(business.color_primary);
+          // Aplicar identidade visual personalizada da empresa (Destaque, Fundo & Fontes)
+          aplicarTemaVisual(business.color_primary, business.color_bg, business.color_text);
           
           // Helper para decodificar entidades HTML (&amp; -> &)
           function unescapeHtml(text) {

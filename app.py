@@ -159,6 +159,10 @@ def check_db_schema():
             conn.execute("ALTER TABLE businesses ADD COLUMN catalog_url TEXT DEFAULT ''")
         if 'slug' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN slug TEXT DEFAULT ''")
+        if 'color_bg' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN color_bg TEXT DEFAULT '#f8fafc'")
+        if 'color_text' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN color_text TEXT DEFAULT '#0f172a'")
 
         # Garante slug para todas as empresas existentes
         rows_without_slug = conn.execute("SELECT id, name FROM businesses WHERE slug IS NULL OR slug = ''").fetchall()
@@ -568,6 +572,12 @@ def update_business(id):
     linkedin = clean(data.get('linkedin', ''))
     youtube = clean(data.get('youtube', ''))
     catalog_url = clean(data.get('catalog_url', ''))
+    color_bg = clean(data.get('color_bg', '#f8fafc'))
+    if not color_bg.startswith('#') or len(color_bg) not in (4, 7):
+        color_bg = '#f8fafc'
+    color_text = clean(data.get('color_text', '#0f172a'))
+    if not color_text.startswith('#') or len(color_text) not in (4, 7):
+        color_text = '#0f172a'
 
     # Amenities (lista de strings)
     raw_amenities = data.get('amenities', [])
@@ -599,11 +609,12 @@ def update_business(id):
             website = ?, business_hours = ?, color_primary = ?,
             whatsapp_cta = ?, whatsapp_message = ?,
             facebook = ?, tiktok = ?, linkedin = ?, youtube = ?, catalog_url = ?,
-            amenities = ?, slug = ?
+            amenities = ?, slug = ?, color_bg = ?, color_text = ?
         WHERE id = ?
     ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, 
           website, business_hours, color_primary, whatsapp_cta, whatsapp_message,
-          facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug, id))
+          facebook, tiktok, linkedin, youtube, catalog_url, amenities_json, custom_slug,
+          color_bg, color_text, id))
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'slug': custom_slug})

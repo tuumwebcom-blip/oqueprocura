@@ -217,6 +217,37 @@
       opacity: 1;
       transform: scale(1);
     }
+    .theme-preset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      box-shadow: var(--shadow-sm);
+    }
+    .theme-preset-btn:hover {
+      border-color: var(--color-secondary);
+      transform: translateY(-1px);
+    }
+    .theme-preset-btn.active {
+      border-color: var(--color-secondary);
+      background: #eff6ff;
+      color: var(--color-secondary);
+    }
+    .style-preview-box {
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+    }
   </style>
 </head>
 <body>
@@ -335,43 +366,134 @@
             </div>
           </div>
 
-          <!-- Seletor de Cor da Marca -->
-          <div class="card-section" style="border-left: 4px solid var(--color-secondary);">
+          <!-- Seletor de Estilo & Cores do Mini-Site -->
+          <div class="card-section" style="border-left: 4px solid var(--color-secondary); background: #ffffff;">
             <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
               <div class="flex items-center gap-2">
-                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1rem;">
-                  <i data-lucide="palette" class="w-4 h-4 inline mr-1 text-secondary"></i> Cor Principal da sua Marca
+                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1.05rem;">
+                  <i data-lucide="palette" class="w-5 h-5 inline mr-1 text-secondary"></i> Estilo Visual, Fundo & Fontes
                 </label>
-                <span class="badge" style="background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700;">Identidade Visual</span>
+                <span class="badge" style="background: #eff6ff; color: #2563eb; font-size: 0.7rem; font-weight: 700;">Personalização Completa</span>
               </div>
-              <div id="brand-color-badge-preview" class="px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm flex items-center gap-1.5" style="background-color: #2563eb;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: white; display: inline-block;"></span>
-                Preview no Perfil
+              <span class="text-xs text-muted">Defina a harmonia perfeita da sua página</span>
+            </div>
+            <p class="text-xs text-muted mb-4">Escolha a combinação de cores da sua página ou monte sua paleta personalizada. A legibilidade é protegida automaticamente.</p>
+
+            <!-- Temas Rápidos em 1 Clique -->
+            <div class="mb-5 p-3 rounded-lg" style="background: #f8fafc; border: 1px solid var(--color-border);">
+              <label class="text-xs font-bold text-text-dark block mb-2">⚡ Temas Prontos em 1 Clique</label>
+              <div class="flex gap-2" style="flex-wrap: wrap;">
+                <button type="button" class="theme-preset-btn active" id="theme-btn-claro" onclick="aplicarTemaPreset('claro')">
+                  <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ffffff; border:1px solid #cbd5e1;"></span>
+                  ☀️ Clássico Claro
+                </button>
+                <button type="button" class="theme-preset-btn" id="theme-btn-dark" onclick="aplicarTemaPreset('dark')">
+                  <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#0f172a; border:1px solid #475569;"></span>
+                  🌙 Noturno / Dark Mode
+                </button>
+                <button type="button" class="theme-preset-btn" id="theme-btn-creme" onclick="aplicarTemaPreset('creme')">
+                  <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#fdfbf7; border:1px solid #e2d9cc;"></span>
+                  ☕ Creme Acolhedor
+                </button>
+                <button type="button" class="theme-preset-btn" id="theme-btn-clean" onclick="aplicarTemaPreset('clean')">
+                  <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ffffff; border:1px solid #94a3b8;"></span>
+                  🌿 Clean Minimalista
+                </button>
               </div>
             </div>
-            <p class="text-xs text-muted mb-3">Escolha a cor predominante da sua marca. Ela personalizará os botões, detalhes e destaques do seu perfil público.</p>
 
-            <div class="flex items-center gap-3" style="flex-wrap: wrap;">
-              <!-- Paletas Pré-definidas -->
-              <div class="flex items-center gap-2" id="color-presets-container">
-                <button type="button" class="color-preset-btn active" data-color="#2563eb" style="background-color: #2563eb;" title="Azul Real (Padrão)" onclick="selecionarCorPreset('#2563eb')"></button>
-                <button type="button" class="color-preset-btn" data-color="#0d9488" style="background-color: #0d9488;" title="Verde Petróleo (Saúde & Estética)" onclick="selecionarCorPreset('#0d9488')"></button>
-                <button type="button" class="color-preset-btn" data-color="#16a34a" style="background-color: #16a34a;" title="Verde Esmeralda (Sustentabilidade & Negócios)" onclick="selecionarCorPreset('#16a34a')"></button>
-                <button type="button" class="color-preset-btn" data-color="#7c3aed" style="background-color: #7c3aed;" title="Roxo Criativo (Tecnologia & Arte)" onclick="selecionarCorPreset('#7c3aed')"></button>
-                <button type="button" class="color-preset-btn" data-color="#e11d48" style="background-color: #e11d48;" title="Vermelho Rubi (Gastronomia & Paixão)" onclick="selecionarCorPreset('#e11d48')"></button>
-                <button type="button" class="color-preset-btn" data-color="#ea580c" style="background-color: #ea580c;" title="Laranja Vibrante (Energia & Delivery)" onclick="selecionarCorPreset('#ea580c')"></button>
-                <button type="button" class="color-preset-btn" data-color="#d97706" style="background-color: #d97706;" title="Dourado Âmbar (Elegância & Advocacia)" onclick="selecionarCorPreset('#d97706')"></button>
-                <button type="button" class="color-preset-btn" data-color="#0f172a" style="background-color: #0f172a;" title="Grafite Nobre (Luxo & Corporativo)" onclick="selecionarCorPreset('#0f172a')"></button>
+            <!-- Grid de Seletores e Preview -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+              
+              <!-- Controles Individuais -->
+              <div class="flex flex-col gap-4">
+                
+                <!-- 1. Cor Principal da Marca (Destaque/Botões) -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="form-label text-xs font-bold mb-0">1. Cor de Ação da Marca (Botões & Destaques)</label>
+                  </div>
+                  <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+                    <div class="flex items-center gap-1.5" id="color-presets-container">
+                      <button type="button" class="color-preset-btn active" data-color="#2563eb" style="background-color: #2563eb;" title="Azul Real (Padrão)" onclick="selecionarCorPreset('#2563eb')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#0d9488" style="background-color: #0d9488;" title="Verde Petróleo" onclick="selecionarCorPreset('#0d9488')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#16a34a" style="background-color: #16a34a;" title="Verde Esmeralda" onclick="selecionarCorPreset('#16a34a')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#7c3aed" style="background-color: #7c3aed;" title="Roxo Criativo" onclick="selecionarCorPreset('#7c3aed')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#e11d48" style="background-color: #e11d48;" title="Vermelho Rubi" onclick="selecionarCorPreset('#e11d48')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#ea580c" style="background-color: #ea580c;" title="Laranja Vibrante" onclick="selecionarCorPreset('#ea580c')"></button>
+                      <button type="button" class="color-preset-btn" data-color="#d97706" style="background-color: #d97706;" title="Dourado Âmbar" onclick="selecionarCorPreset('#d97706')"></button>
+                    </div>
+                    <div class="flex items-center gap-1.5 ml-auto">
+                      <input type="color" id="input-color-picker" value="#2563eb" oninput="aoMudarColorPicker(this.value)" style="width: 32px; height: 32px; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; padding: 2px; background: white;">
+                      <input type="text" id="input-color-primary" class="form-control text-xs font-mono" style="width: 82px; padding: 0.4rem 0.5rem; text-transform: uppercase;" value="#2563eb" placeholder="#2563eb" maxlength="7" oninput="aoDigitarHexCor(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Cor de Fundo da Página (Background) -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="form-label text-xs font-bold mb-0">2. Cor de Fundo da Página (Background)</label>
+                  </div>
+                  <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+                    <div class="flex items-center gap-1.5" id="bg-presets-container">
+                      <button type="button" class="color-preset-btn active" data-bg="#f8fafc" style="background-color: #f8fafc;" title="Branco Suave (Padrão)" onclick="selecionarBgPreset('#f8fafc')"></button>
+                      <button type="button" class="color-preset-btn" data-bg="#0f172a" style="background-color: #0f172a;" title="Dark Mode (Grafite Noturno)" onclick="selecionarBgPreset('#0f172a')"></button>
+                      <button type="button" class="color-preset-btn" data-bg="#fdfbf7" style="background-color: #fdfbf7;" title="Creme / Off-White" onclick="selecionarBgPreset('#fdfbf7')"></button>
+                      <button type="button" class="color-preset-btn" data-bg="#f1f5f9" style="background-color: #f1f5f9;" title="Cinza Suave" onclick="selecionarBgPreset('#f1f5f9')"></button>
+                      <button type="button" class="color-preset-btn" data-bg="#050505" style="background-color: #050505;" title="Preto Profundo" onclick="selecionarBgPreset('#050505')"></button>
+                    </div>
+                    <div class="flex items-center gap-1.5 ml-auto">
+                      <input type="color" id="input-color-bg-picker" value="#f8fafc" oninput="aoMudarBgPicker(this.value)" style="width: 32px; height: 32px; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; padding: 2px; background: white;">
+                      <input type="text" id="input-color-bg" class="form-control text-xs font-mono" style="width: 82px; padding: 0.4rem 0.5rem; text-transform: uppercase;" value="#f8fafc" placeholder="#f8fafc" maxlength="7" oninput="aoDigitarHexBg(this.value)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Cor das Fontes & Títulos -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label class="form-label text-xs font-bold mb-0">3. Cor dos Textos & Títulos</label>
+                  </div>
+                  <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+                    <div class="flex items-center gap-1.5" id="text-presets-container">
+                      <button type="button" class="color-preset-btn active" data-text="#0f172a" style="background-color: #0f172a;" title="Grafite Escuro (Padrão)" onclick="selecionarTextPreset('#0f172a')"></button>
+                      <button type="button" class="color-preset-btn" data-text="#000000" style="background-color: #000000;" title="Preto Puro" onclick="selecionarTextPreset('#000000')"></button>
+                      <button type="button" class="color-preset-btn" data-text="#ffffff" style="background-color: #ffffff;" title="Branco Puro (para fundos escuros)" onclick="selecionarTextPreset('#ffffff')"></button>
+                      <button type="button" class="color-preset-btn" data-text="#e2e8f0" style="background-color: #e2e8f0;" title="Cinza Claro" onclick="selecionarTextPreset('#e2e8f0')"></button>
+                      <button type="button" class="color-preset-btn" data-text="#292524" style="background-color: #292524;" title="Café / Marrom Escuro" onclick="selecionarTextPreset('#292524')"></button>
+                    </div>
+                    <div class="flex items-center gap-1.5 ml-auto">
+                      <input type="color" id="input-color-text-picker" value="#0f172a" oninput="aoMudarTextPicker(this.value)" style="width: 32px; height: 32px; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; padding: 2px; background: white;">
+                      <input type="text" id="input-color-text" class="form-control text-xs font-mono" style="width: 82px; padding: 0.4rem 0.5rem; text-transform: uppercase;" value="#0f172a" placeholder="#0f172a" maxlength="7" oninput="aoDigitarHexText(this.value)">
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              <!-- Divisor -->
-              <div style="height: 24px; width: 1px; background: var(--color-border);" class="hidden sm:block"></div>
-
-              <!-- Input personalizado -->
-              <div class="flex items-center gap-2">
-                <input type="color" id="input-color-picker" value="#2563eb" oninput="aoMudarColorPicker(this.value)" style="width: 36px; height: 36px; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; padding: 2px; background: white;">
-                <input type="text" id="input-color-primary" class="form-control text-xs font-mono" style="width: 90px; padding: 0.45rem 0.6rem; text-transform: uppercase;" value="#2563eb" placeholder="#2563eb" maxlength="7" oninput="aoDigitarHexCor(this.value)">
+              <!-- Mini-Preview Interativo em Tempo Real -->
+              <div>
+                <label class="form-label text-xs font-bold mb-1.5 block">Preview em Tempo Real da sua Página</label>
+                <div id="style-live-preview-box" class="style-preview-box" style="background-color: #f8fafc; border-radius: var(--radius-lg); padding: 1.25rem; border: 1.5px solid var(--color-border); transition: all 0.25s ease;">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span id="preview-chip-cat" class="px-2.5 py-0.5 rounded-full text-xs font-bold" style="background: rgba(37,99,235,0.12); color: #2563eb;">Restaurante & Bar</span>
+                    <span id="preview-badge-status" class="text-xs font-semibold" style="color: #10b981;">• Aberto Agora</span>
+                  </div>
+                  <h3 id="preview-title" class="text-lg font-bold mb-1" style="color: #0f172a; font-family: 'Plus Jakarta Sans', sans-serif;">Nome da Sua Empresa</h3>
+                  <p id="preview-desc" class="text-xs mb-4" style="color: #334155; line-height: 1.5;">O melhor atendimento e produtos da região. Conheça nossos serviços e faça seu pedido direto.</p>
+                  
+                  <div class="flex gap-2">
+                    <button type="button" id="preview-btn-main" class="btn text-xs font-semibold" style="background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-md); pointer-events: none;">
+                      Conversar no WhatsApp
+                    </button>
+                    <button type="button" id="preview-btn-outline" class="btn text-xs font-semibold" style="background: transparent; color: #2563eb; border: 1.5px solid #2563eb; padding: 0.5rem 0.8rem; border-radius: var(--radius-md); pointer-events: none;">
+                      Ver Fotos
+                    </button>
+                  </div>
+                </div>
               </div>
+
             </div>
           </div>
 
@@ -1183,8 +1305,17 @@
         document.getElementById('input-hours').value = data.business_hours || '';
         document.getElementById('input-maps-url').value = data.maps_url || '';
         definirCorMarca(data.color_primary || '#2563eb');
+        definirCorBg(data.color_bg || '#f8fafc');
+        definirCorText(data.color_text || '#0f172a');
 
-        const ctaInput = document.getElementById('input-whatsapp-cta');
+        // Atualiza textos do mini-preview
+        const prevTitle = document.getElementById('preview-title');
+        if (prevTitle && data.name) prevTitle.textContent = data.name;
+        const prevDesc = document.getElementById('preview-desc');
+        if (prevDesc && data.short_description) prevDesc.textContent = data.short_description;
+        const prevCat = document.getElementById('preview-chip-cat');
+        if (prevCat && data.category) prevCat.textContent = data.category;
+        atualizarMiniPreview();
         if (ctaInput) {
           ctaInput.value = data.whatsapp_cta || 'Conversar no WhatsApp';
           atualizarPillAtiva(ctaInput.value);
@@ -1530,10 +1661,95 @@
       }
     }
 
-    // Funções de Identidade Visual / Cor da Marca
+    // Variáveis de Estilo Visual
+    let currentColorPrimary = '#2563eb';
+    let currentColorBg = '#f8fafc';
+    let currentColorText = '#0f172a';
+
+    // Cálculo de luminância para contraste acessível (0 = preto, 1 = branco)
+    function getLuminance(hex) {
+      if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return 1;
+      let c = hex.replace('#', '').trim();
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (c.length !== 6) return 1;
+      const num = parseInt(c, 16);
+      if (isNaN(num)) return 1;
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    }
+
+    // Mini-preview em tempo real dentro do painel
+    function atualizarMiniPreview() {
+      const box = document.getElementById('style-live-preview-box');
+      const title = document.getElementById('preview-title');
+      const desc = document.getElementById('preview-desc');
+      const chipCat = document.getElementById('preview-chip-cat');
+      const btnMain = document.getElementById('preview-btn-main');
+      const btnOutline = document.getElementById('preview-btn-outline');
+
+      if (!box) return;
+
+      const bgLum = getLuminance(currentColorBg);
+      const isDark = bgLum < 0.45;
+
+      box.style.backgroundColor = currentColorBg;
+      box.style.borderColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+
+      if (title) {
+        title.style.color = currentColorText;
+      }
+      if (desc) {
+        desc.style.color = currentColorText;
+        desc.style.opacity = isDark ? '0.85' : '0.75';
+      }
+      if (chipCat) {
+        chipCat.style.backgroundColor = isDark ? 'rgba(255,255,255,0.12)' : (currentColorPrimary + '1a');
+        chipCat.style.color = isDark ? '#ffffff' : currentColorPrimary;
+      }
+      if (btnMain) {
+        btnMain.style.backgroundColor = currentColorPrimary;
+        const btnLum = getLuminance(currentColorPrimary);
+        btnMain.style.color = btnLum < 0.55 ? '#ffffff' : '#0f172a';
+      }
+      if (btnOutline) {
+        btnOutline.style.borderColor = currentColorPrimary;
+        btnOutline.style.color = currentColorPrimary;
+      }
+    }
+
+    // Aplicação rápida de temas completos
+    function aplicarTemaPreset(tema) {
+      document.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.theme-preset-btn[data-theme="${tema}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tema === 'claro') {
+        definirCorMarca(currentColorPrimary || '#2563eb');
+        definirCorBg('#f8fafc');
+        definirCorText('#0f172a');
+      } else if (tema === 'dark') {
+        definirCorMarca(currentColorPrimary || '#3b82f6');
+        definirCorBg('#0f172a');
+        definirCorText('#f8fafc');
+      } else if (tema === 'creme') {
+        definirCorMarca(currentColorPrimary || '#b45309');
+        definirCorBg('#fefce8');
+        definirCorText('#451a03');
+      } else if (tema === 'clean') {
+        definirCorMarca(currentColorPrimary || '#0f172a');
+        definirCorBg('#ffffff');
+        definirCorText('#1e293b');
+      }
+      atualizarMiniPreview();
+    }
+
+    // 1. Cor da Marca (Destaque & Botões)
     function definirCorMarca(cor) {
       if (!cor || !cor.startsWith('#')) cor = '#2563eb';
       cor = cor.toLowerCase();
+      currentColorPrimary = cor;
 
       const inputHex = document.getElementById('input-color-primary');
       const inputPicker = document.getElementById('input-color-picker');
@@ -1543,15 +1759,17 @@
       if (inputPicker) inputPicker.value = cor;
       if (badgePreview) badgePreview.style.backgroundColor = cor;
 
-      // Atualiza estado ativo dos botões de preset
-      const presetBtns = document.querySelectorAll('.color-preset-btn');
+      const presetBtns = document.querySelectorAll('#color-presets-container .color-preset-btn');
       presetBtns.forEach(btn => {
-        if (btn.getAttribute('data-color').toLowerCase() === cor) {
+        const val = (btn.getAttribute('data-color') || '').toLowerCase();
+        if (val === cor) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
         }
       });
+
+      atualizarMiniPreview();
     }
 
     function selecionarCorPreset(cor) {
@@ -1566,19 +1784,89 @@
       valor = valor.trim();
       if (!valor.startsWith('#')) valor = '#' + valor;
       if (/^#[0-9A-Fa-f]{6}$/.test(valor) || /^#[0-9A-Fa-f]{3}$/.test(valor)) {
-        const inputPicker = document.getElementById('input-color-picker');
-        const badgePreview = document.getElementById('brand-color-badge-preview');
-        if (inputPicker) inputPicker.value = valor;
-        if (badgePreview) badgePreview.style.backgroundColor = valor;
+        definirCorMarca(valor);
+      }
+    }
 
-        const presetBtns = document.querySelectorAll('.color-preset-btn');
-        presetBtns.forEach(btn => {
-          if (btn.getAttribute('data-color').toLowerCase() === valor.toLowerCase()) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
+    // 2. Cor de Fundo da Página (Background)
+    function definirCorBg(cor) {
+      if (!cor || !cor.startsWith('#')) cor = '#f8fafc';
+      cor = cor.toLowerCase();
+      currentColorBg = cor;
+
+      const inputHex = document.getElementById('input-color-bg');
+      const inputPicker = document.getElementById('input-color-bg-picker');
+
+      if (inputHex) inputHex.value = cor;
+      if (inputPicker) inputPicker.value = cor;
+
+      const presetBtns = document.querySelectorAll('#bg-presets-container .color-preset-btn');
+      presetBtns.forEach(btn => {
+        const val = (btn.getAttribute('data-bg') || '').toLowerCase();
+        if (val === cor) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      atualizarMiniPreview();
+    }
+
+    function selecionarBgPreset(cor) {
+      definirCorBg(cor);
+    }
+
+    function aoMudarBgPicker(cor) {
+      definirCorBg(cor);
+    }
+
+    function aoDigitarHexBg(valor) {
+      valor = valor.trim();
+      if (!valor.startsWith('#')) valor = '#' + valor;
+      if (/^#[0-9A-Fa-f]{6}$/.test(valor) || /^#[0-9A-Fa-f]{3}$/.test(valor)) {
+        definirCorBg(valor);
+      }
+    }
+
+    // 3. Cor das Fontes & Títulos
+    function definirCorText(cor) {
+      if (!cor || !cor.startsWith('#')) cor = '#0f172a';
+      cor = cor.toLowerCase();
+      currentColorText = cor;
+
+      const inputHex = document.getElementById('input-color-text');
+      const inputPicker = document.getElementById('input-color-text-picker');
+
+      if (inputHex) inputHex.value = cor;
+      if (inputPicker) inputPicker.value = cor;
+
+      const presetBtns = document.querySelectorAll('#text-presets-container .color-preset-btn');
+      presetBtns.forEach(btn => {
+        const val = (btn.getAttribute('data-text') || '').toLowerCase();
+        if (val === cor) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      atualizarMiniPreview();
+    }
+
+    function selecionarTextPreset(cor) {
+      definirCorText(cor);
+    }
+
+    function aoMudarTextPicker(cor) {
+      definirCorText(cor);
+    }
+
+    function aoDigitarHexText(valor) {
+      valor = valor.trim();
+      if (!valor.startsWith('#')) valor = '#' + valor;
+      if (/^#[0-9A-Fa-f]{6}$/.test(valor) || /^#[0-9A-Fa-f]{3}$/.test(valor)) {
+        definirCorText(valor);
       }
     }
 
@@ -1609,6 +1897,14 @@
       let colorVal = colorInput ? colorInput.value.trim() : '#2563eb';
       if (!colorVal.startsWith('#')) colorVal = '#' + colorVal;
 
+      const bgInput = document.getElementById('input-color-bg');
+      let colorBgVal = bgInput ? bgInput.value.trim() : '#f8fafc';
+      if (!colorBgVal.startsWith('#')) colorBgVal = '#' + colorBgVal;
+
+      const textInput = document.getElementById('input-color-text');
+      let colorTextVal = textInput ? textInput.value.trim() : '#0f172a';
+      if (!colorTextVal.startsWith('#')) colorTextVal = '#' + colorTextVal;
+
       const data = {
         name: document.getElementById('input-name').value,
         category: document.getElementById('input-category').value,
@@ -1621,6 +1917,8 @@
         business_hours: document.getElementById('input-hours').value,
         maps_url: document.getElementById('input-maps-url').value,
         color_primary: colorVal,
+        color_bg: colorBgVal,
+        color_text: colorTextVal,
         whatsapp_cta: document.getElementById('input-whatsapp-cta') ? document.getElementById('input-whatsapp-cta').value.trim() : 'Conversar no WhatsApp',
         whatsapp_message: document.getElementById('input-whatsapp-message') ? document.getElementById('input-whatsapp-message').value.trim() : '',
         facebook: document.getElementById('input-facebook') ? document.getElementById('input-facebook').value.trim() : '',
