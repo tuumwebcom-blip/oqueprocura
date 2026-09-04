@@ -310,6 +310,15 @@ def check_db_schema():
         except Exception:
             pass
 
+        # Remove empresas e dados fakes/demo legados para manter o banco limpo para produção
+        try:
+            conn.execute("DELETE FROM services WHERE business_id IN (SELECT id FROM businesses WHERE name IN ('Estúdio Lente Clara', 'Padaria Artesanal Pão & Prosa', 'Oficina do João', 'Clínica Sorriso Saudável', 'Teste'))")
+            conn.execute("DELETE FROM users WHERE email IN ('admin@lentelclara.com', 'test@test.com')")
+            conn.execute("DELETE FROM businesses WHERE name IN ('Estúdio Lente Clara', 'Padaria Artesanal Pão & Prosa', 'Oficina do João', 'Clínica Sorriso Saudável', 'Teste')")
+            conn.execute("DELETE FROM services WHERE business_id NOT IN (SELECT id FROM businesses)")
+        except Exception as e:
+            print(f"Aviso ao limpar fakes: {e}")
+
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1505,6 +1514,34 @@ def toggle_status(id):
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'status': new_status})
+
+@app.route('/api/superadmin/businesses/<int:id>/delete', methods=['POST', 'DELETE'])
+@superadmin_required
+def superadmin_delete_business(id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM services WHERE business_id = ?', (id,))
+    conn.execute('DELETE FROM gallery WHERE business_id = ?', (id,))
+    conn.execute('DELETE FROM reviews WHERE business_id = ?', (id,))
+    conn.execute('DELETE FROM users WHERE business_id = ?', (id,))
+    conn.execute('DELETE FROM businesses WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Empresa excluída com sucesso!'})
+
+@app.route('/api/superadmin/businesses/clear-all', methods=['POST'])
+@superadmin_required
+def superadmin_clear_all_businesses():
+    conn = get_db_connection()
+    conn.execute('DELETE FROM services')
+    conn.execute('DELETE FROM gallery')
+    conn.execute('DELETE FROM reviews')
+    SUPERADMIN_EMAILS = {'admin@tuumweb.com', 'tuumweb.com@gmail.com'}
+    placeholders = ','.join(['?'] * len(SUPERADMIN_EMAILS))
+    conn.execute(f'DELETE FROM users WHERE email NOT IN ({placeholders})', list(SUPERADMIN_EMAILS))
+    conn.execute('DELETE FROM businesses')
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Todas as empresas foram removidas com sucesso!'})
 
 # --- Categorias (Público & Super Admin) ---
 

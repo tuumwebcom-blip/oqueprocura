@@ -34,12 +34,22 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
   const businessesToRender = limit ? mockBusinesses.slice(0, limit) : mockBusinesses;
   
   if (businessesToRender.length === 0) {
+    const isHome = containerId === 'featured-businesses';
     container.innerHTML = `
-      <div class="col-span-3 text-center py-12" style="background:var(--color-surface); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
-        <i data-lucide="search-x" class="w-12 h-12 text-muted mx-auto mb-4"></i>
-        <h3 class="text-xl font-bold text-text-dark mb-2">Nenhum resultado encontrado</h3>
-        <p class="text-muted">Tente buscar por termos mais genéricos ou mude a categoria.</p>
-        <button class="btn btn-outline mt-6" onclick="window.location.href='search.html'">Ver todas as empresas</button>
+      <div style="grid-column: 1 / -1; background: var(--color-surface); border-radius: var(--radius-xl); border: 1.5px dashed var(--color-border); padding: 3rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #eff6ff; color: var(--color-secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+          <i data-lucide="${isHome ? 'store' : 'search-x'}" style="width: 28px; height: 28px;"></i>
+        </div>
+        <h3 class="text-xl font-bold text-text-dark mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+          ${isHome ? 'Cadastre sua empresa e seja o primeiro em destaque!' : 'Nenhuma empresa encontrada'}
+        </h3>
+        <p class="text-muted text-sm max-w-md mx-auto mb-6">
+          ${isHome ? 'A plataforma está pronta para receber novos negócios da sua região. Destaque sua empresa e seja encontrado por milhares de clientes.' : 'Tente buscar por termos mais amplos ou explore outras categorias disponíveis na plataforma.'}
+        </p>
+        <a href="${isHome ? 'anuncie.html' : 'search.html'}" class="btn btn-primary text-sm shadow-md inline-flex items-center gap-2" style="border-radius: var(--radius-full); padding: 0.65rem 1.5rem;">
+          <i data-lucide="${isHome ? 'rocket' : 'rotate-ccw'}" class="w-4 h-4"></i>
+          ${isHome ? 'Cadastrar Minha Empresa' : 'Ver Todas as Empresas'}
+        </a>
       </div>
     `;
     if (typeof lucide !== 'undefined') lucide.createIcons();

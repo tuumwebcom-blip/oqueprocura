@@ -320,6 +320,7 @@
                 <th class="text-left">Email</th>
                 <th class="text-left">Plano</th>
                 <th class="text-left">Status</th>
+                <th class="text-left" style="width: 80px;">Ações</th>
               </tr>
             </thead>
             <tbody id="empresas-list-body">
@@ -610,9 +611,25 @@
       <!-- ABA: CONFIGURAÇÕES -->
       <section id="tab-configuracoes" class="tab-section" style="display:none;">
         <h1 class="text-3xl font-bold text-text-dark mb-6" style="font-family: 'Plus Jakarta Sans', sans-serif;">Configurações Globais</h1>
-        <div class="card max-w-lg">
-          <p class="text-muted mb-4">Em breve, configurações avançadas de SEO, nome da plataforma e chaves de pagamento estarão disponíveis aqui.</p>
-          <button class="btn btn-outline" onclick="alert('Funcionalidade em desenvolvimento!')">Exportar Banco de Dados</button>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+          <div class="card">
+            <h3 class="font-bold text-text-dark text-lg mb-2 flex items-center gap-2">
+              <i data-lucide="database" class="w-5 h-5 text-secondary"></i> Banco de Dados
+            </h3>
+            <p class="text-muted text-sm mb-4">Exportar dados do sistema ou efetuar cópia de segurança do banco de dados.</p>
+            <button class="btn btn-outline text-sm" onclick="alert('Funcionalidade em desenvolvimento!')">Exportar Banco de Dados</button>
+          </div>
+
+          <div class="card" style="border: 1.5px solid #fecaca; background: #fffaf0;">
+            <h3 class="font-bold text-rose-700 text-lg mb-2 flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600"></i> Limpeza de Dados de Teste
+            </h3>
+            <p class="text-slate-600 text-sm mb-4">Exclui todas as empresas e perfis de teste cadastrados para deixar a plataforma 100% limpa para as empresas reais.</p>
+            <button class="btn text-sm font-bold flex items-center gap-1.5" style="background:#ef4444; color:white; border:none; padding: 0.6rem 1.25rem; border-radius: 8px;" onclick="limparTodasEmpresas()">
+              <i data-lucide="trash-2" class="w-4 h-4"></i> Limpar Todas as Empresas
+            </button>
+          </div>
         </div>
       </section>
 
@@ -884,9 +901,14 @@
                 <td class="font-bold text-text-dark">${sub.views}</td>
                 <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
                 <td>
-                  <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
-                    ${btnText}
-                  </button>
+                  <div class="flex items-center gap-1.5">
+                    <button onclick="toggleStatus(${sub.business_id})" style="background:${btnColor}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">
+                      ${btnText}
+                    </button>
+                    <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             `;}).join('');
@@ -917,6 +939,11 @@
                 </select>
               </td>
               <td class="py-3"><span class="status-badge ${sub.status === 'suspended' ? 'status-pending' : 'status-active'}">${sub.status === 'suspended' ? 'Suspensa' : 'Ativa'}</span></td>
+              <td class="py-3">
+                <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </td>
             </tr>
           `).join('');
         }
@@ -994,9 +1021,14 @@
             </td>
             <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
             <td>
-              <button onclick="toggleStatus(${sub.business_id})" style="background:${isSuspended ? '#22c55e' : '#ef4444'}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
-                ${isSuspended ? 'Ativar' : 'Suspender'}
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="toggleStatus(${sub.business_id})" style="background:${isSuspended ? '#22c55e' : '#ef4444'}; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                  ${isSuspended ? 'Ativar' : 'Suspender'}
+                </button>
+                <button onclick="excluirEmpresa(${sub.business_id}, '${sub.business_name.replace(/'/g, "\\'")}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors" title="Excluir Empresa">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -1198,6 +1230,40 @@
         }
       } catch (e) {
         alert('Erro de conexão.');
+      }
+    }
+
+    async function excluirEmpresa(businessId, nomeEmpresa) {
+      if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente a empresa "${nomeEmpresa}"?\n\nEsta ação apagará a página de perfil, produtos e usuário vinculado.`)) return;
+      try {
+        const res = await fetch(`/api/superadmin/businesses/${businessId}/delete`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert(`Empresa "${nomeEmpresa}" excluída com sucesso!`);
+          await carregarDashboard();
+          carregarCategorias();
+        } else {
+          alert(data.message || 'Erro ao excluir empresa.');
+        }
+      } catch(e) {
+        alert('Erro de conexão ao excluir empresa.');
+      }
+    }
+
+    async function limparTodasEmpresas() {
+      if (!confirm('ATENÇÃO: Deseja realmente excluir TODAS as empresas do sistema?\n\nA plataforma ficará 100% limpa para o cadastro das empresas reais.')) return;
+      try {
+        const res = await fetch('/api/superadmin/businesses/clear-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert('Todas as empresas foram removidas com sucesso! Plataforma pronta para receber empresas reais.');
+          await carregarDashboard();
+          carregarCategorias();
+        } else {
+          alert(data.message || 'Erro ao limpar empresas.');
+        }
+      } catch(e) {
+        alert('Erro de conexão ao limpar empresas.');
       }
     }
 
