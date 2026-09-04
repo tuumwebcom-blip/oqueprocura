@@ -192,7 +192,7 @@
           <i data-lucide="image" class="w-5 h-5"></i> Galeria e Fotos
         </a>
         <a href="#" class="admin-nav-item" data-target="assinatura">
-          <i data-lucide="credit-card" class="w-5 h-5"></i> Assinatura
+          <i data-lucide="credit-card" class="w-5 h-5"></i> Assinatura & Conta
         </a>
         <a href="#" class="admin-nav-item" data-target="avaliacoes">
           <i data-lucide="message-square" class="w-5 h-5"></i> Avaliações
@@ -641,6 +641,25 @@
         <div class="card-panel">
           <h2 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Status da Conta</h2>
           <p class="text-success text-sm flex items-center gap-2 font-bold"><i data-lucide="check-circle" class="w-4 h-4"></i> Conta Ativa e visível nas buscas.</p>
+        </div>
+
+        <!-- ZONA DE PERIGO: Exclusão de Conta -->
+        <div class="card-panel" style="border: 1px solid #fee2e2; background: #fff5f5; margin-top: 2rem;">
+          <div class="flex items-center gap-3 mb-3">
+            <div style="width: 42px; height: 42px; border-radius: 8px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold" style="color: #991b1b; font-family: 'Plus Jakarta Sans', sans-serif;">Zona de Perigo — Excluir Conta</h2>
+              <p class="text-sm" style="color: #b91c1c;">Esta ação é permanente e irreversível.</p>
+            </div>
+          </div>
+          <p class="text-sm text-muted mb-4" style="line-height: 1.6;">
+            Ao excluir sua conta, sua empresa será imediatamente removida das buscas públicas. Todas as fotos da galeria, produtos/serviços cadastrados e avaliações recebidas serão permanentemente apagados do sistema.
+          </p>
+          <button type="button" class="btn" onclick="confirmarExclusaoConta()" style="background-color: #dc2626; color: white; border: none; font-weight: 600; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Excluir Minha Conta Permanentemente
+          </button>
         </div>
       </section>
 
@@ -1308,6 +1327,39 @@
       } catch(e) {
         alert('Erro ao salvar. Verifique o console.');
         console.error(e);
+      }
+    }
+
+    async function confirmarExclusaoConta() {
+      const confirm1 = confirm(
+        "⚠️ ATENÇÃO: Tem certeza de que deseja excluir sua conta e sua empresa permanentemente?\n\nEsta ação é irreversível e todos os seus dados, fotos e avaliações serão apagados."
+      );
+      if (!confirm1) return;
+
+      const confirm2 = prompt(
+        'Para confirmar em definitivo, digite "EXCLUIR" (em letras maiúsculas) abaixo:'
+      );
+      if (confirm2 !== 'EXCLUIR') {
+        alert('Ação cancelada. A palavra de confirmação não foi digitada corretamente.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/account/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.removeItem('business_id');
+          alert('Sua conta foi excluída permanentemente com sucesso.');
+          window.location.href = '/';
+        } else {
+          alert('Erro ao excluir conta: ' + (data.message || 'Tente novamente.'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erro de conexão ao excluir conta.');
       }
     }
   </script>

@@ -246,8 +246,19 @@
         <h3 class="checkout-step-title">
           <span class="step-number">1</span> Dados da Conta
         </h3>
+
+        <!-- Card de usuário autenticado -->
+        <div id="logged-user-alert" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+          <div class="flex items-center gap-2 text-sm text-secondary font-bold">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Conta Conectada
+          </div>
+          <p class="text-xs text-muted mt-1" id="logged-user-desc">
+            Você já está autenticado. O plano escolhido será aplicado à sua conta atual.
+          </p>
+        </div>
+
         <div class="form-group">
-          <label class="form-label">Nome Completo</label>
+          <label class="form-label">Nome Completo / Empresa</label>
           <input type="text" id="checkout-name" class="form-control" placeholder="Como deseja ser chamado?">
         </div>
         <div class="grid-2">
@@ -265,7 +276,7 @@
             <label class="form-label">CPF ou CNPJ</label>
             <input type="text" id="checkout-doc" class="form-control" placeholder="000.000.000-00">
           </div>
-          <div class="form-group">
+          <div class="form-group" id="field-password-group">
             <label class="form-label">Crie uma senha</label>
             <input type="password" id="checkout-password" class="form-control" placeholder="Mínimo de 8 caracteres">
           </div>
@@ -324,24 +335,48 @@
   <script>
     lucide.createIcons();
 
+    let currentUser = null;
+
     function selectPayment(element) {
       document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
     }
 
     async function finalizarCompra() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const plan = urlParams.get('plan') || 'basico';
+
+      if (currentUser && currentUser.logged_in) {
+        // Usuário já está logado: ativa o plano diretamente
+        try {
+          const res = await fetch('/api/user/choose-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`🎉 Parabéns! Seu Plano ${plan.toUpperCase()} foi ativado com sucesso!`);
+            window.location.href = `/admin.html${data.business_id ? '?business_id=' + data.business_id : ''}`;
+          } else {
+            alert(data.message || 'Erro ao ativar o plano.');
+          }
+        } catch (e) {
+          alert('Erro de conexão ao ativar o plano.');
+          console.error(e);
+        }
+        return;
+      }
+
+      // Novo usuário: fluxo de cadastro
       const businessName = (document.getElementById('checkout-name')?.value || '').trim();
       const email = (document.getElementById('checkout-email')?.value || '').trim();
       const password = (document.getElementById('checkout-password')?.value || '').trim();
 
       if (!businessName || !email || !password) {
-        alert('Por favor, preencha pelo menos o Nome, E-mail e Senha.');
+        alert('Por favor, preencha pelo menos o Nome/Empresa, E-mail e crie uma Senha.');
         return;
       }
-
-      // Pega o plano da URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const plan = urlParams.get('plan') || 'basico';
 
       try {
         const response = await fetch('/api/auth/register', {
@@ -357,42 +392,44 @@
 
         const data = await response.json();
         if (data.success) {
-          // Aqui no futuro entrará a API real de pagamento (Stripe/Mercado Pago)
-          // Mas por enquanto, se a conta for criada, faz o login
-          
-          const loginRes = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, password: password })
-          });
-          const loginData = await loginRes.json();
-          
-          if(loginData.success) {
-             localStorage.setItem('business_id', loginData.business_id);
-             alert('Conta criada com sucesso! Redirecionando para o seu painel...');
-             window.location.href = 'admin.html';
+          if (data.business_id) {
+            localStorage.setItem('business_id', data.business_id);
+          }
+          if (data.need_verification) {
+            alert('Enviamos um código de verificação para o seu e-mail. Vamos validar para ativar sua conta.');
+            window.location.href = `/cadastro.html?verify=1&email=${encodeURIComponent(email)}&plan=${plan}`;
           } else {
-             alert('Conta criada, mas houve um erro ao entrar automaticamente: ' + loginData.message);
-             window.location.href = 'login.html';
+            alert('Conta criada com sucesso! Redirecionando para o seu painel...');
+            window.location.href = `/admin.html?business_id=${data.business_id}`;
           }
         } else {
           alert('Erro ao criar conta: ' + data.message);
         }
       } catch (e) {
         alert('Erro de conexão ao finalizar compra.');
+        console.error(e);
       }
     }
 
-    // Dynamic Plan Load
-    document.addEventListener('DOMContentLoaded', () => {
+    // Dynamic Plan Load & Auth Check
+    document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const plan = urlParams.get('plan') || 'basico'; // default para basico se vier vazio
+      const plan = urlParams.get('plan') || 'basico';
       
       const title = document.getElementById('summary-title');
       const price = document.getElementById('summary-price');
       const benefits = document.getElementById('summary-benefits');
 
-      if (plan === 'basico') {
+      if (plan === 'gratuito') {
+        title.textContent = 'Gratuito';
+        price.textContent = '0';
+        benefits.innerHTML = `
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Logotipo e dados de contato</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Botão WhatsApp e Instagram</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Galeria com até 2 fotos</li>
+          <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> 1 Produto/Serviço</li>
+        `;
+      } else if (plan === 'basico') {
         title.textContent = 'Básico';
         price.textContent = '29,90';
         benefits.innerHTML = `
@@ -417,6 +454,39 @@
           <li><i data-lucide="check-circle" class="w-5 h-5 text-secondary"></i> Produtos/Serviços Ilimitados</li>
         `;
       }
+
+      // Checa se o usuário já está logado
+      try {
+        const authRes = await fetch('/api/auth/me');
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.logged_in) {
+            currentUser = authData;
+            const alertBox = document.getElementById('logged-user-alert');
+            const alertDesc = document.getElementById('logged-user-desc');
+            const passGroup = document.getElementById('field-password-group');
+            const emailInput = document.getElementById('checkout-email');
+            const nameInput = document.getElementById('checkout-name');
+
+            if (alertBox) alertBox.style.display = 'block';
+            if (alertDesc) {
+              alertDesc.innerHTML = `Você está autenticado como <strong>${authData.email}</strong>. O plano escolhido será vinculado diretamente ao seu painel.`;
+            }
+            if (passGroup) passGroup.style.display = 'none';
+            if (emailInput && authData.email) {
+              emailInput.value = authData.email;
+              emailInput.readOnly = true;
+              emailInput.style.backgroundColor = '#f1f5f9';
+            }
+            if (nameInput && authData.business_name) {
+              nameInput.value = authData.business_name;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao verificar login no checkout', e);
+      }
+
       lucide.createIcons();
     });
   </script>

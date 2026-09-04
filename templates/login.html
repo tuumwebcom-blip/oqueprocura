@@ -218,15 +218,15 @@
         const data = await response.json();
         
         if (data.success) {
-          // O backend agora gerencia o Cookie de Sessão automaticamente!
-          
           if (data.role === 'superadmin') {
             window.location.href = data.redirect;
           } else {
-            // Guardamos apenas para saber no frontend que estamos logados, mas a segurança é do servidor
             localStorage.setItem('business_id', data.business_id);
             window.location.href = 'admin.html';
           }
+        } else if (data.need_verification) {
+          alert(data.message || 'Seu e-mail precisa de confirmação.');
+          window.location.href = `/cadastro.html?verify=1&email=${encodeURIComponent(data.email || email)}`;
         } else {
           alert('Erro no login: ' + data.message);
         }

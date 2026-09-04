@@ -29,14 +29,21 @@
 
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-      max-width: 1140px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      max-width: 1280px;
       margin: 0 auto;
       align-items: stretch;
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1180px) {
+      .pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 760px;
+      }
+    }
+
+    @media (max-width: 640px) {
       .pricing-grid {
         grid-template-columns: 1fr;
         max-width: 440px;
@@ -225,8 +232,49 @@
     </section>
 
     <section class="pricing-section container">
+
+      <!-- Banner de Boas-vindas Pós-Cadastro -->
+      <div id="onboarding-banner" style="display: none; max-width: 1280px; margin: 0 auto 2.5rem; background: #eff6ff; border: 2px solid #bfdbfe; border-radius: var(--radius-xl); padding: 1.5rem 2rem; box-shadow: 0 10px 25px -5px rgba(37,99,235,0.12);">
+        <div class="flex items-center gap-4">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+          </div>
+          <div style="flex: 1;">
+            <h3 class="text-xl font-bold" style="color: #1e3a8a; font-family: 'Plus Jakarta Sans', sans-serif;">🎉 Cadastro confirmado com sucesso!</h3>
+            <p class="text-sm" style="color: #3b82f6; margin-top: 0.25rem;">
+              Escolha o plano ideal para a sua empresa. Você pode começar <strong>totalmente grátis</strong> ou acelerar seus resultados com mais visibilidade e recursos.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div class="pricing-grid">
         
+        <!-- Plano Gratuito -->
+        <div class="pricing-card">
+          <div class="text-center">
+            <h3 class="text-xl font-bold text-text-dark">Gratuito</h3>
+            <p class="text-sm text-muted mt-2">Para criar sua presença digital e começar sem custo.</p>
+            <div class="price-wrap">
+              <span class="price-currency">R$</span>
+              <span class="price-amount">0<span class="price-cents">,00</span></span>
+              <span class="price-period">/grátis</span>
+            </div>
+          </div>
+          <ul class="feature-list">
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Perfil na plataforma</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Aparecer nas buscas locais</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Receber avaliações</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Botão WhatsApp</strong> e Instagram</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Galeria com até <strong>2 fotos</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Até <strong>1 produto/serviço</strong></span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Posição prioritária na busca</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Google Maps no perfil</span></li>
+            <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Selo de verificado</span></li>
+          </ul>
+          <button class="btn btn-outline w-full" id="btn-plano-gratuito" onclick="escolherPlano('gratuito')" style="padding: 0.875rem; font-weight: 600;">Começar Grátis</button>
+        </div>
+
         <!-- Plano Básico -->
         <div class="pricing-card">
           <div class="text-center">
@@ -239,17 +287,15 @@
             </div>
           </div>
           <ul class="feature-list">
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Perfil completo na plataforma</span></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Aparecer nas buscas locais</span></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Receber avaliações de clientes</span></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Botão WhatsApp</strong> e Instagram</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Tudo do Gratuito</strong></span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Galeria com até <strong>5 fotos</strong></span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Até <strong>5 produtos/serviços</strong></span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Suporte por e-mail</span></li>
             <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Posição prioritária na busca</span></li>
             <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Google Maps no perfil</span></li>
             <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Selo de verificado</span></li>
           </ul>
-          <button class="btn btn-outline w-full" onclick="window.location.href='/checkout.html?plan=basico'" style="padding: 0.875rem; font-weight: 600;">Começar com o Básico</button>
+          <button class="btn btn-outline w-full" onclick="escolherPlano('basico')" style="padding: 0.875rem; font-weight: 600;">Assinar Plano Básico</button>
         </div>
 
         <!-- Plano PRO -->
@@ -274,7 +320,7 @@
             <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Selo de Empresa Verificada</span></li>
             <li class="feature-item"><i data-lucide="x-circle" class="feature-icon missing w-5 h-5"></i><span class="text-muted">Destaque na página inicial</span></li>
           </ul>
-          <button class="btn btn-primary w-full shadow-md" onclick="window.location.href='/checkout.html?plan=pro'" style="padding: 0.875rem; font-weight: 700;">Assinar Plano PRO</button>
+          <button class="btn btn-primary w-full shadow-md" onclick="escolherPlano('pro')" style="padding: 0.875rem; font-weight: 700;">Assinar Plano PRO</button>
         </div>
 
         <!-- Plano Elite -->
@@ -294,11 +340,11 @@
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Galeria com até <strong>100 fotos</strong></span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Produtos e serviços ilimitados</strong></span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span><strong>Selo de Empresa Verificada ✓</strong></span></li>
-            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Destaque na <strong>Página Inicial</strong> (sorteio)</span></li>
+            <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Destaque na <strong>Página Inicial</strong></span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Painel de Analytics avançado</span></li>
             <li class="feature-item"><i data-lucide="check-circle" class="feature-icon w-5 h-5"></i><span>Suporte VIP dedicado</span></li>
           </ul>
-          <button class="btn w-full" onclick="window.location.href='/checkout.html?plan=elite'" style="padding: 0.875rem; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; box-shadow: 0 4px 14px rgba(245,158,11,0.35);">Assinar Plano Elite ✦</button>
+          <button class="btn w-full" onclick="escolherPlano('elite')" style="padding: 0.875rem; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; box-shadow: 0 4px 14px rgba(245,158,11,0.35);">Assinar Plano Elite ✦</button>
         </div>
         
       </div>
@@ -372,6 +418,86 @@
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script>
     lucide.createIcons();
+
+    let userAutenticado = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isOnboarding = urlParams.get('onboarding') === '1';
+      const paramBid = urlParams.get('business_id');
+
+      if (paramBid) {
+        localStorage.setItem('business_id', paramBid);
+      }
+
+      if (isOnboarding) {
+        const banner = document.getElementById('onboarding-banner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.logged_in) {
+            userAutenticado = data;
+            const btnGratuito = document.getElementById('btn-plano-gratuito');
+            if (btnGratuito) {
+              btnGratuito.textContent = 'Continuar com o Gratuito';
+              btnGratuito.classList.remove('btn-outline');
+              btnGratuito.classList.add('btn-primary');
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao verificar autenticação:', e);
+      }
+    });
+
+    async function escolherPlano(plano) {
+      if (plano === 'gratuito') {
+        if (!userAutenticado) {
+          window.location.href = '/cadastro.html?plan=gratuito';
+          return;
+        }
+
+        const btn = document.getElementById('btn-plano-gratuito');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Ativando plano gratuito...';
+        }
+
+        try {
+          const res = await fetch('/api/user/choose-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: 'gratuito' })
+          });
+          const data = await res.json();
+          if (data.success) {
+            if (data.business_id) {
+              localStorage.setItem('business_id', data.business_id);
+            }
+            window.location.href = `/admin.html${data.business_id ? '?business_id=' + data.business_id : ''}`;
+          } else {
+            alert(data.message || 'Erro ao selecionar o plano.');
+            if (btn) {
+              btn.disabled = false;
+              btn.textContent = 'Continuar com o Gratuito';
+            }
+          }
+        } catch (e) {
+          console.error(e);
+          window.location.href = '/admin.html';
+        }
+      } else {
+        // Planos pagos: basico, pro, elite
+        window.location.href = `/checkout.html?plan=${plano}`;
+      }
+    }
   </script>
 </body>
 </html>

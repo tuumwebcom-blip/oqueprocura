@@ -5,6 +5,8 @@ import uuid
 import os
 import re
 import html
+import random
+import time
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import escape
@@ -119,6 +121,14 @@ def check_db_schema():
         if 'author_email' not in cols_rev:
             conn.execute('ALTER TABLE reviews ADD COLUMN author_email TEXT')
 
+        cols_users = [c[1] for c in conn.execute('PRAGMA table_info(users)').fetchall()]
+        if 'is_verified' not in cols_users:
+            conn.execute('ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 1')
+        if 'verification_code' not in cols_users:
+            conn.execute('ALTER TABLE users ADD COLUMN verification_code TEXT')
+        if 'verification_code_expires' not in cols_users:
+            conn.execute('ALTER TABLE users ADD COLUMN verification_code_expires INTEGER')
+
         # Limpa entidades HTML duplicadas no banco
         conn.execute("UPDATE businesses SET category = REPLACE(category, '&amp;amp;', '&') WHERE category LIKE '%&amp;amp;%'")
         conn.execute("UPDATE businesses SET category = REPLACE(category, '&amp;', '&') WHERE category LIKE '%&amp;%'")
@@ -131,6 +141,130 @@ def check_db_schema():
         pass
 
 check_db_schema()
+
+def send_verification_email(to_email, code):
+    """
+    Envia o código de verificação para o e-mail informado.
+    Prioridades de envio:
+    1. Resend API (se RESEND_API_KEY estiver configurado no .env)
+    2. SendGrid API (se SENDGRID_API_KEY estiver configurado no .env)
+    3. SMTP padrão (se SMTP_HOST e SMTP_USER estiverem configurados no .env)
+    Fallback: Exibe o código no log do servidor.
+    """
+    subject = f"{code} é o seu código de verificação - O Que Procura?"
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 30px 10px;">
+      <div style="max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="background: #2563eb; padding: 24px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">O Que Procura?</h1>
+        </div>
+        <div style="padding: 32px 28px; text-align: center;">
+          <h2 style="color: #0f172a; font-size: 20px; font-weight: 700; margin: 0 0 12px;">Confirme seu endereço de e-mail</h2>
+          <p style="color: #475569; font-size: 15px; line-height: 1.5; margin: 0 0 24px;">
+            Obrigado por se cadastrar! Para ativar sua conta e garantir que seu e-mail seja autêntico, informe o código de verificação abaixo:
+          </p>
+          <div style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 10px; padding: 18px 24px; display: inline-block; margin-bottom: 24px;">
+            <span style="font-family: monospace, Courier, monospace; font-size: 34px; font-weight: 800; color: #1d4ed8; letter-spacing: 8px;">{code}</span>
+          </div>
+          <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0 0 12px;">
+            Este código é válido por <strong>15 minutos</strong>. Se você não solicitou este cadastro, desconsidere esta mensagem.
+          </p>
+        </div>
+        <div style="background: #f1f5f9; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">© 2026 O Que Procura? · TUUMWEB.COM</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    resend_api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    resend_from = os.environ.get('RESEND_FROM', 'O Que Procura? <onboarding@resend.dev>').strip()
+    sendgrid_api_key = os.environ.get('SENDGRID_API_KEY', '').strip()
+    sendgrid_from = os.environ.get('SENDGRID_FROM', 'contato@tuumweb.com').strip()
+    smtp_host = os.environ.get('SMTP_HOST', '').strip()
+
+    # 1. Tentativa via Resend (HTTPS 443)
+    if resend_api_key:
+        try:
+            resp = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "from": resend_from,
+                    "to": [to_email],
+                    "subject": subject,
+                    "html": html_content
+                },
+                timeout=10
+            )
+            print(f"[RESEND] Status {resp.status_code}: {resp.text}")
+            if resp.status_code in [200, 201]:
+                return True, "Enviado via Resend"
+        except Exception as e:
+            print(f"[RESEND ERROR] {e}")
+
+    # 2. Tentativa via SendGrid (HTTPS 443)
+    if sendgrid_api_key:
+        try:
+            resp = requests.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers={
+                    "Authorization": f"Bearer {sendgrid_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "personalizations": [{"to": [{"email": to_email}]}],
+                    "from": {"email": sendgrid_from, "name": "O Que Procura?"},
+                    "subject": subject,
+                    "content": [{"type": "text/html", "value": html_content}]
+                },
+                timeout=10
+            )
+            print(f"[SENDGRID] Status {resp.status_code}")
+            if resp.status_code in [200, 202]:
+                return True, "Enviado via SendGrid"
+        except Exception as e:
+            print(f"[SENDGRID ERROR] {e}")
+
+    # 3. Tentativa via SMTP padrão
+    if smtp_host:
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+
+            smtp_user = os.environ.get('SMTP_USER', '').strip()
+            smtp_pass = os.environ.get('SMTP_PASSWORD', '').strip()
+            smtp_port = int(os.environ.get('SMTP_PORT', 587))
+
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = smtp_user
+            msg["To"] = to_email
+            msg.attach(MIMEText(html_content, "html"))
+
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [to_email], msg.as_string())
+            print(f"[SMTP] Enviado para {to_email}")
+            return True, "Enviado via SMTP"
+        except Exception as e:
+            print(f"[SMTP ERROR] {e}")
+
+    # Log de fallback quando nenhuma chave estiver no .env
+    print(f"==================================================")
+    print(f"[EMAIL FALLBACK] Para: {to_email}")
+    print(f"[EMAIL FALLBACK] CÓDIGO DE VERIFICAÇÃO: {code}")
+    print(f"==================================================")
+    return False, "Código registrado no console"
 
 def get_user_plan(business_id):
     conn = get_db_connection()
@@ -602,7 +736,7 @@ def google_callback():
             hashed = generate_password_hash(random_pass)
             
             cursor = conn.execute(
-                'INSERT INTO users (email, password, business_id, plan) VALUES (?, ?, ?, ?)',
+                'INSERT INTO users (email, password, business_id, plan, is_verified) VALUES (?, ?, ?, ?, 1)',
                 (email, hashed, business_id, 'gratuito')
             )
             user_id = cursor.lastrowid
@@ -612,7 +746,7 @@ def google_callback():
             session['user_id'] = user_id
             session['business_id'] = business_id
             session['role'] = 'business'
-            return redirect(f'/admin.html?business_id={business_id}')
+            return redirect(f'/anuncie.html?onboarding=1&business_id={business_id}')
     except Exception as e:
         import traceback
         return f"<h1>Erro interno ao processar login:</h1><pre>{traceback.format_exc()}</pre>", 500
@@ -624,8 +758,8 @@ def google_callback():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login_api():
-    data = request.json
-    email = data.get('email')
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
     password = data.get('password')
     
     if email == 'admin@tuumweb.com' and password == 'superadmin123':
@@ -648,6 +782,20 @@ def login_api():
                 conn.commit()
                 
         if is_valid:
+            if user['is_verified'] is not None and user['is_verified'] == 0:
+                code = f"{random.randint(100000, 999999)}"
+                expires = int(time.time()) + 900
+                conn.execute('UPDATE users SET verification_code = ?, verification_code_expires = ? WHERE id = ?', (code, expires, user['id']))
+                conn.commit()
+                conn.close()
+                send_verification_email(email, code)
+                return jsonify({
+                    'success': False,
+                    'need_verification': True,
+                    'email': email,
+                    'message': 'Seu e-mail ainda não foi verificado. Enviamos um novo código de 6 dígitos para o seu e-mail.'
+                })
+
             session['user_id'] = user['id']
             session['business_id'] = user['business_id']
             session['role'] = 'business'
@@ -659,22 +807,52 @@ def login_api():
 
 @app.route('/api/auth/register', methods=['POST'])
 def register_api():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
+    password = (data.get('password') or '').strip()
     business_name = str(escape(data.get('business_name', ''))).strip()
     
-    # Valida e recebe o plano escolhido (default para basico se vier vazio)
-    chosen_plan = data.get('plan', 'basico').lower()
+    if not email or not password or not business_name:
+        return jsonify({'success': False, 'message': 'Preencha todos os campos obrigatórios.'}), 400
+
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return jsonify({'success': False, 'message': 'Digite um e-mail válido.'}), 400
+
+    chosen_plan = (data.get('plan') or 'gratuito').lower().strip()
     valid_plans = ['gratuito', 'basico', 'pro', 'elite']
     if chosen_plan not in valid_plans:
-        chosen_plan = 'basico'
+        chosen_plan = 'gratuito'
     
     conn = get_db_connection()
     existing = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    
+    code = f"{random.randint(100000, 999999)}"
+    expires = int(time.time()) + 900  # 15 minutos
+
     if existing:
-        conn.close()
-        return jsonify({'success': False, 'message': 'Email já cadastrado.'}), 400
+        if existing['is_verified'] == 1:
+            conn.close()
+            return jsonify({'success': False, 'message': 'Este e-mail já possui cadastro. Faça login para acessar.'}), 400
+        else:
+            # Reenvia código para conta não verificada
+            hashed_pw = generate_password_hash(password)
+            conn.execute('''
+                UPDATE users 
+                SET password = ?, verification_code = ?, verification_code_expires = ?, plan = ?
+                WHERE id = ?
+            ''', (hashed_pw, code, expires, chosen_plan, existing['id']))
+            business_id = existing['business_id']
+            conn.commit()
+            conn.close()
+            
+            send_verification_email(email, code)
+            return jsonify({
+                'success': True,
+                'need_verification': True,
+                'email': email,
+                'business_id': business_id,
+                'message': 'Código de verificação reenviado para o seu e-mail.'
+            })
 
     cursor = conn.cursor()
     cursor.execute('''
@@ -685,29 +863,208 @@ def register_api():
 
     hashed_pw = generate_password_hash(password)
     cursor.execute('''
-        INSERT INTO users (email, password, business_id, plan)
-        VALUES (?, ?, ?, ?)
-    ''', (email, hashed_pw, business_id, chosen_plan))
+        INSERT INTO users (email, password, business_id, plan, is_verified, verification_code, verification_code_expires)
+        VALUES (?, ?, ?, ?, 0, ?, ?)
+    ''', (email, hashed_pw, business_id, chosen_plan, code, expires))
     
-    user_id = cursor.lastrowid
-    
-    # Loga o usuário automaticamente no backend após o cadastro
-    session['user_id'] = user_id
-    session['business_id'] = business_id
-    session['role'] = 'business'
-
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'business_id': business_id, 'plan': chosen_plan})
+
+    send_verification_email(email, code)
+
+    return jsonify({
+        'success': True,
+        'need_verification': True,
+        'email': email,
+        'business_id': business_id,
+        'message': f'Código de confirmação enviado para {email}.'
+    })
+
+@app.route('/api/auth/verify-code', methods=['POST'])
+def verify_code_api():
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
+    code = (data.get('code') or '').strip()
+
+    if not email or not code:
+        return jsonify({'success': False, 'message': 'Informe o e-mail e o código.'}), 400
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Conta não encontrada.'}), 404
+
+    if user['is_verified'] == 1:
+        session['user_id'] = user['id']
+        session['business_id'] = user['business_id']
+        session['role'] = 'business'
+        conn.close()
+        return jsonify({
+            'success': True,
+            'business_id': user['business_id'],
+            'redirect': f'/anuncie.html?onboarding=1&business_id={user["business_id"]}'
+        })
+
+    stored_code = (user['verification_code'] or '').strip()
+    expires = user['verification_code_expires'] or 0
+
+    if not stored_code or stored_code != code:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Código incorreto. Confira os 6 dígitos digitados.'}), 400
+
+    if int(time.time()) > expires:
+        conn.close()
+        return jsonify({'success': False, 'message': 'O código expirou. Clique em "Reenviar código".'}), 400
+
+    conn.execute('''
+        UPDATE users 
+        SET is_verified = 1, verification_code = NULL, verification_code_expires = NULL 
+        WHERE id = ?
+    ''', (user['id'],))
+    conn.commit()
+    conn.close()
+
+    session['user_id'] = user['id']
+    session['business_id'] = user['business_id']
+    session['role'] = 'business'
+
+    return jsonify({
+        'success': True,
+        'business_id': user['business_id'],
+        'redirect': f'/anuncie.html?onboarding=1&business_id={user["business_id"]}'
+    })
+
+@app.route('/api/auth/resend-code', methods=['POST'])
+def resend_code_api():
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
+
+    if not email:
+        return jsonify({'success': False, 'message': 'Informe o e-mail.'}), 400
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'success': False, 'message': 'E-mail não cadastrado.'}), 404
+
+    if user['is_verified'] == 1:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Este e-mail já foi verificado.'}), 400
+
+    code = f"{random.randint(100000, 999999)}"
+    expires = int(time.time()) + 900
+    conn.execute('UPDATE users SET verification_code = ?, verification_code_expires = ? WHERE id = ?', (code, expires, user['id']))
+    conn.commit()
+    conn.close()
+
+    send_verification_email(email, code)
+    return jsonify({'success': True, 'message': f'Novo código de 6 dígitos enviado para {email}.'})
+
+@app.route('/api/user/choose-plan', methods=['POST'])
+def choose_plan_api():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    data = request.json or {}
+    plan = (data.get('plan') or 'gratuito').lower().strip()
+    valid_plans = ['gratuito', 'basico', 'pro', 'elite']
+    if plan not in valid_plans:
+        return jsonify({'success': False, 'message': 'Plano inválido'}), 400
+    
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET plan = ? WHERE id = ?', (plan, user_id))
+    
+    business_id = session.get('business_id')
+    if business_id:
+        if plan == 'elite':
+            conn.execute('UPDATE businesses SET featured = 1 WHERE id = ?', (business_id,))
+        else:
+            conn.execute('UPDATE businesses SET featured = 0 WHERE id = ?', (business_id,))
+            
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'success': True,
+        'plan': plan,
+        'business_id': business_id,
+        'message': f'Plano {plan.capitalize()} ativado com sucesso!'
+    })
+
+@app.route('/api/account/delete', methods=['POST'])
+def delete_account():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+        
+    if session.get('role') == 'superadmin' or user_id == 0:
+        return jsonify({'success': False, 'message': 'A conta SuperAdmin não pode ser excluída.'}), 403
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        session.clear()
+        return jsonify({'success': False, 'message': 'Usuário não encontrado.'}), 404
+
+    business_id = user['business_id'] or session.get('business_id')
+
+    if business_id:
+        conn.execute('DELETE FROM reviews WHERE business_id = ?', (business_id,))
+        conn.execute('DELETE FROM services WHERE business_id = ?', (business_id,))
+        conn.execute('DELETE FROM gallery WHERE business_id = ?', (business_id,))
+        conn.execute('DELETE FROM businesses WHERE id = ?', (business_id,))
+
+    conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+
+    session.clear()
+    return jsonify({'success': True, 'message': 'Conta e dados excluídos com sucesso.'})
 
 @app.route('/api/auth/me')
 def auth_me():
     if session.get('user_id') is not None:
+        user_id = session.get('user_id')
+        business_id = session.get('business_id')
+        role = session.get('role')
+        email = ''
+        plan = 'gratuito'
+        business_name = ''
+        
+        try:
+            conn = get_db_connection()
+            if user_id == 0:
+                email = 'admin@tuumweb.com'
+                plan = 'elite'
+            else:
+                user = conn.execute('SELECT email, plan, business_id FROM users WHERE id = ?', (user_id,)).fetchone()
+                if user:
+                    email = user['email'] or ''
+                    plan = user['plan'] or 'gratuito'
+                    if not business_id and user['business_id']:
+                        business_id = user['business_id']
+                        session['business_id'] = business_id
+                        
+            if business_id:
+                biz = conn.execute('SELECT name FROM businesses WHERE id = ?', (business_id,)).fetchone()
+                if biz:
+                    business_name = biz['name'] or ''
+            conn.close()
+        except Exception:
+            pass
+
         return jsonify({
             'logged_in': True,
-            'user_id': session.get('user_id'),
-            'business_id': session.get('business_id'),
-            'role': session.get('role')
+            'user_id': user_id,
+            'business_id': business_id,
+            'role': role,
+            'email': email,
+            'plan': plan,
+            'business_name': business_name
         })
     return jsonify({'logged_in': False}), 401
 
@@ -829,6 +1186,8 @@ def profile():
     return render_template('profile.html')
 
 @app.route('/anuncie.html')
+@app.route('/planos.html')
+@app.route('/planos')
 def anuncie():
     return render_template('anuncie.html')
 

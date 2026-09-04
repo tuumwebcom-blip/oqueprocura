@@ -163,45 +163,89 @@
       <a href="/" class="back-link"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar ao site</a>
       
       <div class="form-wrapper">
-        <h1 class="auth-title">Crie sua conta</h1>
-        <p class="auth-subtitle">Preencha os dados abaixo para iniciar.</p>
-        
-        <form id="register-form">
-          <div class="form-group">
-            <label for="company" class="form-label">Nome da Empresa / Profissional</label>
-            <input type="text" id="company" class="form-control" placeholder="Ex: Padaria do João" required>
+        <!-- ETAPA 1: Dados do Cadastro -->
+        <div id="register-box">
+          <h1 class="auth-title">Crie sua conta</h1>
+          <p class="auth-subtitle">Preencha os dados abaixo para iniciar.</p>
+          
+          <form id="register-form" onsubmit="event.preventDefault(); fazerCadastro();">
+            <div class="form-group">
+              <label for="company" class="form-label">Nome da Empresa / Profissional</label>
+              <input type="text" id="company" class="form-control" placeholder="Ex: Padaria do João" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="email" class="form-label">E-mail corporativo</label>
+              <input type="email" id="email" class="form-control" placeholder="nome@empresa.com.br" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="password" class="form-label">Senha</label>
+              <input type="password" id="password" class="form-control" placeholder="Crie uma senha forte" required>
+            </div>
+            
+            <p class="text-xs text-muted mb-4">Ao se cadastrar, você concorda com nossos <a href="#" class="text-secondary hover:underline">Termos de Serviço</a> e <a href="#" class="text-secondary hover:underline">Política de Privacidade</a>.</p>
+            
+            <button type="submit" id="btn-cadastrar" class="btn btn-primary w-full" style="padding: 0.875rem; font-weight: 700;">Criar minha conta</button>
+          </form>
+          
+          <div class="divider">ou</div>
+          
+          <a href="/api/auth/google/login" class="social-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Entrar com Google
+          </a>
+          
+          <p class="text-center text-sm text-muted mt-4">
+            Já tem uma conta? <a href="login.html" class="font-medium text-secondary hover:text-secondary-hover">Faça login</a>
+          </p>
+        </div>
+
+        <!-- ETAPA 2: Verificação do Código de 6 Dígitos -->
+        <div id="verify-box" style="display: none;">
+          <button type="button" onclick="voltarParaCadastro()" class="back-link mb-4" style="background: none; border: none; cursor: pointer; padding: 0;">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar ou corrigir e-mail
+          </button>
+          
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; color: var(--color-secondary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+              <i data-lucide="mail-check" class="w-8 h-8"></i>
+            </div>
+            <h1 class="auth-title" style="font-size: 1.75rem;">Valide seu e-mail</h1>
+            <p class="auth-subtitle" style="margin-bottom: 0.5rem;">
+              Enviamos um código de 6 dígitos para:
+            </p>
+            <p style="font-weight: 700; color: var(--color-text-dark); word-break: break-all;" id="verify-target-email"></p>
           </div>
-          
-          <div class="form-group">
-            <label for="email" class="form-label">E-mail corporativo</label>
-            <input type="email" id="email" class="form-control" placeholder="nome@empresa.com.br" required>
+
+          <form id="verify-form" onsubmit="event.preventDefault(); confirmarCodigo();">
+            <div class="form-group mb-3">
+              <label for="verify-code" class="form-label text-center" style="display: block; font-size: 0.85rem;">Digite o código de 6 dígitos</label>
+              <input type="text" id="verify-code" maxlength="6" class="form-control" placeholder="000000" autocomplete="one-time-code" required style="text-align: center; font-size: 2rem; letter-spacing: 10px; font-weight: 800; font-family: monospace; padding: 0.75rem;">
+            </div>
+
+            <p class="text-xs text-muted text-center mb-4">
+              Não encontrou? Verifique também a pasta de Spam ou Lixo Eletrônico.
+            </p>
+
+            <button type="submit" id="btn-confirmar" class="btn btn-primary w-full" style="padding: 0.875rem; font-weight: 700;">
+              Confirmar e Escolher Plano
+            </button>
+          </form>
+
+          <div class="text-center mt-4 text-sm text-muted">
+            Não recebeu o código? 
+            <button id="btn-resend" onclick="reenviarCodigo()" class="text-secondary font-medium hover:underline bg-transparent border-none p-0 cursor-pointer" style="display: inline;">
+              Reenviar código
+            </button>
+            <span id="resend-countdown" class="text-xs text-muted ml-1" style="display: none;"></span>
           </div>
-          
-          <div class="form-group">
-            <label for="password" class="form-label">Senha</label>
-            <input type="password" id="password" class="form-control" placeholder="Crie uma senha forte" required>
-          </div>
-          
-          <p class="text-xs text-muted mb-4">Ao se cadastrar, você concorda com nossos <a href="#" class="text-secondary hover:underline">Termos de Serviço</a> e <a href="#" class="text-secondary hover:underline">Política de Privacidade</a>.</p>
-          
-          <button type="button" onclick="fazerCadastro()" class="btn btn-primary w-full" style="padding: 0.875rem;">Criar minha conta</button>
-        </form>
-        
-        <div class="divider">ou</div>
-        
-        <a href="/api/auth/google/login" class="social-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          Entrar com Google
-        </a>
-        
-        <p class="text-center text-sm text-muted mt-4">
-          Já tem uma conta? <a href="login.html" class="font-medium text-secondary hover:text-secondary-hover">Faça login</a>
-        </p>
+        </div>
       </div>
     </div>
   </div>
@@ -209,34 +253,170 @@
   <script>
     lucide.createIcons();
 
+    let emailCadastrado = '';
+    let resendTimer = null;
+
+    // Verifica parâmetros na URL ao carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const verifyMode = urlParams.get('verify');
+      const emailParam = urlParams.get('email');
+
+      if (verifyMode === '1' && emailParam) {
+        emailCadastrado = decodeURIComponent(emailParam);
+        mostrarTelaVerificacao(emailCadastrado);
+      }
+    });
+
+    function mostrarTelaVerificacao(email) {
+      emailCadastrado = email;
+      document.getElementById('register-box').style.display = 'none';
+      document.getElementById('verify-box').style.display = 'block';
+      document.getElementById('verify-target-email').textContent = email;
+      document.getElementById('verify-code').value = '';
+      document.getElementById('verify-code').focus();
+      lucide.createIcons();
+      iniciarContadorReenvio(60);
+    }
+
+    function voltarParaCadastro() {
+      document.getElementById('verify-box').style.display = 'none';
+      document.getElementById('register-box').style.display = 'block';
+      lucide.createIcons();
+    }
+
     async function fazerCadastro() {
-      const name = document.getElementById('company').value;
-      const email = document.getElementById('email').value;
+      const name = document.getElementById('company').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const btn = document.getElementById('btn-cadastrar');
 
       if (!name || !email || !password) {
-        alert('Preencha todos os campos!');
+        alert('Por favor, preencha todos os campos.');
         return;
       }
+
+      // Pega plano pré-selecionado na URL se houver
+      const urlParams = new URLSearchParams(window.location.search);
+      const plan = urlParams.get('plan') || 'gratuito';
+
+      btn.disabled = true;
+      btn.textContent = 'Enviando código...';
 
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, business_name: name })
+          body: JSON.stringify({ email, password, business_name: name, plan })
         });
         const data = await res.json();
 
         if (data.success) {
-          localStorage.setItem('business_id', data.business_id);
-          window.location.href = '/admin.html';
+          if (data.business_id) {
+            localStorage.setItem('business_id', data.business_id);
+          }
+          if (data.need_verification) {
+            mostrarTelaVerificacao(email);
+          } else {
+            // Se já validou direto
+            window.location.href = `/anuncie.html?onboarding=1&business_id=${data.business_id || ''}`;
+          }
         } else {
           alert(data.message || 'Erro ao criar conta.');
         }
       } catch (e) {
-        alert('Erro ao conectar com o servidor. Verifique se o Flask está rodando.');
+        alert('Erro ao conectar com o servidor. Tente novamente em instantes.');
         console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Criar minha conta';
       }
+    }
+
+    async function confirmarCodigo() {
+      const code = document.getElementById('verify-code').value.trim();
+      const btn = document.getElementById('btn-confirmar');
+
+      if (!code || code.length < 6) {
+        alert('Digite os 6 dígitos do código de verificação recebido.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+
+      try {
+        const res = await fetch('/api/auth/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailCadastrado, code })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          if (data.business_id) {
+            localStorage.setItem('business_id', data.business_id);
+          }
+          // Redireciona para a tela de planos
+          window.location.href = data.redirect || `/anuncie.html?onboarding=1&business_id=${data.business_id || ''}`;
+        } else {
+          alert(data.message || 'Código incorreto ou expirado.');
+        }
+      } catch (e) {
+        alert('Erro de conexão ao verificar código.');
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirmar e Escolher Plano';
+      }
+    }
+
+    async function reenviarCodigo() {
+      if (!emailCadastrado) return;
+      const btn = document.getElementById('btn-resend');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/resend-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailCadastrado })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Novo código de verificação enviado! Confira sua caixa de entrada.');
+          iniciarContadorReenvio(60);
+        } else {
+          alert(data.message || 'Erro ao reenviar código.');
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert('Erro de conexão.');
+        btn.disabled = false;
+      }
+    }
+
+    function iniciarContadorReenvio(segundos) {
+      const btn = document.getElementById('btn-resend');
+      const span = document.getElementById('resend-countdown');
+      btn.style.display = 'none';
+      span.style.display = 'inline';
+
+      let restante = segundos;
+      span.textContent = `(aguarde ${restante}s para reenviar)`;
+
+      clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        restante--;
+        if (restante <= 0) {
+          clearInterval(resendTimer);
+          btn.style.display = 'inline';
+          btn.disabled = false;
+          span.style.display = 'none';
+        } else {
+          span.textContent = `(aguarde ${restante}s para reenviar)`;
+        }
+      }, 1000);
     }
   </script>
 </body>
