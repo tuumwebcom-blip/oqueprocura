@@ -873,7 +873,7 @@
           </div>
           <div class="form-group mb-4">
             <label class="form-label font-bold">Formato de Atendimento</label>
-            <select class="form-control" id="input-attendance" style="font-weight: 500;">
+            <select class="form-control" id="input-attendance" onchange="atualizarExigenciaEndereco()" style="font-weight: 500;">
               <option value="ambos">🌐 Ambos (Presencial e Online / Remoto)</option>
               <option value="presencial">📍 Somente Presencial (no meu endereço físico)</option>
               <option value="online">💻 100% Online / Remoto (atendo clientes de qualquer localidade)</option>
@@ -995,8 +995,11 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Endereço Completo</label>
+            <label class="form-label" id="label-address">
+              Endereço Completo <span id="address-required-badge" class="text-rose-500 font-bold">*</span>
+            </label>
             <input type="text" class="form-control" id="input-address" placeholder="Rua, Número - Bairro, Cidade - UF">
+            <p id="address-help-text" class="text-xs text-amber-700 mt-1">⚠️ <strong>Obrigatório</strong> para empresas com atendimento presencial ou ambos.</p>
           </div>
           <div class="grid grid-cols-2 gap-4 mb-4" style="margin-top: 1rem;">
             <div class="form-group">
@@ -1461,6 +1464,29 @@
       } catch(e) { alert('Erro ao salvar serviço.'); }
     }
 
+    function atualizarExigenciaEndereco() {
+      const att = document.getElementById('input-attendance')?.value || 'ambos';
+      const badge = document.getElementById('address-required-badge');
+      const help = document.getElementById('address-help-text');
+      const input = document.getElementById('input-address');
+
+      if (att === 'online') {
+        if (badge) badge.style.display = 'none';
+        if (help) {
+          help.innerHTML = '✨ <em>Opcional para empresas 100% online/remotas.</em>';
+          help.className = 'text-xs text-emerald-600 mt-1';
+        }
+        if (input) input.placeholder = 'Opcional para empresas 100% online';
+      } else {
+        if (badge) badge.style.display = 'inline';
+        if (help) {
+          help.innerHTML = '⚠️ <strong>Obrigatório</strong> para atendimento presencial (para que clientes saibam onde encontrar sua empresa).';
+          help.className = 'text-xs text-amber-700 mt-1';
+        }
+        if (input) input.placeholder = 'Rua, Número - Bairro, Cidade - UF (Obrigatório)';
+      }
+    }
+
     async function carregarDados() {
       // Se não temos BUSINESS_ID válido no momento, tenta obter da sessão ativa do servidor
       if (!BUSINESS_ID || isNaN(Number(BUSINESS_ID))) {
@@ -1547,6 +1573,7 @@
         document.getElementById('input-short').value = data.short_description || '';
         if (document.getElementById('input-attendance')) {
           document.getElementById('input-attendance').value = data.attendance_type || 'ambos';
+          atualizarExigenciaEndereco();
         }
         document.getElementById('input-about').value = data.about_text || '';
         document.getElementById('input-whatsapp').value = data.whatsapp || '';
@@ -2333,15 +2360,24 @@
       let colorTextVal = textInput ? textInput.value.trim() : '#0f172a';
       if (!colorTextVal.startsWith('#')) colorTextVal = '#' + colorTextVal;
 
+      const attendanceVal = document.getElementById('input-attendance') ? document.getElementById('input-attendance').value : 'ambos';
+      const addressVal = document.getElementById('input-address') ? document.getElementById('input-address').value.trim() : '';
+
+      if (attendanceVal !== 'online' && !addressVal) {
+        alert('O endereço completo é obrigatório para empresas com atendimento Presencial ou Ambos! Por favor, preencha o campo de endereço da sua empresa.');
+        document.getElementById('input-address')?.focus();
+        return;
+      }
+
       const data = {
         name: document.getElementById('input-name').value,
         category: document.getElementById('input-category').value,
-        attendance_type: document.getElementById('input-attendance') ? document.getElementById('input-attendance').value : 'ambos',
+        attendance_type: attendanceVal,
         short_description: document.getElementById('input-short').value,
         about_text: document.getElementById('input-about').value,
         whatsapp: document.getElementById('input-whatsapp').value,
         instagram: document.getElementById('input-instagram').value,
-        address: document.getElementById('input-address').value,
+        address: addressVal,
         website: document.getElementById('input-website').value,
         business_hours: document.getElementById('input-hours').value,
         maps_url: document.getElementById('input-maps-url').value,

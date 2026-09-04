@@ -893,8 +893,10 @@
 
             metaContainer.innerHTML = `
               <span class="profile-meta-item font-medium"><i data-lucide="star" class="w-4 h-4 text-warning fill-warning"></i> ${ratingDisplay} (${reviewCount} avaliações)</span>
-              <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
-              <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${cleanDist}</span>
+              ${(business.attendance_type !== 'online' || business.address) ? `
+                <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
+                <span class="profile-meta-item"><i data-lucide="map-pin" class="w-4 h-4"></i> ${cleanDist}</span>
+              ` : ''}
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
               <span class="profile-category-pill">${cleanCat}</span>
               <span style="color: var(--color-border); font-size: 0.75rem;">•</span>
@@ -1023,7 +1025,17 @@
           const addressEl = document.getElementById('contact-address');
           const addressText = document.getElementById('contact-address-text');
           if (addressText) {
-            addressText.textContent = business.address || business.distance || 'Endereço sob consulta';
+            if (business.attendance_type === 'online') {
+              if (business.address) {
+                if (addressEl) addressEl.style.display = 'flex';
+                addressText.textContent = business.address;
+              } else {
+                if (addressEl) addressEl.style.display = 'none';
+              }
+            } else {
+              if (addressEl) addressEl.style.display = 'flex';
+              addressText.textContent = business.address || business.distance || 'Endereço sob consulta';
+            }
           }
 
           // Atualizar Horário de Funcionamento

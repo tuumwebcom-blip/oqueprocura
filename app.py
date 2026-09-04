@@ -800,6 +800,11 @@ def update_business(id):
     if attendance_type not in ('online', 'presencial', 'ambos'):
         attendance_type = 'ambos'
 
+    # Endereço é obrigatório quando presencial ou ambos; opcional quando 100% online
+    if attendance_type in ('presencial', 'ambos') and not address:
+        conn.close()
+        return jsonify({'success': False, 'message': 'O endereço completo é obrigatório para empresas com atendimento Presencial ou Ambos.'}), 400
+
     conn.execute('''
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
