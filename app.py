@@ -1035,11 +1035,14 @@ def auth_me():
         plan = 'gratuito'
         business_name = ''
         
+        business_image = ''
+        
         try:
             conn = get_db_connection()
             if user_id == 0:
                 email = 'admin@tuumweb.com'
                 plan = 'elite'
+                business_name = 'Super Admin'
             else:
                 user = conn.execute('SELECT email, plan, business_id FROM users WHERE id = ?', (user_id,)).fetchone()
                 if user:
@@ -1050,9 +1053,10 @@ def auth_me():
                         session['business_id'] = business_id
                         
             if business_id:
-                biz = conn.execute('SELECT name FROM businesses WHERE id = ?', (business_id,)).fetchone()
+                biz = conn.execute('SELECT name, image FROM businesses WHERE id = ?', (business_id,)).fetchone()
                 if biz:
                     business_name = biz['name'] or ''
+                    business_image = biz['image'] or ''
             conn.close()
         except Exception:
             pass
@@ -1064,7 +1068,8 @@ def auth_me():
             'role': role,
             'email': email,
             'plan': plan,
-            'business_name': business_name
+            'business_name': business_name,
+            'business_image': business_image
         })
     return jsonify({'logged_in': False}), 401
 

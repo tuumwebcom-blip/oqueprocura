@@ -180,9 +180,31 @@ input, textarea, select { font-family: inherit; }
   font-size: 1.25rem; font-weight: 700; color: var(--color-text-dark); letter-spacing: -0.02em;
 }
 .logo img { height: 100px; width: auto; object-fit: contain; padding: 0.5rem 0; }
-.header-nav { display: flex; gap: 2rem; align-items: center; }
+.header-nav { display: flex; gap: 1.25rem; align-items: center; }
 .header-link { color: var(--color-text); font-weight: 500; font-size: 0.9rem; }
 .header-link:hover { color: var(--color-secondary); }
+
+/* User Header Profile & Dropdown */
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background: #f8fafc;
+}
+
+.user-avatar-trigger:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-secondary) !important;
+}
 
 /* Hero Section */
 .hero {

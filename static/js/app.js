@@ -78,6 +78,8 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
+  verificarHeaderAuth();
+
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get('q') || '';
   const cat = urlParams.get('category') || '';
@@ -148,4 +150,125 @@ function usarLocalizacao() {
       if (btn) btn.title = 'Usar minha localização atual';
     }
   );
+}
+
+// ============================================================
+// Header — Perfil do Usuário Autenticado & Foto
+// ============================================================
+async function verificarHeaderAuth() {
+  const headerNavs = document.querySelectorAll('.header-nav');
+  if (!headerNavs.length) return;
+
+  try {
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.logged_in) return;
+
+    const isSuperAdmin = data.role === 'superadmin';
+    const panelUrl = isSuperAdmin ? '/super_admin.html' : `/admin.html${data.business_id ? '?business_id=' + data.business_id : ''}`;
+    const name = data.business_name || (isSuperAdmin ? 'Super Admin' : 'Minha Empresa');
+    const email = data.email || '';
+    
+    // Foto de perfil do usuário / logo da empresa
+    let avatarUrl = data.business_image;
+    if (!avatarUrl || avatarUrl.includes('placehold.co')) {
+      const bg = isSuperAdmin ? '4f46e5' : '2563eb';
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=fff&bold=true`;
+    }
+
+    const publicProfileHtml = (data.business_id && !isSuperAdmin) ? `
+      <a href="/profile.html?id=${data.business_id}" class="user-dropdown-item">
+        <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i> Ver Perfil Público
+      </a>
+    ` : '';
+
+    const isAnunciePage = window.location.pathname.includes('anuncie') || window.location.pathname.includes('planos');
+    const extraLinks = isAnunciePage ? `
+      <a href="/" class="btn btn-ghost text-sm font-medium">Início</a>
+      <a href="/search.html" class="btn btn-ghost text-sm font-medium">Buscar</a>
+    ` : '';
+
+    const navHtml = `
+      ${extraLinks}
+      <div class="user-header-profile" style="position: relative; display: flex; align-items: center; gap: 0.75rem;">
+        <a href="${panelUrl}" class="btn btn-primary text-sm shadow-sm flex items-center gap-1.5" style="padding: 0.5rem 1rem; font-weight: 600; text-decoration: none;">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Meu Painel
+        </a>
+
+        <!-- Botão com a Foto do Perfil e Menu Dropdown -->
+        <div class="user-dropdown-wrapper" style="position: relative;">
+          <button type="button" class="user-avatar-trigger" style="display: flex; align-items: center; gap: 8px; background: white; border: 1.5px solid var(--color-border); padding: 3px 10px 3px 4px; border-radius: 9999px; cursor: pointer; transition: all 0.2s; outline: none;" title="Minha Conta">
+            <img src="${avatarUrl}" alt="${name}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--color-secondary); background: #f1f5f9;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-dark); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-muted"></i>
+          </button>
+
+          <!-- Dropdown Flutuante -->
+          <div class="user-dropdown-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 230px; background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; z-index: 9999; overflow: hidden; padding: 6px 0;">
+            <div style="padding: 10px 16px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
+              <p style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</p>
+              <p style="font-size: 0.75rem; color: #64748b; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${email}</p>
+            </div>
+            
+            <a href="${panelUrl}" class="user-dropdown-item">
+              <i data-lucide="layout-dashboard" class="w-4 h-4 text-blue-600"></i> Meu Painel
+            </a>
+            ${publicProfileHtml}
+            <a href="/anuncie.html" class="user-dropdown-item">
+              <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i> Planos & Preços
+            </a>
+            
+            <div style="border-top: 1px solid #f1f5f9; margin: 4px 0;"></div>
+            
+            <a href="#" onclick="logoutHeader(event)" class="user-dropdown-item" style="color: #ef4444;">
+              <i data-lucide="log-out" class="w-4 h-4 text-red-500"></i> Sair da conta
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+
+    headerNavs.forEach(nav => {
+      nav.innerHTML = navHtml;
+    });
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+
+    // Configura cliques no botão avatar para abrir/fechar menu
+    document.querySelectorAll('.user-dropdown-wrapper').forEach(wrapper => {
+      const btn = wrapper.querySelector('.user-avatar-trigger');
+      const dropdown = wrapper.querySelector('.user-dropdown-menu');
+
+      if (btn && dropdown) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = dropdown.style.display === 'block';
+          document.querySelectorAll('.user-dropdown-menu').forEach(d => d.style.display = 'none');
+          dropdown.style.display = isOpen ? 'none' : 'block';
+        });
+      }
+    });
+
+    // Fecha ao clicar fora
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.user-dropdown-menu').forEach(d => d.style.display = 'none');
+    });
+
+  } catch (err) {
+    console.error('Erro ao verificar header auth:', err);
+  }
+}
+
+async function logoutHeader(e) {
+  if (e) e.preventDefault();
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('business_id');
+    window.location.href = '/';
+  } catch(err) {
+    window.location.href = '/';
+  }
 }
