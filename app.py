@@ -1479,6 +1479,15 @@ def superadmin_add_business():
         return jsonify({'success': False, 'message': 'Este e-mail já está cadastrado.'}), 400
         
     cursor = conn.cursor()
+    # Se a categoria for nova e não existir ainda em categories, cadastra no banco
+    cat_exists = conn.execute('SELECT id FROM categories WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))', (category,)).fetchone()
+    if not cat_exists and category != 'Geral':
+        try:
+            conn.execute('INSERT INTO categories (name, group_name, icon, slug) VALUES (?, ?, ?, ?)',
+                         (category, 'Outros', 'tag', slugify(category)))
+        except Exception:
+            pass
+
     biz_slug = get_unique_slug(conn, business_name)
     is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''

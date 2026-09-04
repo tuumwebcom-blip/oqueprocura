@@ -751,8 +751,125 @@
             <input type="email" id="new-biz-email" class="form-control" placeholder="contato@empresa.com">
           </div>
           <div class="form-group mb-3">
-            <label class="form-label font-semibold text-sm">Categoria Principal</label>
-            <input type="text" id="new-biz-category" list="list-grupos-sugestoes" class="form-control" placeholder="Ex: Tecnologia, Restaurantes, etc." value="Geral">
+            <div class="flex items-center justify-between mb-1">
+              <label class="form-label font-semibold text-sm mb-0">Categoria Principal *</label>
+              <span class="text-xs text-secondary font-medium">75+ categorias</span>
+            </div>
+            <div class="relative mb-1.5">
+              <input type="text" id="filtro-categoria-modal" oninput="filtrarSelectModalEmpresa(this.value)" placeholder="🔍 Filtrar categoria (ex: psicólogo, médico, pizzaria...)" class="form-control text-xs" style="padding-left: 2rem; border-color: #cbd5e1;">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+            </div>
+            <select id="new-biz-category" onchange="verificarCategoriaCustom(this.value)" class="form-control" style="font-weight: 500; padding: 0.6rem 0.75rem;">
+              <option value="">Selecione uma categoria...</option>
+              <optgroup label="Alimentação & Gastronomia">
+                <option value="Alimentação, Lanchonetes & Fast-Food">Alimentação, Lanchonetes & Fast-Food</option>
+                <option value="Marmitarias & Comida Saudável">Marmitarias & Comida Saudável</option>
+                <option value="Padarias, Confeitarias & Cafés">Padarias, Confeitarias & Cafés</option>
+                <option value="Pizzarias & Hamburguerias">Pizzarias & Hamburguerias</option>
+                <option value="Restaurantes & Bares">Restaurantes & Bares</option>
+              </optgroup>
+              <optgroup label="Automotivo">
+                <option value="Borracharia & Pneus">Borracharia & Pneus</option>
+                <option value="Funilaria, Pintura & Estética Automotiva">Funilaria, Pintura & Estética Automotiva</option>
+                <option value="Guincho & Socorro Mecânico">Guincho & Socorro Mecânico</option>
+                <option value="Lava-Rápido & Detalhamento">Lava-Rápido & Detalhamento</option>
+                <option value="Oficina Mecânica & Auto Elétrica">Oficina Mecânica & Auto Elétrica</option>
+              </optgroup>
+              <optgroup label="Beleza & Cuidados Pessoais">
+                <option value="Barbearia">Barbearia</option>
+                <option value="Clínica de Estética & Bronzeamento">Clínica de Estética & Bronzeamento</option>
+                <option value="Manicure & Pedicure">Manicure & Pedicure</option>
+                <option value="Massoterapia & Bem-estar">Massoterapia & Bem-estar</option>
+                <option value="Salão de Beleza & Cabeleireiro">Salão de Beleza & Cabeleireiro</option>
+                <option value="Tatuagem & Piercing">Tatuagem & Piercing</option>
+              </optgroup>
+              <optgroup label="Comércio & Varejo">
+                <option value="Acessórios, Joias & Bijuterias">Acessórios, Joias & Bijuterias</option>
+                <option value="Bazar, Armarinho & Papelaria">Bazar, Armarinho & Papelaria</option>
+                <option value="Eletrônicos & Celulares">Eletrônicos & Celulares</option>
+                <option value="Floricultura & Presentes">Floricultura & Presentes</option>
+                <option value="Lojas de Roupas & Calçados">Lojas de Roupas & Calçados</option>
+                <option value="Móveis & Decoração">Móveis & Decoração</option>
+                <option value="Supermercados & Mercearias">Supermercados & Mercearias</option>
+              </optgroup>
+              <optgroup label="Construção & Reformas">
+                <option value="Ar-Condicionado & Refrigeração">Ar-Condicionado & Refrigeração</option>
+                <option value="Construção Civil, Pedreiro & Reformas">Construção Civil, Pedreiro & Reformas</option>
+                <option value="Eletricista & Instalações">Eletricista & Instalações</option>
+                <option value="Encanador & Desentupidora">Encanador & Desentupidora</option>
+                <option value="Gesso & Drywall">Gesso & Drywall</option>
+                <option value="Marcenaria & Móveis Planejados">Marcenaria & Móveis Planejados</option>
+                <option value="Marido de Aluguel & Reparos">Marido de Aluguel & Reparos</option>
+                <option value="Pintura & Acabamento">Pintura & Acabamento</option>
+                <option value="Serralheria & Esquadrias">Serralheria & Esquadrias</option>
+                <option value="Vidraçaria & Box">Vidraçaria & Box</option>
+              </optgroup>
+              <optgroup label="Educação & Treinamento">
+                <option value="Academias & Treinamento Físico">Academias & Treinamento Físico</option>
+                <option value="Artes Marciais & Dança">Artes Marciais & Dança</option>
+                <option value="Aulas Particulares & Reforço">Aulas Particulares & Reforço</option>
+                <option value="Autoescola (CFC)">Autoescola (CFC)</option>
+                <option value="Cursos Profissionalizantes & Idiomas">Cursos Profissionalizantes & Idiomas</option>
+                <option value="Escolas & Colégios">Escolas & Colégios</option>
+              </optgroup>
+              <optgroup label="Eventos & Lazer">
+                <option value="Buffet & Catering">Buffet & Catering</option>
+                <option value="Cerimonial & Assessoria">Cerimonial & Assessoria</option>
+                <option value="DJ, Som & Iluminação">DJ, Som & Iluminação</option>
+                <option value="Decoração de Festas">Decoração de Festas</option>
+                <option value="Espaço para Eventos & Chácaras">Espaço para Eventos & Chácaras</option>
+                <option value="Fotografia & Filmagem">Fotografia & Filmagem</option>
+              </optgroup>
+              <optgroup label="Pets & Agro">
+                <option value="Adestramento & Hotel Pet">Adestramento & Hotel Pet</option>
+                <option value="Agropecuária & Rações">Agropecuária & Rações</option>
+                <option value="Clínica Veterinária">Clínica Veterinária</option>
+                <option value="Pet Shop, Banho & Tosa">Pet Shop, Banho & Tosa</option>
+              </optgroup>
+              <optgroup label="Saúde & Medicina">
+                <option value="Consultórios & Clínicas Médicas">Consultórios & Clínicas Médicas</option>
+                <option value="Dentistas & Odontologia">Dentistas & Odontologia</option>
+                <option value="Farmácias & Manipulação">Farmácias & Manipulação</option>
+                <option value="Fisioterapia & Pilates">Fisioterapia & Pilates</option>
+                <option value="Nutrição & Suplementos">Nutrição & Suplementos</option>
+                <option value="Psicologia & Terapia">Psicologia & Terapia</option>
+                <option value="Óticas & Cuidados da Visão">Óticas & Cuidados da Visão</option>
+              </optgroup>
+              <optgroup label="Serviços Domésticos & Limpeza">
+                <option value="Dedetizadora & Controle de Pragas">Dedetizadora & Controle de Pragas</option>
+                <option value="Jardinagem & Paisagismo">Jardinagem & Paisagismo</option>
+                <option value="Lavanderia & Passadoria">Lavanderia & Passadoria</option>
+                <option value="Limpeza Residencial & Diaristas">Limpeza Residencial & Diaristas</option>
+                <option value="Limpeza de Estofados & Carpetes">Limpeza de Estofados & Carpetes</option>
+                <option value="Piscineiro & Manutenção de Piscinas">Piscineiro & Manutenção de Piscinas</option>
+              </optgroup>
+              <optgroup label="Serviços Profissionais & Jurídicos">
+                <option value="Advocacia & Assessoria Jurídica">Advocacia & Assessoria Jurídica</option>
+                <option value="Arquitetura & Engenharia">Arquitetura & Engenharia</option>
+                <option value="Chaveiro 24 Horas">Chaveiro 24 Horas</option>
+                <option value="Consultoria Empresarial & RH">Consultoria Empresarial & RH</option>
+                <option value="Contabilidade & Assessoria Fiscal">Contabilidade & Assessoria Fiscal</option>
+                <option value="Despachante">Despachante</option>
+                <option value="Imobiliárias & Corretores de Imóveis">Imobiliárias & Corretores de Imóveis</option>
+                <option value="Segurança Eletrônica & Alarmes">Segurança Eletrônica & Alarmes</option>
+                <option value="Seguros & Previdência">Seguros & Previdência</option>
+              </optgroup>
+              <optgroup label="Tecnologia & Comunicação">
+                <option value="Gráfica & Comunicação Visual">Gráfica & Comunicação Visual</option>
+                <option value="Marketing Digital & Redes Sociais">Marketing Digital & Redes Sociais</option>
+                <option value="Tecnologia, Sites & Informática">Tecnologia, Sites & Informática</option>
+              </optgroup>
+              <optgroup label="Outros">
+                <option value="Transporte, Mudanças & Fretes">Transporte, Mudanças & Fretes</option>
+                <option value="Geral">Geral</option>
+              </optgroup>
+              <option value="__outra__">➕ Outra categoria (digitar manual)...</option>
+            </select>
+            <div id="box-new-biz-cat-custom" style="display:none;" class="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+              <label class="text-xs font-semibold text-slate-700 block mb-1">Nome da Nova Categoria:</label>
+              <input type="text" id="new-biz-category-custom" class="form-control text-sm" placeholder="Ex: Psicólogo Clínico, Pet Sitter...">
+              <span class="text-xs text-slate-500 mt-1 block">Esta categoria será registrada e associada à nova empresa.</span>
+            </div>
           </div>
           <div class="form-group mb-3">
             <label class="form-label font-semibold text-sm">Senha Provisória *</label>
@@ -1162,9 +1279,65 @@
           }
 
           renderizarCategorias(window.listaCategoriasOriginal);
+          atualizarSelectNovaEmpresa(window.listaCategoriasOriginal);
         }
       } catch (err) {
         console.error('Erro ao carregar categorias:', err);
+      }
+    }
+
+    function atualizarSelectNovaEmpresa(cats, filtroTexto = '') {
+      const select = document.getElementById('new-biz-category');
+      if (!select) return;
+      
+      const valorAtual = select.value;
+      const filtro = (filtroTexto || '').trim().toLowerCase();
+      
+      const listaBase = cats && cats.length > 0 ? cats : (window.listaCategoriasOriginal || []);
+      
+      const filtradas = filtro 
+        ? listaBase.filter(c => (c.name && c.name.toLowerCase().includes(filtro)) || (c.group_name && c.group_name.toLowerCase().includes(filtro)))
+        : listaBase;
+
+      const grupos = {};
+      filtradas.forEach(c => {
+        const grp = c.group_name || 'Geral';
+        if (!grupos[grp]) grupos[grp] = [];
+        grupos[grp].push(c.name);
+      });
+
+      let html = '<option value="">Selecione uma categoria...</option>';
+      Object.keys(grupos).sort().forEach(grp => {
+        html += `<optgroup label="${grp}">`;
+        grupos[grp].sort().forEach(nome => {
+          html += `<option value="${nome}">${nome}</option>`;
+        });
+        html += `</optgroup>`;
+      });
+      html += '<option value="__outra__">➕ Outra categoria (digitar manual)...</option>';
+      
+      select.innerHTML = html;
+      if (valorAtual && select.querySelector(`option[value="${valorAtual}"]`)) {
+        select.value = valorAtual;
+      }
+    }
+
+    function filtrarSelectModalEmpresa(termo) {
+      atualizarSelectNovaEmpresa(window.listaCategoriasOriginal, termo);
+      const select = document.getElementById('new-biz-category');
+      if (select && select.options.length === 2 && select.options[1].value !== '__outra__') {
+        select.selectedIndex = 1;
+      }
+    }
+
+    function verificarCategoriaCustom(val) {
+      const box = document.getElementById('box-new-biz-cat-custom');
+      const input = document.getElementById('new-biz-category-custom');
+      if (val === '__outra__') {
+        if (box) box.style.display = 'block';
+        if (input) input.focus();
+      } else {
+        if (box) box.style.display = 'none';
       }
     }
 
@@ -1371,9 +1544,24 @@
     function abrirModalNovaEmpresa() {
       document.getElementById('new-biz-name').value = '';
       document.getElementById('new-biz-email').value = '';
-      document.getElementById('new-biz-category').value = 'Geral';
       document.getElementById('new-biz-password').value = '123456';
       document.getElementById('new-biz-plan').value = 'elite';
+
+      const filtroInput = document.getElementById('filtro-categoria-modal');
+      if (filtroInput) filtroInput.value = '';
+
+      const boxCustom = document.getElementById('box-new-biz-cat-custom');
+      if (boxCustom) boxCustom.style.display = 'none';
+      const inputCustom = document.getElementById('new-biz-category-custom');
+      if (inputCustom) inputCustom.value = '';
+
+      if (window.listaCategoriasOriginal && window.listaCategoriasOriginal.length > 0) {
+        atualizarSelectNovaEmpresa(window.listaCategoriasOriginal, '');
+      }
+
+      const catSelect = document.getElementById('new-biz-category');
+      if (catSelect) catSelect.value = '';
+
       document.getElementById('modal-nova-empresa').style.display = 'flex';
       document.getElementById('new-biz-name').focus();
     }
@@ -1385,12 +1573,21 @@
     async function salvarNovaEmpresa() {
       const name = document.getElementById('new-biz-name').value.trim();
       const email = document.getElementById('new-biz-email').value.trim();
-      const category = (document.getElementById('new-biz-category')?.value || 'Geral').trim() || 'Geral';
+      let category = (document.getElementById('new-biz-category')?.value || '').trim();
+      if (category === '__outra__') {
+        category = (document.getElementById('new-biz-category-custom')?.value || '').trim();
+      }
       const password = document.getElementById('new-biz-password').value.trim();
       const plan = document.getElementById('new-biz-plan').value;
 
       if (!name || !email || !password) {
-        alert('Preencha todos os campos obrigatórios!');
+        alert('Preencha todos os campos obrigatórios (Nome, E-mail e Senha)!');
+        return;
+      }
+
+      if (!category) {
+        alert('Por favor, selecione ou digite a Categoria Principal da empresa!');
+        document.getElementById('new-biz-category')?.focus();
         return;
       }
 
@@ -1408,7 +1605,7 @@
           await carregarDashboard();
           carregarCategorias();
         } else {
-          alert(data.message);
+          alert(data.message || 'Erro ao cadastrar empresa.');
         }
       } catch(e) {
         alert('Erro ao cadastrar empresa.');
