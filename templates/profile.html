@@ -49,8 +49,11 @@
       align-items: flex-start;
       gap: 1.5rem;
       margin-bottom: 2.5rem;
-      padding-bottom: 2.5rem;
-      border-bottom: 1px solid var(--color-border);
+      padding: 1.5rem;
+      background: linear-gradient(135deg, var(--color-brand-light, rgba(37, 99, 235, 0.05)) 0%, var(--color-surface) 100%);
+      border: 1px solid var(--color-brand-border, var(--color-border));
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
     }
 
     .profile-logo {
@@ -61,6 +64,7 @@
       box-shadow: var(--shadow-sm);
       border: 3px solid var(--color-secondary);
       background: white;
+      flex-shrink: 0;
     }
 
     .profile-title {
@@ -85,6 +89,18 @@
       color: var(--color-text-dark);
       margin-bottom: 1.25rem;
       font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.15em;
+      background-color: var(--color-secondary);
+      border-radius: 2px;
+      flex-shrink: 0;
     }
 
     .about-text {
@@ -117,16 +133,16 @@
       border-radius: var(--radius-xl);
       padding: 2rem;
       border: 1px solid var(--color-border);
-      border-top: 4px solid var(--color-secondary);
-      box-shadow: var(--shadow-xl);
+      border-top: 5px solid var(--color-secondary);
+      box-shadow: 0 12px 30px -10px var(--color-brand-light, rgba(37, 99, 235, 0.08)), var(--shadow-xl);
       position: sticky;
       top: 100px;
     }
 
     .contact-card-price {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      color: var(--color-text-dark);
+      color: var(--color-secondary);
       margin-bottom: 1.5rem;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
@@ -519,7 +535,8 @@
           if (btnWhatsapp) {
             if (business.whatsapp) {
               btnWhatsapp.style.display = 'flex';
-              btnWhatsapp.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Conversar no WhatsApp`;
+              const ctaText = business.whatsapp_cta || 'Conversar no WhatsApp';
+              btnWhatsapp.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> <span>${ctaText}</span>`;
               
               // Formata telefone (apenas números)
               let cleanPhone = business.whatsapp.replace(/\D/g, '');
@@ -527,8 +544,10 @@
                 cleanPhone = '55' + cleanPhone;
               }
               const bName = business.name || 'empresa';
-              const defaultMsg = encodeURIComponent(`Olá! Encontrei o perfil de vocês no O Que Procura e gostaria de tirar uma dúvida.`);
-              const waUrl = `https://wa.me/${cleanPhone}?text=${defaultMsg}`;
+              const userMsg = business.whatsapp_message && business.whatsapp_message.trim()
+                ? business.whatsapp_message.trim()
+                : `Olá! Encontrei o perfil de vocês no O Que Procura e gostaria de tirar uma dúvida.`;
+              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(userMsg)}`;
               
               btnWhatsapp.onclick = function(e) {
                 e.preventDefault();
@@ -663,7 +682,7 @@
                     <h4 class="font-bold text-text-dark">${s.name}</h4>
                     <p class="text-sm text-muted">${s.description}</p>
                   </div>
-                  <div class="font-bold text-text-dark">${s.price}</div>
+                  <div class="font-bold" style="color: var(--color-secondary);">${s.price}</div>
                 </div>
               `).join('');
           }

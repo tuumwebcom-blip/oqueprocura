@@ -460,6 +460,38 @@
               <input type="text" class="form-control" id="input-instagram" placeholder="@suaempresa">
             </div>
           </div>
+
+          <!-- CTA Inteligente do WhatsApp -->
+          <div class="mb-4 p-4 rounded-xl border border-color-border bg-bg" style="border-left: 4px solid #25D366;">
+            <div class="flex items-center justify-between gap-2 mb-2" style="flex-wrap: wrap;">
+              <div class="flex items-center gap-2">
+                <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 0.95rem;">
+                  <i data-lucide="message-circle" class="w-4 h-4 inline mr-1 text-success"></i> Botão do WhatsApp Inteligente & Mensagem Pronta
+                </label>
+                <span class="badge" style="background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 700;">Alta Conversão</span>
+              </div>
+            </div>
+            <p class="text-xs text-muted mb-3">Personalize o texto de chamada do botão principal e configure uma mensagem de abertura que já aparecerá pronta para o cliente no WhatsApp.</p>
+
+            <div class="grid grid-cols-2 gap-4 mb-2">
+              <div class="form-group mb-2">
+                <label class="form-label text-xs font-semibold">Texto do Botão (Chamada para Ação)</label>
+                <input type="text" class="form-control text-sm" id="input-whatsapp-cta" placeholder="Ex: Pedir pelo WhatsApp, Agendar Horário..." value="Conversar no WhatsApp">
+                <div class="flex gap-1.5 mt-2" style="flex-wrap: wrap;">
+                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Conversar no WhatsApp')">Conversar no WhatsApp</button>
+                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Pedir pelo WhatsApp')">Pedir pelo WhatsApp</button>
+                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Agendar Horário')">Agendar Horário</button>
+                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Solicitar Orçamento')">Solicitar Orçamento</button>
+                  <button type="button" class="badge bg-white border text-xs cursor-pointer hover:bg-gray-100" onclick="definirCtaRapido('Falar com Atendente')">Falar com Atendente</button>
+                </div>
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label text-xs font-semibold">Mensagem Inicial do Cliente (Opcional)</label>
+                <textarea class="form-control text-sm" id="input-whatsapp-message" rows="3" placeholder="Ex: Olá! Vi o perfil de vocês no O Que Procura e gostaria de solicitar um orçamento..."></textarea>
+                <span class="text-xs text-muted mt-1 block">O cliente não precisará pensar no que escrever — a mensagem já abrirá pronta.</span>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label">Endereço Completo</label>
             <input type="text" class="form-control" id="input-address" placeholder="Rua, Número - Bairro, Cidade - UF">
@@ -801,6 +833,11 @@
         document.getElementById('input-hours').value = data.business_hours || '';
         document.getElementById('input-maps-url').value = data.maps_url || '';
         definirCorMarca(data.color_primary || '#2563eb');
+
+        const ctaInput = document.getElementById('input-whatsapp-cta');
+        if (ctaInput) ctaInput.value = data.whatsapp_cta || 'Conversar no WhatsApp';
+        const msgInput = document.getElementById('input-whatsapp-message');
+        if (msgInput) msgInput.value = data.whatsapp_message || '';
 
         // Mostrar plano no badge
         const planBadge = document.getElementById('plan-badge');
@@ -1170,6 +1207,14 @@
       }
     }
 
+    function definirCtaRapido(texto) {
+      const ctaInput = document.getElementById('input-whatsapp-cta');
+      if (ctaInput) {
+        ctaInput.value = texto;
+        ctaInput.focus();
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', carregarDados);
 
     async function salvarAlteracoes() {
@@ -1188,7 +1233,9 @@
         website: document.getElementById('input-website').value,
         business_hours: document.getElementById('input-hours').value,
         maps_url: document.getElementById('input-maps-url').value,
-        color_primary: colorVal
+        color_primary: colorVal,
+        whatsapp_cta: document.getElementById('input-whatsapp-cta') ? document.getElementById('input-whatsapp-cta').value.trim() : 'Conversar no WhatsApp',
+        whatsapp_message: document.getElementById('input-whatsapp-message') ? document.getElementById('input-whatsapp-message').value.trim() : ''
       };
 
       try {

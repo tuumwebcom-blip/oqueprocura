@@ -109,6 +109,10 @@ def check_db_schema():
             conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_clicks INTEGER DEFAULT 0')
         if 'color_primary' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN color_primary TEXT DEFAULT '#2563eb'")
+        if 'whatsapp_cta' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN whatsapp_cta TEXT DEFAULT 'Conversar no WhatsApp'")
+        if 'whatsapp_message' not in cols:
+            conn.execute('ALTER TABLE businesses ADD COLUMN whatsapp_message TEXT')
 
         cols_rev = [c[1] for c in conn.execute('PRAGMA table_info(reviews)').fetchall()]
         if 'author_email' not in cols_rev:
@@ -336,6 +340,8 @@ def update_business(id):
     color_primary = str(escape(data.get('color_primary', '#2563eb'))).strip()
     if not color_primary.startswith('#') or len(color_primary) not in (4, 7):
         color_primary = '#2563eb'
+    whatsapp_cta = str(escape(data.get('whatsapp_cta', 'Conversar no WhatsApp'))).strip() or 'Conversar no WhatsApp'
+    whatsapp_message = str(escape(data.get('whatsapp_message', ''))).strip()
     maps_url = data.get('maps_url', '') # Maps URL must be kept intact but we trust admin input here, could sanitize differently
 
     conn = get_db_connection()
@@ -343,9 +349,10 @@ def update_business(id):
         UPDATE businesses 
         SET name = ?, category = ?, short_description = ?, about_text = ?, 
             whatsapp = ?, instagram = ?, address = ?, maps_url = ?,
-            website = ?, business_hours = ?, color_primary = ?
+            website = ?, business_hours = ?, color_primary = ?,
+            whatsapp_cta = ?, whatsapp_message = ?
         WHERE id = ?
-    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, color_primary, id))
+    ''', (name, category, short_description, about_text, whatsapp, instagram, address, maps_url, website, business_hours, color_primary, whatsapp_cta, whatsapp_message, id))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
