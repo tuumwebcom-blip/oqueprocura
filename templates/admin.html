@@ -1099,11 +1099,11 @@
         <div class="card-panel mb-6">
           <h2 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Foto Principal de Capa</h2>
           <div class="flex items-center gap-6">
-            <img id="admin-main-photo" src="" alt="Capa" style="width: 200px; height: 130px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <img id="admin-main-photo" src="" alt="Capa" style="width: 450px; height: 150px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
             <div>
               <input type="file" id="upload-main-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoPrincipal(this)">
               <button class="btn btn-primary" onclick="document.getElementById('upload-main-photo').click()">Alterar Foto de Capa</button>
-              <p class="text-xs text-muted mt-2">Recomendado: 600x400px (Máx 10MB)</p>
+              <p class="text-xs text-muted mt-2">Recomendado: 1200x400px (Máx 10MB)</p>
               <p id="main-upload-status" class="text-sm mt-2 font-medium" style="display:none;"></p>
             </div>
           </div>
@@ -1746,7 +1746,7 @@
             galleryContainer.innerHTML = '<p class="col-span-4 text-center text-muted py-4">Nenhuma foto adicionada ainda.</p>';
           } else {
             galleryContainer.innerHTML = data.gallery.map(g => `
-              <div style="position: relative; aspect-ratio: 800/300; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border);">
+              <div style="position: relative; aspect-ratio: 16/9; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border);">
                 <img src="${escapeHtml(g.image_url)}" class="w-full h-full object-cover">
                 <button onclick="apagarFotoGaleria(${g.id})" class="w-8 h-8 rounded-full bg-white text-danger flex items-center justify-center shadow-sm absolute top-2 right-2 hover:bg-red-50">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1873,7 +1873,7 @@
       
       const canvas = currentCropper.getCroppedCanvas({
         width: currentCropper.options.aspectRatio === 1 ? 400 : 1200,
-        height: currentCropper.options.aspectRatio === 1 ? 400 : 450
+        height: currentCropper.options.aspectRatio === 1 ? 400 : 400
       });
       
       canvas.toBlob(async (blob) => {
@@ -1924,7 +1924,7 @@
 
     function enviarFotoPrincipal(input) {
       if (!input.files || !input.files[0]) return;
-      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-cover`, 'main-upload-status', 800/300);
+      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-cover`, 'main-upload-status', 1200/400);
     }
 
     async function enviarFotoGaleria(input) {
