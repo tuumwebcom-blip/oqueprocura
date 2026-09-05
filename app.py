@@ -1808,5 +1808,15 @@ def como_funciona():
 def checkout():
     return render_template('checkout.html')
 
+
+@app.route('/api/fix-ratings')
+def fix_ratings_endpoint():
+    conn = get_db_connection()
+    conn.execute('DELETE FROM reviews')
+    conn.execute('UPDATE businesses SET rating = 0.0')
+    conn.commit()
+    conn.close()
+    return 'Avaliações zeradas com sucesso! Volte para a tela inicial e atualize a página.'
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -20,7 +20,7 @@ async function loadBusinesses(query = '', category = '', local = '', attendance 
     
     // Sempre usamos o search porque ele junta a tabela de usuários
     // e já ordena por prioridade (Elite > Pro > Basico > Gratuito)
-    const url = `/api/search?${params.toString()}`;
+    const url = `/api/search?${params.toString()}&_t=${new Date().getTime()}`;
 
     const response = await fetch(url);
     const data = await response.json();
