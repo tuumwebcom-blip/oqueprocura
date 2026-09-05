@@ -472,20 +472,43 @@
         const data = await res.json();
         const container = document.getElementById('category-filter-list');
         if (data.success && data.categories && data.categories.length > 0) {
-          // Extrair a categoria atual da URL se houver
           const urlParams = new URLSearchParams(window.location.search);
           const currentCategory = urlParams.get('category') || '';
           
-          container.innerHTML = data.categories.map(c => {
+          let htmlStr = '';
+          const maxVisible = 6; // Mostra as 6 principais para não poluir
+          let hiddenCount = 0;
+          
+          data.categories.forEach((c, index) => {
             const isActive = currentCategory.toLowerCase() === (c.slug || c.name).toLowerCase() ? 'active' : '';
-            return `
-              <a href="search.html?category=${c.slug || c.name}" class="filter-item ${isActive}" data-category="${c.slug || c.name}">
+            let hideAttr = '';
+            let extraClass = '';
+            
+            // Esconde se passou do limite, mas NUNCA esconde se for a categoria atualmente selecionada
+            if (index >= maxVisible && !isActive) {
+              hideAttr = 'style="display: none;"';
+              extraClass = 'hidden-cat';
+              hiddenCount++;
+            }
+            
+            htmlStr += `
+              <a href="search.html?category=${c.slug || c.name}" class="filter-item ${isActive} ${extraClass}" ${hideAttr} data-category="${c.slug || c.name}">
                 <span class="filter-icon-box"><i data-lucide="${c.icon || 'tag'}" class="w-4 h-4"></i></span>
                 <span class="filter-name">${c.name}</span>
                 <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
               </a>
             `;
-          }).join('');
+          });
+
+          if (hiddenCount > 0) {
+            htmlStr += `
+              <button id="btn-toggle-cats" onclick="toggleCategorias()" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; font-size: 0.85rem; border-radius: var(--radius-md); font-weight: 600;">
+                Ver mais ${hiddenCount} categorias...
+              </button>
+            `;
+          }
+
+          container.innerHTML = htmlStr;
           if(typeof lucide !== 'undefined') lucide.createIcons();
         } else {
           container.innerHTML = '<span class="text-xs text-muted">Nenhuma categoria cadastrada.</span>';
@@ -494,6 +517,25 @@
         console.error('Erro ao carregar categorias', e);
       }
     }
+
+    window.toggleCategorias = function() {
+      const hidden = document.querySelectorAll('.hidden-cat');
+      const btn = document.getElementById('btn-toggle-cats');
+      let isShowing = false;
+      
+      hidden.forEach(el => {
+        if (el.style.display === 'none') {
+          el.style.display = 'flex';
+          isShowing = true;
+        } else {
+          el.style.display = 'none';
+        }
+      });
+      
+      if (btn) {
+        btn.textContent = isShowing ? 'Ocultar categorias' : `Ver mais ${hidden.length} categorias...`;
+      }
+    };
 
     carregarCategoriasMenu();
   </script>
