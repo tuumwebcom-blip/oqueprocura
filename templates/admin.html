@@ -1099,7 +1099,7 @@
         <div class="card-panel mb-6">
           <h2 class="text-xl font-bold text-text-dark mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">Foto Principal de Capa</h2>
           <div class="flex items-center gap-6">
-            <img id="admin-main-photo" src="" alt="Capa" style="width: 450px; height: 150px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <img id="admin-main-photo" src="" alt="Capa" style="width: 450px; height: 150px; object-fit: contain; background: #000; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
             <div>
               <input type="file" id="upload-main-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoPrincipal(this)">
               <button class="btn btn-primary" onclick="document.getElementById('upload-main-photo').click()">Alterar Foto de Capa</button>
@@ -1871,10 +1871,10 @@
     async function salvarCropper() {
       if (!currentCropper) return;
       
-      const canvas = currentCropper.getCroppedCanvas({
-        width: currentCropper.options.aspectRatio === 1 ? 400 : 1200,
-        height: currentCropper.options.aspectRatio === 1 ? 400 : 400
-      });
+      const opts = currentCropper.options.aspectRatio === 1 
+        ? { width: 400, height: 400 } 
+        : { maxWidth: 1920, maxHeight: 1080 };
+      const canvas = currentCropper.getCroppedCanvas(opts);
       
       canvas.toBlob(async (blob) => {
         fecharCropper();
@@ -1924,7 +1924,7 @@
 
     function enviarFotoPrincipal(input) {
       if (!input.files || !input.files[0]) return;
-      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-cover`, 'main-upload-status', 1200/400);
+      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-cover`, 'main-upload-status', NaN);
     }
 
     async function enviarFotoGaleria(input) {
