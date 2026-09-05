@@ -632,6 +632,33 @@ def upload_main_image(id):
     
     return jsonify({'success': False, 'message': 'Formato não permitido'}), 400
 
+
+@app.route('/api/businesses/<int:id>/upload-cover', methods=['POST'])
+@login_required
+def upload_cover_image(id):
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'Nenhuma imagem enviada'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'Nenhum arquivo selecionado'}), 400
+        
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"cover_{id}_{uuid.uuid4().hex[:8]}.{ext}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        file_url = f"/static/uploads/{filename}"
+        
+        conn = get_db_connection()
+        conn.execute('UPDATE businesses SET cover_image = ? WHERE id = ?', (file_url, id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'url': file_url})
+    
+    return jsonify({'success': False, 'message': 'Formato não permitido'}), 400
+
 @app.route('/api/businesses/<int:id>/upload-bg', methods=['POST'])
 @login_required
 def upload_bg_image(id):
