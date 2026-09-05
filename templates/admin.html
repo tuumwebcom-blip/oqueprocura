@@ -6,6 +6,8 @@
   <title>Painel do Anunciante - O Que Procura?</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <style>
     .admin-layout {
       display: grid;
@@ -1824,98 +1826,105 @@
       }
     }
 
-    // Funcionalidades de Upload de Imagens
-    async function enviarLogoEmpresa(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const status = document.getElementById('logo-upload-status');
-      if (status) {
-        status.style.display = 'inline-block';
-        status.textContent = 'Enviando logotipo...';
-        status.className = 'text-xs font-semibold text-secondary';
+    // Funcionalidades de Upload de Imagens com CropperJS
+    let currentCropper = null;
+    let cropperTargetEndpoint = '';
+    let cropperTargetStatus = null;
+    
+    function abrirCropper(file, endpoint, statusId, aspectRatio = 1) {
+      const modal = document.getElementById('modal-cropper');
+      const img = document.getElementById('cropper-image');
+      const statusEl = document.getElementById(statusId);
+      
+      cropperTargetEndpoint = endpoint;
+      cropperTargetStatus = statusEl;
+      
+      const url = URL.createObjectURL(file);
+      img.src = url;
+      
+      modal.style.display = 'flex';
+      
+      if (currentCropper) {
+        currentCropper.destroy();
       }
-
-      try {
-        const res = await fetch(`/api/businesses/${BUSINESS_ID}/upload-main`, {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-          if (status) {
-            status.textContent = '✓ Logotipo atualizado!';
-            status.className = 'text-xs font-semibold text-success';
-          }
-          const t = Date.now();
-          const imgUrl = (data.url || '') + '?t=' + t;
-          const logoPreview = document.getElementById('profile-logo-preview');
-          if (logoPreview && data.url) logoPreview.src = imgUrl;
-          const imgMain = document.getElementById('admin-main-photo');
-          if (imgMain && data.url) imgMain.src = imgUrl;
-          const sidebarAvatar = document.getElementById('sidebar-user-avatar');
-          if (sidebarAvatar && data.url) sidebarAvatar.src = imgUrl;
-
-          await carregarDados(); // Atualiza preview do logo e foto de capa
-        } else {
-          if (status) {
-            status.textContent = 'Erro: ' + (data.message || 'Falha ao enviar.');
-            status.className = 'text-xs font-semibold text-danger';
-          }
-        }
-      } catch(e) {
-        if (status) {
-          status.textContent = 'Erro de conexão.';
-          status.className = 'text-xs font-semibold text-danger';
-        }
-      }
-      setTimeout(() => { if (status) status.style.display = 'none'; }, 4000);
+      
+      currentCropper = new Cropper(img, {
+        aspectRatio: aspectRatio,
+        viewMode: 1,
+        autoCropArea: 1,
+        background: false,
+      });
+      // Limpa o input file para permitir selecionar o mesmo arquivo novamente
+      document.getElementById('upload-logo-input').value = '';
+      document.getElementById('upload-main-photo').value = '';
     }
 
-    async function enviarFotoPrincipal(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const status = document.getElementById('main-upload-status');
-      status.style.display = 'block';
-      status.textContent = 'Enviando...';
-      status.className = 'text-sm mt-2 font-medium text-secondary';
-
-      try {
-        const res = await fetch(`/api/businesses/${BUSINESS_ID}/upload-main`, {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-          status.textContent = 'Capa atualizada!';
-          status.className = 'text-sm mt-2 font-medium text-success';
-
-          const t = Date.now();
-          const imgUrl = (data.url || '') + '?t=' + t;
-          const imgMain = document.getElementById('admin-main-photo');
-          if (imgMain && data.url) imgMain.src = imgUrl;
-          const logoPreview = document.getElementById('profile-logo-preview');
-          if (logoPreview && data.url) logoPreview.src = imgUrl;
-          const sidebarAvatar = document.getElementById('sidebar-user-avatar');
-          if (sidebarAvatar && data.url) sidebarAvatar.src = imgUrl;
-
-          await carregarDados(); // Recarrega para mostrar a foto nova
-        } else {
-          status.textContent = 'Erro: ' + data.message;
-          status.className = 'text-sm mt-2 font-medium text-danger';
-        }
-      } catch(e) {
-        status.textContent = 'Erro de conexão.';
-        status.className = 'text-sm mt-2 font-medium text-danger';
+    function fecharCropper() {
+      document.getElementById('modal-cropper').style.display = 'none';
+      if (currentCropper) {
+        currentCropper.destroy();
+        currentCropper = null;
       }
-      setTimeout(() => status.style.display = 'none', 4000);
+    }
+
+    async function salvarCropper() {
+      if (!currentCropper) return;
+      
+      const canvas = currentCropper.getCroppedCanvas({
+        width: currentCropper.options.aspectRatio === 1 ? 400 : 600,
+        height: currentCropper.options.aspectRatio === 1 ? 400 : 400
+      });
+      
+      canvas.toBlob(async (blob) => {
+        fecharCropper();
+        
+        if (cropperTargetStatus) {
+          cropperTargetStatus.style.display = 'inline-block';
+          cropperTargetStatus.textContent = 'Enviando imagem...';
+          cropperTargetStatus.className = 'text-xs font-semibold text-secondary';
+        }
+        
+        const formData = new FormData();
+        formData.append('image', blob, 'cropped.jpg');
+        
+        try {
+          const res = await fetch(cropperTargetEndpoint, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          
+          if (data.success) {
+            if (cropperTargetStatus) {
+              cropperTargetStatus.textContent = '✓ Imagem atualizada!';
+              cropperTargetStatus.className = 'text-xs font-semibold text-success';
+              setTimeout(() => cropperTargetStatus.style.display = 'none', 3000);
+            }
+            await carregarDados(); // Reload UI
+          } else {
+            if (cropperTargetStatus) {
+              cropperTargetStatus.textContent = 'Erro: ' + (data.message || 'Falha ao enviar.');
+              cropperTargetStatus.className = 'text-xs font-semibold text-danger';
+            }
+          }
+        } catch(e) {
+          if (cropperTargetStatus) {
+            cropperTargetStatus.textContent = 'Erro de conexão';
+            cropperTargetStatus.className = 'text-xs font-semibold text-danger';
+          }
+        }
+      }, 'image/jpeg', 0.9);
+    }
+
+    function enviarLogoEmpresa(input) {
+      if (!input.files || !input.files[0]) return;
+      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-main`, 'logo-upload-status', 1);
+    }
+
+    function enviarFotoPrincipal(input) {
+      if (!input.files || !input.files[0]) return;
+      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-main`, 'main-upload-status', 600/400);
+    }
     }
 
     async function enviarFotoGaleria(input) {
@@ -2482,6 +2491,20 @@
       }
     }
   </script>
+  <!-- Modal CropperJS -->
+  <div id="modal-cropper" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="background:white; padding:1.5rem; border-radius:12px; max-width:90vw; width:500px; display:flex; flex-direction:column; gap:1rem;">
+      <h3 class="text-xl font-bold text-text-dark" style="font-family:'Plus Jakarta Sans', sans-serif;">Ajustar Imagem</h3>
+      <div style="width:100%; max-height:50vh; overflow:hidden; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+        <img id="cropper-image" src="" style="max-width:100%; max-height:50vh; display:block;">
+      </div>
+      <p class="text-xs text-muted text-center">Use o mouse ou toque para mover, dar zoom e ajustar a área de corte.</p>
+      <div class="flex gap-2 justify-end mt-2">
+        <button class="btn btn-outline flex-1" onclick="fecharCropper()">Cancelar</button>
+        <button class="btn btn-primary flex-1" onclick="salvarCropper()">Cortar e Salvar</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
