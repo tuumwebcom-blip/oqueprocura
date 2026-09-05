@@ -927,7 +927,7 @@
         <!-- Modal de Adicionar/Editar Serviço -->
         <div id="modal-servico" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
           <div style="background:white; border-radius:var(--radius-xl); padding:2rem; width:100%; max-width:480px; margin:1rem;">
-            <h3 class="text-xl font-bold text-text-dark mb-4" style="font-family:'Plus Jakarta Sans',sans-serif;">Novo Serviço</h3>
+            <h3 id="modal-servico-title" class="text-xl font-bold text-text-dark mb-4" style="font-family:'Plus Jakarta Sans',sans-serif;">Novo Serviço</h3>
             <div class="form-group">
               <label class="form-label">Nome do Serviço</label>
               <input type="text" id="svc-name" class="form-control" placeholder="Ex: Corte de cabelo masculino">
@@ -1384,10 +1384,8 @@
       }
     }
 
-
-    let currentPlanLimits = {};
-
     function renderizarServicos(servicos, planLimits) {
+      window.currentServices = servicos;
       const lista = document.getElementById('admin-services-list');
       const countLabel = document.getElementById('services-count-label');
       const btnAdd = document.getElementById('btn-add-service');
@@ -1401,11 +1399,9 @@
           : `${count} de ${max} serviços usados`;
       }
 
-      // Bloquear botão se atingiu o limite
       if (btnAdd) {
         const atingiu = max !== null && count >= max;
         btnAdd.disabled = atingiu;
-        btnAdd.title = atingiu ? `Limite do plano atingido. Faça upgrade!` : 'Adicionar serviço';
         btnAdd.style.opacity = atingiu ? '0.5' : '1';
       }
 
@@ -1423,6 +1419,9 @@
           </div>
           <div style="display:flex; align-items:center; gap:1rem; flex-shrink:0;">
             <span class="font-bold text-text-dark">${escapeHtml(s.price)}</span>
+            <button onclick="prepararEdicaoServico(${s.id})" style="background:none;border:none;cursor:pointer;color:var(--color-primary);" title="Editar serviço">
+              <i data-lucide="edit" class="w-4 h-4"></i>
+            </button>
             <button onclick="deletarServico(${s.id})" style="background:none;border:none;cursor:pointer;color:#ef4444;" title="Remover serviço">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
@@ -1440,15 +1439,31 @@
       } catch(e) { alert('Erro ao remover serviço.'); }
     }
 
+    let editandoServicoId = null;
+
     function abrirModalServico() {
+      editandoServicoId = null;
+      document.getElementById('modal-servico-title').textContent = 'Novo Serviço';
       document.getElementById('svc-name').value = '';
       document.getElementById('svc-desc').value = '';
       document.getElementById('svc-price').value = '';
       document.getElementById('modal-servico').style.display = 'flex';
     }
 
+    function prepararEdicaoServico(id) {
+      const s = window.currentServices.find(srv => srv.id === id);
+      if (!s) return;
+      editandoServicoId = id;
+      document.getElementById('modal-servico-title').textContent = 'Editar Serviço';
+      document.getElementById('svc-name').value = s.name || '';
+      document.getElementById('svc-desc').value = s.description || '';
+      document.getElementById('svc-price').value = s.price || '';
+      document.getElementById('modal-servico').style.display = 'flex';
+    }
+
     function fecharModalServico() {
       document.getElementById('modal-servico').style.display = 'none';
+      editandoServicoId = null;
     }
 
     async function salvarServico() {
@@ -1457,8 +1472,12 @@
       const price = document.getElementById('svc-price').value.trim();
       if (!name || !price) { alert('Preencha pelo menos o nome e o preço!'); return; }
 
+      const url = editandoServicoId 
+        ? `/api/businesses/${BUSINESS_ID}/services/${editandoServicoId}/update` 
+        : `/api/businesses/${BUSINESS_ID}/services/add`;
+
       try {
-        const res = await fetch(`/api/businesses/${BUSINESS_ID}/services/add`, {
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, description: desc, price })

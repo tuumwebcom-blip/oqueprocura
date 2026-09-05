@@ -856,6 +856,27 @@ def add_service(id):
     conn.close()
     return jsonify({'success': True})
 
+@app.route('/api/businesses/<int:id>/services/<int:service_id>/update', methods=['POST'])
+@login_required
+def update_service(id, service_id):
+    data = request.json
+    name = str(escape(data.get('name', '')))
+    description = str(escape(data.get('description', '')))
+    price = str(escape(data.get('price', '')))
+    
+    conn = get_db_connection()
+    # Verifica se o serviço pertence a essa empresa
+    service = conn.execute('SELECT id FROM services WHERE id = ? AND business_id = ?', (service_id, id)).fetchone()
+    if not service:
+        conn.close()
+        return jsonify({'success': False, 'message': 'Serviço não encontrado.'}), 404
+
+    conn.execute('UPDATE services SET name = ?, description = ?, price = ? WHERE id = ?',
+                 (name, description, price, service_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/businesses/<int:id>/services/<int:service_id>/delete', methods=['POST'])
 @login_required
 def delete_service(id, service_id):
