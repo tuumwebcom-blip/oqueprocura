@@ -494,7 +494,7 @@
                 <label class="form-label mb-0 font-bold text-text-dark" style="font-size: 1rem;">Logotipo da Empresa</label>
                 <span class="badge" style="background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 700;">Incluso no Plano Gratuito</span>
               </div>
-              <p class="text-xs text-muted mb-3">Esta imagem será o logotipo (formato circular) da sua empresa nos cards de busca e no perfil.</p>
+              <p class="text-xs text-muted mb-3">Esta imagem será o logotipo (formato circular) da sua empresa nos cards de busca e no perfil.<br><strong style="color:var(--color-primary);">💡 Dica para foto perfeita:</strong> Use uma imagem quadrada (ex: 400x400px) com o texto/ícone bem centralizado, pois as bordas serão arredondadas no formato de círculo.</p>
               <div class="flex items-center gap-3">
                 <input type="file" id="upload-logo-input" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarLogoEmpresa(this)">
                 <button type="button" class="btn btn-primary" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;" onclick="document.getElementById('upload-logo-input').click()">
@@ -1103,7 +1103,8 @@
             <div>
               <input type="file" id="upload-main-photo" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="enviarFotoPrincipal(this)">
               <button class="btn btn-primary" onclick="document.getElementById('upload-main-photo').click()">Alterar Foto de Capa</button>
-              <p class="text-xs text-muted mt-2">Recomendado: 1200x400px (Máx 10MB)</p>
+              <p class="text-xs text-muted mt-2 mb-0">Recomendado: Formato largo/horizontal (Máx 10MB).</p>
+              <p class="text-xs text-muted mt-1"><strong style="color:var(--color-primary);">💡 Dica para foto perfeita:</strong> Para não ficar com faixas pretas ao fundo, recomendamos imagens na proporção 3:1 (ex: 1200x400px). Você tem liberdade para recortar o tamanho que desejar!</p>
               <p id="main-upload-status" class="text-sm mt-2 font-medium" style="display:none;"></p>
             </div>
           </div>
