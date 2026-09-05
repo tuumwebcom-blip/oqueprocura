@@ -884,7 +884,7 @@
           const metaContainer = document.querySelector('.profile-meta');
           if (metaContainer) {
             const reviewCount = business.reviews ? business.reviews.length : 0;
-            const ratingDisplay = business.rating > 0 ? parseFloat(business.rating).toFixed(1) : 'Novo';
+            const ratingDisplay = business.reviews && business.reviews.length > 0 ? parseFloat(business.rating).toFixed(1) : 'Novo';
             const cleanCat = unescapeHtml(business.category || 'Geral');
             
             // Prioriza SEMPRE o endereço real cadastrado pelo anunciante

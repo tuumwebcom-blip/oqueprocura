@@ -1589,7 +1589,7 @@ def superadmin_add_business():
     is_featured = 1 if plan == 'elite' else 0
     cursor.execute('''
         INSERT INTO businesses (name, category, rating, distance, image, featured, about_text, slug, status, attendance_type)
-        VALUES (?, ?, 5.0, '', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active', ?)
+        VALUES (?, ?, 0.0, '', 'https://placehold.co/600x400?text=Foto+Capa', ?, '', ?, 'active', ?)
     ''', (business_name, category, is_featured, biz_slug, attendance_type))
     business_id = cursor.lastrowid
 

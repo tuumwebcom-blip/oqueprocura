@@ -101,7 +101,7 @@ async function renderBusinessCards(containerId, limit = null, query = '', catego
         <div class="card-footer">
           <div class="rating">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            ${biz.rating}
+            ${biz.rating > 0 ? parseFloat(biz.rating).toFixed(1) : 'Novo'}
           </div>
           <span class="text-secondary font-medium text-sm flex items-center gap-2">Ver perfil <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
         </div>
