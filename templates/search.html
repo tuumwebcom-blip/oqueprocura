@@ -302,48 +302,9 @@
           </div>
 
           <div>
-            <h4 class="filter-subtitle">Categorias Populares</h4>
+            <h4 class="filter-subtitle">Todas as Categorias</h4>
             <div class="filter-list" id="category-filter-list">
-              <a href="search.html?category=alimentacao" class="filter-item" data-category="alimentacao">
-                <span class="filter-icon-box"><i data-lucide="utensils" class="w-4 h-4"></i></span>
-                <span class="filter-name">Alimentação</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=saude" class="filter-item" data-category="saude">
-                <span class="filter-icon-box"><i data-lucide="heart-pulse" class="w-4 h-4"></i></span>
-                <span class="filter-name">Saúde e Bem-estar</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=fotografia" class="filter-item" data-category="fotografia">
-                <span class="filter-icon-box"><i data-lucide="camera" class="w-4 h-4"></i></span>
-                <span class="filter-name">Fotografia e Eventos</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=mecanica" class="filter-item" data-category="mecanica">
-                <span class="filter-icon-box"><i data-lucide="wrench" class="w-4 h-4"></i></span>
-                <span class="filter-name">Serviços e Mecânica</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=tecnologia" class="filter-item" data-category="tecnologia">
-                <span class="filter-icon-box"><i data-lucide="laptop" class="w-4 h-4"></i></span>
-                <span class="filter-name">Tecnologia e Web</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=beleza" class="filter-item" data-category="beleza">
-                <span class="filter-icon-box"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
-                <span class="filter-name">Beleza e Estética</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=construcao" class="filter-item" data-category="construcao">
-                <span class="filter-icon-box"><i data-lucide="hammer" class="w-4 h-4"></i></span>
-                <span class="filter-name">Construção e Reformas</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
-              <a href="search.html?category=pet" class="filter-item" data-category="pet">
-                <span class="filter-icon-box"><i data-lucide="paw-print" class="w-4 h-4"></i></span>
-                <span class="filter-name">Pets e Veterinária</span>
-                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
-              </a>
+              <span class="text-xs text-muted">Carregando categorias...</span>
             </div>
           </div>
         </div>
@@ -501,7 +462,37 @@
         if (btnClear) btnClear.style.display = 'none';
       }
     }
-  </script>
+  
 
+    async function carregarCategoriasMenu() {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        const container = document.getElementById('category-filter-list');
+        if (data.success && data.categories && data.categories.length > 0) {
+          // Extrair a categoria atual da URL se houver
+          const urlParams = new URLSearchParams(window.location.search);
+          const currentCategory = urlParams.get('category') || '';
+          
+          container.innerHTML = data.categories.map(c => {
+            const isActive = currentCategory.toLowerCase() === (c.slug || c.name).toLowerCase() ? 'active' : '';
+            return `
+              <a href="search.html?category=${c.slug || c.name}" class="filter-item ${isActive}" data-category="${c.slug || c.name}">
+                <span class="filter-icon-box"><i data-lucide="${c.icon || 'tag'}" class="w-4 h-4"></i></span>
+                <span class="filter-name">${c.name}</span>
+                <i data-lucide="chevron-right" class="filter-arrow w-4 h-4"></i>
+              </a>
+            `;
+          }).join('');
+          if(typeof lucide !== 'undefined') lucide.createIcons();
+        } else {
+          container.innerHTML = '<span class="text-xs text-muted">Nenhuma categoria cadastrada.</span>';
+        }
+      } catch(e) {
+        console.error('Erro ao carregar categorias', e);
+      }
+    }
+
+  </script>
 </body>
 </html>
