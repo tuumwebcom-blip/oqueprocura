@@ -286,8 +286,27 @@
     .service-item {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
       padding: 1rem 0;
       border-bottom: 1px solid var(--color-border);
+    }
+    .service-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .service-price {
+      white-space: nowrap;
+      text-align: right;
+      font-weight: bold;
+      color: var(--color-secondary);
+      flex-shrink: 0;
+      font-size: 1.05rem;
+    }
+    .service-desc {
+      white-space: pre-line;
+      margin-top: 0.35rem;
+      line-height: 1.4;
     }
     .service-item:last-child { border-bottom: none; }
     
@@ -340,6 +359,9 @@
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 0.5rem !important;
+      }
+      .service-price {
+        text-align: left !important;
       }
     }
 
@@ -1173,18 +1195,18 @@
               item.className = 'service-item';
 
               const infoDiv = document.createElement('div');
+              infoDiv.className = 'service-info';
               const h4 = document.createElement('h4');
               h4.className = 'font-bold text-text-dark';
               h4.textContent = s.name || '';
               const desc = document.createElement('p');
-              desc.className = 'text-sm text-muted';
+              desc.className = 'text-sm text-muted service-desc';
               desc.textContent = s.description || '';
               infoDiv.appendChild(h4);
               infoDiv.appendChild(desc);
 
               const priceDiv = document.createElement('div');
-              priceDiv.className = 'font-bold';
-              priceDiv.style.color = 'var(--color-secondary)';
+              priceDiv.className = 'service-price';
               priceDiv.textContent = s.price || '';
 
               item.appendChild(infoDiv);
