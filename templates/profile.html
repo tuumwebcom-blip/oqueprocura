@@ -857,7 +857,7 @@
           // Atualizar Imagem Principal
           const imgEl = document.querySelector('.gallery-main');
           if (imgEl) {
-            imgEl.src = business.image;
+            imgEl.src = business.cover_image || business.image;
             imgEl.alt = cleanName;
           }
           
@@ -1134,7 +1134,11 @@
             const parent = galleryContainer.parentElement;
             
             if (business.gallery && business.gallery.length > 0) {
-              parent.innerHTML = business.gallery.slice(0, 5).map((g, i) => {
+              const coverImgUrl = business.cover_image || business.image;
+              const mosaicImages = (coverImgUrl && coverImgUrl !== 'https://placehold.co/1200x600?text=Sem+Foto') 
+                ? [{image_url: coverImgUrl}, ...business.gallery] 
+                : business.gallery;
+              parent.innerHTML = mosaicImages.slice(0, 5).map((g, i) => {
                 let classes = 'gallery-img';
                 let style = '';
                 if (i === 0) classes += ' gallery-main';
@@ -1142,13 +1146,13 @@
                 if (i === 4 || (i === business.gallery.length - 1 && i > 0)) style += 'border-bottom-right-radius: var(--radius-xl);';
                 
                 // Se for a única foto
-                if (business.gallery.length === 1) style = 'border-radius: var(--radius-xl);';
+                if (mosaicImages.length === 1) style = 'border-radius: var(--radius-xl);';
                 
                 return `<img src="${g.image_url}" alt="Foto ${i+1}" class="${classes}" style="${style}">`;
               }).join('');
             } else {
               // Se não tiver fotos na galeria, usamos a imagem principal de capa!
-              parent.innerHTML = `<img src="${business.image || 'https://placehold.co/1200x600?text=Sem+Foto'}" alt="Capa" class="gallery-img gallery-main" style="border-radius: var(--radius-xl);">`;
+              parent.innerHTML = `<img src="${business.cover_image || business.image || 'https://placehold.co/1200x600?text=Sem+Foto'}" alt="Capa" class="gallery-img gallery-main" style="border-radius: var(--radius-xl); object-fit: cover; width: 100%; height: 100%;">`;
             }
           }
 

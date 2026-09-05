@@ -1716,8 +1716,9 @@
         const logoPreview = document.getElementById('profile-logo-preview');
         const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Empresa')}&background=2563eb&color=fff&size=128`;
         const currentImg = (data.image && !data.image.includes('placehold.co')) ? data.image : fallbackLogo;
+        const currentCover = (data.cover_image && !data.cover_image.includes('placehold.co')) ? data.cover_image : currentImg;
 
-        if (imgMain) imgMain.src = currentImg;
+        if (imgMain) imgMain.src = currentCover;
         if (logoPreview) logoPreview.src = currentImg;
 
         // Renderizar Galeria e limites
@@ -1745,7 +1746,7 @@
             galleryContainer.innerHTML = '<p class="col-span-4 text-center text-muted py-4">Nenhuma foto adicionada ainda.</p>';
           } else {
             galleryContainer.innerHTML = data.gallery.map(g => `
-              <div style="position: relative; aspect-ratio: 16/9; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border);">
+              <div style="position: relative; aspect-ratio: 800/300; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border);">
                 <img src="${escapeHtml(g.image_url)}" class="w-full h-full object-cover">
                 <button onclick="apagarFotoGaleria(${g.id})" class="w-8 h-8 rounded-full bg-white text-danger flex items-center justify-center shadow-sm absolute top-2 right-2 hover:bg-red-50">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1871,8 +1872,8 @@
       if (!currentCropper) return;
       
       const canvas = currentCropper.getCroppedCanvas({
-        width: currentCropper.options.aspectRatio === 1 ? 400 : 600,
-        height: currentCropper.options.aspectRatio === 1 ? 400 : 400
+        width: currentCropper.options.aspectRatio === 1 ? 400 : 1200,
+        height: currentCropper.options.aspectRatio === 1 ? 400 : 450
       });
       
       canvas.toBlob(async (blob) => {
@@ -1923,7 +1924,7 @@
 
     function enviarFotoPrincipal(input) {
       if (!input.files || !input.files[0]) return;
-      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-main`, 'main-upload-status', 600/400);
+      abrirCropper(input.files[0], `/api/businesses/${BUSINESS_ID}/upload-cover`, 'main-upload-status', 800/300);
     }
 
     async function enviarFotoGaleria(input) {

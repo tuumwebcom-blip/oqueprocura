@@ -175,6 +175,8 @@ def check_db_schema():
             conn.execute("ALTER TABLE businesses ADD COLUMN color_text TEXT DEFAULT '#0f172a'")
         if 'bg_image' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN bg_image TEXT DEFAULT ''")
+        if 'cover_image' not in cols:
+            conn.execute("ALTER TABLE businesses ADD COLUMN cover_image TEXT DEFAULT ''")
         if 'attendance_type' not in cols:
             conn.execute("ALTER TABLE businesses ADD COLUMN attendance_type TEXT DEFAULT 'ambos'")
         conn.execute("UPDATE businesses SET attendance_type = 'ambos' WHERE attendance_type IS NULL OR attendance_type = ''")
